@@ -14,23 +14,16 @@ const NURMIJARVI = { name: "Nurmijärvi", lat: 60.4647, lon: 24.8073 };
 const MAX_DISTANCE_KM = 150;
 
 const allPlaces = [
+
   { name: "Nurmijärvi", lat: 60.4647, lon: 24.8073 },
   { name: "Klaukkala", lat: 60.3824, lon: 24.7494 },
   { name: "Rajamäki", lat: 60.5291, lon: 24.7257 },
   { name: "Röykkä", lat: 60.4869, lon: 24.6076 },
   { name: "Helsinki", lat: 60.1699, lon: 24.9384 },
   { name: "Espoo", lat: 60.2055, lon: 24.6559 },
-  { name: "Leppävaara", lat: 60.2190, lon: 24.8128 },
-  { name: "Matinkylä", lat: 60.1585, lon: 24.7381 },
   { name: "Vantaa", lat: 60.2934, lon: 25.0378 },
-  { name: "Tikkurila", lat: 60.2932, lon: 25.0410 },
-  { name: "Myyrmäki", lat: 60.2595, lon: 24.8522 },
-  { name: "Korso", lat: 60.3510, lon: 25.0803 },
   { name: "Kauniainen", lat: 60.2121, lon: 24.7276 },
   { name: "Kirkkonummi", lat: 60.1231, lon: 24.4381 },
-  { name: "Veikkola", lat: 60.2708, lon: 24.5011 },
-  { name: "Siuntio", lat: 60.1382, lon: 24.2273 },
-  { name: "Inkoo", lat: 60.0459, lon: 24.0044 },
   { name: "Vihti", lat: 60.4167, lon: 24.3167 },
   { name: "Nummela", lat: 60.3330, lon: 24.3258 },
   { name: "Karkkila", lat: 60.5342, lon: 24.2103 },
@@ -38,45 +31,29 @@ const allPlaces = [
   { name: "Kerava", lat: 60.4034, lon: 25.1050 },
   { name: "Järvenpää", lat: 60.4737, lon: 25.0899 },
   { name: "Tuusula", lat: 60.4020, lon: 25.0290 },
-  { name: "Hyrylä", lat: 60.4027, lon: 25.0286 },
   { name: "Jokela", lat: 60.5553, lon: 25.0955 },
-  { name: "Kellokoski", lat: 60.5330, lon: 25.1097 },
   { name: "Sipoo", lat: 60.3775, lon: 25.2691 },
-  { name: "Söderkulla", lat: 60.2868, lon: 25.3100 },
   { name: "Pornainen", lat: 60.4758, lon: 25.3748 },
   { name: "Mäntsälä", lat: 60.6333, lon: 25.3167 },
   { name: "Askola", lat: 60.5333, lon: 25.6000 },
-  { name: "Pukkila", lat: 60.6500, lon: 25.5667 },
   { name: "Porvoo", lat: 60.3923, lon: 25.6651 },
   { name: "Loviisa", lat: 60.4566, lon: 26.2251 },
-  { name: "Lapinjärvi", lat: 60.6244, lon: 26.1978 },
-  { name: "Myrskylä", lat: 60.6667, lon: 25.8500 },
   { name: "Hyvinkää", lat: 60.6333, lon: 24.8667 },
   { name: "Riihimäki", lat: 60.7377, lon: 24.7773 },
   { name: "Hausjärvi", lat: 60.7833, lon: 24.9333 },
   { name: "Loppi", lat: 60.7167, lon: 24.4500 },
   { name: "Janakkala", lat: 60.9000, lon: 24.6000 },
   { name: "Hämeenlinna", lat: 61.0027, lon: 24.4590 },
-  { name: "Hattula", lat: 61.0500, lon: 24.3667 },
-  { name: "Lammi", lat: 61.0833, lon: 25.0167 },
   { name: "Forssa", lat: 60.8146, lon: 23.6215 },
-  { name: "Tammela", lat: 60.8167, lon: 23.7667 },
-  { name: "Jokioinen", lat: 60.8000, lon: 23.4833 },
-  { name: "Humppila", lat: 60.9333, lon: 23.3667 },
-  { name: "Somero", lat: 60.6167, lon: 23.5333 },
   { name: "Lahti", lat: 60.9827, lon: 25.6612 },
   { name: "Hollola", lat: 61.0500, lon: 25.4333 },
   { name: "Orimattila", lat: 60.8049, lon: 25.7296 },
-  { name: "Nastola", lat: 60.95, lon: 25.9333 },
-  { name: "Asikkala", lat: 61.2000, lon: 25.5000 },
   { name: "Heinola", lat: 61.2056, lon: 26.0381 },
-  { name: "Padasjoki", lat: 61.3500, lon: 25.2833 },
-  { name: "Iitti", lat: 60.9000, lon: 26.3333 },
   { name: "Kouvola", lat: 60.8681, lon: 26.7042 },
+  { name: "Tampere", lat: 61.4978, lon: 23.7610 },
   { name: "Valkeakoski", lat: 61.2642, lon: 24.0312 },
   { name: "Akaa", lat: 61.1667, lon: 23.8667 },
-  { name: "Lempäälä", lat: 61.3167, lon: 23.7500 },
-  { name: "Tampere", lat: 61.4978, lon: 23.7610 }
+  { name: "Lempäälä", lat: 61.3167, lon: 23.7500 }
 
 ];
 
@@ -85,11 +62,9 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   const earthRadiusKm = 6371;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-
   return 2 * earthRadiusKm * Math.asin(Math.sqrt(a));
 }
 
@@ -103,23 +78,11 @@ const places = allPlaces
 
 let cachedForecast = null;
 let cacheTime = 0;
-const CACHE_DURATION_MS = 60 * 60 * 1000; // 60 min, nopeuttaa käyttöä
+const CACHE_DURATION_MS = 60 * 60 * 1000;
+const pointForecastCache = new Map();
+const POINT_CACHE_DURATION_MS = 60 * 60 * 1000;
 const BATCH_SIZE = 12;
 const BATCH_DELAY_MS = 80;
-
-const pointForecastCache = new Map();
-const POINT_CACHE_DURATION_MS = 60 * 60 * 1000; // 60 min
-
-async function fetchWithTimeout(url, timeoutMs = 4500) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    return await fetch(url, { signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
-  }
-
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -145,10 +108,6 @@ function makeTimeSteps() {
   return steps;
 }
 
-function formatFmiTime(date) {
-  return date.toISOString().slice(0, 19) + "Z";
-}
-
 function isGood(weather) {
   return (
     weather &&
@@ -161,20 +120,14 @@ function isGood(weather) {
 
 function scoreWeather(weather) {
   if (!weather) return 0;
-
   let score = 100;
-
   if (weather.temp <= 5) score -= 45;
   else if (weather.temp < 8) score -= 15;
-
   if (weather.humidity >= 70) score -= 45;
   else if (weather.humidity > 65) score -= 15;
-
   if (weather.wind >= 10) score -= 30;
   else if (weather.wind > 7) score -= 10;
-
   if (weather.precipitation > 0.1) score -= 60;
-
   return Math.max(0, Math.min(100, score));
 }
 
@@ -182,7 +135,6 @@ function pickNearestForecast(forecasts, targetTime) {
   const target = new Date(targetTime).getTime();
   let best = forecasts[0];
   let bestDiff = Infinity;
-
   for (const forecast of forecasts) {
     const diff = Math.abs(new Date(forecast.time).getTime() - target);
     if (diff < bestDiff) {
@@ -190,8 +142,21 @@ function pickNearestForecast(forecasts, targetTime) {
       bestDiff = diff;
     }
   }
-
   return best;
+}
+
+async function fetchWithTimeout(url, timeoutMs = 4500) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function formatFmiTime(date) {
+  return date.toISOString().slice(0, 19) + "Z";
 }
 
 function parseFmiTimeValuePair(xml) {
@@ -200,8 +165,8 @@ function parseFmiTimeValuePair(xml) {
 
   for (const block of memberBlocks) {
     const lower = block.toLowerCase();
-
     let key = null;
+
     if (lower.includes("temperature")) key = "temp";
     else if (lower.includes("humidity")) key = "humidity";
     else if (lower.includes("windspeedms")) key = "wind";
@@ -210,16 +175,13 @@ function parseFmiTimeValuePair(xml) {
     if (!key) continue;
 
     const tvps = block.match(/<wml2:MeasurementTVP[\s\S]*?<\/wml2:MeasurementTVP>/g) || [];
-
     for (const tvp of tvps) {
       const timeMatch = tvp.match(/<wml2:time>(.*?)<\/wml2:time>/);
       const valueMatch = tvp.match(/<wml2:value>(.*?)<\/wml2:value>/);
-
       if (!timeMatch || !valueMatch) continue;
 
       const time = timeMatch[1];
       const value = Number.parseFloat(valueMatch[1]);
-
       if (!Number.isFinite(value)) continue;
 
       if (!byTime.has(time)) {
@@ -241,7 +203,6 @@ function parseFmiTimeValuePair(xml) {
     .sort((a, b) => new Date(a.time) - new Date(b.time));
 }
 
-
 async function fetchFmiPointForecast(lat, lon) {
   const start = roundToNextHour(new Date());
   const end = addHours(start, 72);
@@ -257,8 +218,6 @@ async function fetchFmiPointForecast(lat, lon) {
     `&endtime=${encodeURIComponent(formatFmiTime(end))}` +
     "&timestep=60";
 
-  // Yritetään vain kahta yleisintä muotoa.
-  // Aiemmin kokeiltiin useampaa, mikä hidasti paljon jos FMI ei vastannut sopivasti.
   const urls = [
     base + "&parameters=Temperature,Humidity,WindSpeedMS,Precipitation1h",
     base + "&param=Temperature,Humidity,WindSpeedMS,Precipitation1h"
@@ -268,16 +227,12 @@ async function fetchFmiPointForecast(lat, lon) {
     try {
       const response = await fetchWithTimeout(url, 4500);
       if (!response.ok) continue;
-
       const xml = await response.text();
       if (xml.includes("ExceptionReport")) continue;
-
       const forecasts = parseFmiTimeValuePair(xml);
-      if (forecasts.length > 0) {
-        return forecasts;
-      }
+      if (forecasts.length > 0) return forecasts;
     } catch {
-      // Jos FMI on hidas tai ei vastaa, ei jäädä odottamaan.
+      // fallback seuraavaan
     }
   }
 
@@ -294,17 +249,11 @@ async function fetchOpenMeteoPointForecast(lat, lon) {
     "&timezone=auto";
 
   const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`Open-Meteo status ${response.status}`);
-  }
+  if (!response.ok) throw new Error(`Open-Meteo status ${response.status}`);
 
   const json = await response.json();
   const hourly = json.hourly;
-
-  if (!hourly?.time?.length) {
-    throw new Error("Open-Meteo returned no values");
-  }
+  if (!hourly?.time?.length) throw new Error("Open-Meteo returned no values");
 
   return hourly.time.map((time, index) => ({
     time,
@@ -315,7 +264,6 @@ async function fetchOpenMeteoPointForecast(lat, lon) {
   }));
 }
 
-
 async function fetchPointForecast(lat, lon) {
   const cacheKey = `${lat.toFixed(4)},${lon.toFixed(4)}`;
   const cached = pointForecastCache.get(cacheKey);
@@ -325,7 +273,6 @@ async function fetchPointForecast(lat, lon) {
   }
 
   let result;
-
   try {
     const forecasts = await fetchFmiPointForecast(lat, lon);
     result = { source: "FMI / Ilmatieteen laitos", forecasts };
@@ -335,17 +282,12 @@ async function fetchPointForecast(lat, lon) {
     result = { source: "Open-Meteo varalähde", forecasts };
   }
 
-  pointForecastCache.set(cacheKey, {
-    time: Date.now(),
-    value: result
-  });
-
+  pointForecastCache.set(cacheKey, { time: Date.now(), value: result });
   return result;
 }
 
 async function fetchForecastPlaces() {
   const timeSteps = makeTimeSteps();
-
   const timeBuckets = timeSteps.map((time) => ({
     time: time.toISOString(),
     label: time.toLocaleString("fi-FI", {
@@ -367,7 +309,6 @@ async function fetchForecastPlaces() {
 
   for (let i = 0; i < places.length; i += BATCH_SIZE) {
     const batch = places.slice(i, i + BATCH_SIZE);
-
     const batchResults = await Promise.all(
       batch.map(async (place) => {
         try {
@@ -383,14 +324,12 @@ async function fetchForecastPlaces() {
     for (const item of batchResults.filter(Boolean)) {
       timeBuckets.forEach((bucket) => {
         const weather = pickNearestForecast(item.forecasts, bucket.time);
-
         if (!weather) {
           bucket.errorCount += 1;
           return;
         }
 
         const ok = isGood(weather);
-
         bucket.points.push({
           name: item.name,
           lat: item.lat,
@@ -408,12 +347,10 @@ async function fetchForecastPlaces() {
       });
     }
 
-    if (i + BATCH_SIZE < places.length) {
-      await sleep(BATCH_DELAY_MS);
-    }
+    if (i + BATCH_SIZE < places.length) await sleep(BATCH_DELAY_MS);
   }
 
-  console.log(`Ennustekartta valmis. Paikkoja: ${places.length}, täysin epäonnistuneet: ${totalErrors}`);
+  console.log(`Ennustekartta valmis. Paikkoja: ${places.length}, virheet: ${totalErrors}`);
   return timeBuckets;
 }
 
@@ -429,29 +366,20 @@ async function geocodeCity(city) {
     "&addressdetails=1";
 
   const response = await fetch(searchUrl, {
-    headers: {
-      "User-Agent": "kattokartta-local-app/1.0"
-    }
+    headers: { "User-Agent": "kattokartta-local-app/1.0" }
   });
 
   const json = await response.json();
+  if (!Array.isArray(json) || json.length === 0) throw new Error("Paikkakuntaa ei löytynyt");
 
-  if (!Array.isArray(json) || json.length === 0) {
-    throw new Error("Paikkakuntaa ei löytynyt");
-  }
+  const lat = Number.parseFloat(json[0].lat);
+  const lon = Number.parseFloat(json[0].lon);
 
   return {
     name: json[0].display_name,
-    lat: Number.parseFloat(json[0].lat),
-    lon: Number.parseFloat(json[0].lon),
-    distanceKm: Math.round(
-      haversineKm(
-        NURMIJARVI.lat,
-        NURMIJARVI.lon,
-        Number.parseFloat(json[0].lat),
-        Number.parseFloat(json[0].lon)
-      )
-    )
+    lat,
+    lon,
+    distanceKm: Math.round(haversineKm(NURMIJARVI.lat, NURMIJARVI.lon, lat, lon))
   };
 }
 
@@ -465,14 +393,10 @@ async function reverseGeocode(lat, lon) {
       "&zoom=12";
 
     const response = await fetch(url, {
-      headers: {
-        "User-Agent": "kattokartta-local-app/1.0"
-      }
+      headers: { "User-Agent": "kattokartta-local-app/1.0" }
     });
 
-    if (!response.ok) {
-      throw new Error("Reverse geocode failed");
-    }
+    if (!response.ok) throw new Error("Reverse geocode failed");
 
     const json = await response.json();
     return (
@@ -504,12 +428,9 @@ function makeHourlyRows(forecasts) {
 app.get("/api/forecast-map", async (req, res) => {
   try {
     const now = Date.now();
+    if (cachedForecast && now - cacheTime < CACHE_DURATION_MS) return res.json(cachedForecast);
 
-    if (cachedForecast && now - cacheTime < CACHE_DURATION_MS) {
-      return res.json(cachedForecast);
-    }
-
-    console.log("Haetaan ennustekarttaa nopeasti: FMI ensisijainen, Open-Meteo varalla, cache käytössä...");
+    console.log("Haetaan ennustekarttaa...");
     const times = await fetchForecastPlaces();
 
     cachedForecast = {
@@ -534,10 +455,7 @@ app.get("/api/search", async (req, res) => {
   try {
     const city = String(req.query.city || "").trim();
     const timeIso = req.query.time ? String(req.query.time) : new Date().toISOString();
-
-    if (!city) {
-      return res.status(400).json({ error: "Paikkakunta puuttuu" });
-    }
+    if (!city) return res.status(400).json({ error: "Paikkakunta puuttuu" });
 
     const place = await geocodeCity(city);
     const result = await fetchPointForecast(place.lat, place.lon);
@@ -563,10 +481,7 @@ app.get("/api/search", async (req, res) => {
 app.get("/api/place-forecast", async (req, res) => {
   try {
     const city = String(req.query.city || "").trim();
-
-    if (!city) {
-      return res.status(400).json({ error: "Paikkakunta puuttuu" });
-    }
+    if (!city) return res.status(400).json({ error: "Paikkakunta puuttuu" });
 
     const place = await geocodeCity(city);
     const result = await fetchPointForecast(place.lat, place.lon);
@@ -590,10 +505,7 @@ app.get("/api/location-forecast", async (req, res) => {
     const lat = Number.parseFloat(String(req.query.lat || ""));
     const lon = Number.parseFloat(String(req.query.lon || ""));
     const timeIso = req.query.time ? String(req.query.time) : new Date().toISOString();
-
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-      return res.status(400).json({ error: "Sijainti puuttuu" });
-    }
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return res.status(400).json({ error: "Sijainti puuttuu" });
 
     const result = await fetchPointForecast(lat, lon);
     const weather = pickNearestForecast(result.forecasts, timeIso);

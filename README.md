@@ -92,3 +92,17 @@ npm run render-build
 
 Start Command:
 npm start
+
+
+
+KORJAUS:
+Backendin server.js on korjattu kokonaan.
+Aiempi Render-virhe oli:
+SyntaxError: Unexpected end of input
+
+Tässä paketissa server.js on tarkistettu Node-komennolla:
+node --check backend/server.js
+
+Render-asetukset:
+Build Command: npm run render-build
+Start Command: npm start
