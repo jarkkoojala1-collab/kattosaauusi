@@ -1,0 +1,108 @@
+# Kattokartta - helpompi puhelinversio
+
+Tässä versiossa frontend löytää backendin automaattisesti samasta tietokoneesta puhelinta varten.
+
+## Ensin
+
+Varmista että Node.js on asennettu:
+https://nodejs.org
+
+Lataa LTS-versio ja asenna.
+
+## Käynnistys Windowsissa
+
+1. Avaa tämä kansio.
+2. Kaksoisklikkaa tiedostoa:
+
+   1_KAYNNISTA_BACKEND.bat
+
+3. Odota, että siinä lukee:
+
+   Backend running on http://localhost:3001
+
+4. Älä sulje sitä ikkunaa.
+
+5. Kaksoisklikkaa toisessa ikkunassa tiedostoa:
+
+   2_KAYNNISTA_KARTTA.bat
+
+6. Odota, että näet rivin jossa lukee:
+
+   Network: http://192.168.x.x:5173
+
+7. Avaa tuo Network-osoite puhelimen selaimessa.
+
+Puhelimen pitää olla samassa Wi-Fi-verkossa kuin tietokone.
+
+## Tärkeää
+
+Älä avaa puhelimella localhost-osoitetta.
+
+Puhelimella pitää avata Network-osoite, esimerkiksi:
+
+http://192.168.1.25:5173
+
+## Jos puhelin ei avaa sivua
+
+Tarkista:
+
+- puhelin ja tietokone ovat samassa Wi-Fi-verkossa
+- backend-ikkuna on auki
+- kartta-ikkuna on auki
+- Windowsin palomuuri voi kysyä lupaa: valitse Salli / Allow
+
+## Jos et löydä Network-osoitetta
+
+Kartta-ikkunassa pitäisi näkyä esimerkiksi:
+
+Local:   http://localhost:5173/
+Network: http://192.168.1.25:5173/
+
+Puhelimelle käytetään Network-riviä.
+
+
+Tämä versio on optimoitu paremmin puhelimelle. Aikajana on helpompi käyttää peukalolla ja asetukset löytyvät paneelista.
+
+
+Korjattu tässä versiossa:
+- Haku toimii jälleen.
+- Karttapalloa painamalla paneeli näyttää kyseisen paikan ennusteen suoraan.
+
+
+Muutos:
+- Kosteusprosentti näkyy sääennusteen tuntitaulukossa myös mobiilissa.
+
+
+Viimeistelty versio:
+- Koko kartalle värialueet pinnoituskeliin.
+- Aikajanasta poistettu yötunnit.
+- Sääennuste suurempana.
+- Paneeli on avattuna täysikokoinen.
+- Käytettävyyttä ja ulkonäköä parannettu.
+
+
+Extra viimeistely tässä versiossa:
+- Kartta näyttää Nurmijärven 150 km alueen ja enemmän paikkoja.
+- Koko kartalla näkyvät värialueet pinnoituskeliin.
+- Ennusteessa näkyy pienellä säädatan lähde.
+- Paneelin ulkoasu ja käytettävyys on viimeistelty.
+
+
+Uusi muutos:
+- Kartalle lisätty oma sijainti.
+- Omaa sijaintia voi käyttää ennusteen hakemiseen.
+- Sijainti haetaan selaimen paikannuksella.
+
+
+FMI ensisijaisena lähteenä:
+- Backend yrittää hakea ennusteen ensin Ilmatieteen laitoksen WFS-rajapinnasta.
+- Jos FMI ei palauta arvoja, sovellus käyttää Open-Meteota varalähteenä.
+- Ennusteen lähde näkyy paneelissa.
+
+
+Nopeutus tässä versiossa:
+- FMI-kutsuille lisätty aikakatkaisu.
+- Välimuistia pidennetty 60 minuuttiin.
+- Paikkakohtainen cache lisätty.
+- Turhia FMI-uudelleenyrityksiä vähennetty.
+- Kartan lataus toimii sulavammin.

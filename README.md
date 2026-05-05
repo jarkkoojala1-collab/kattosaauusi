@@ -1,0 +1,94 @@
+# Kattokartta - Render-julkaisuvalmis versio
+
+Tämä versio on tehty niin, että Renderissä tarvitsee julkaista vain yksi palvelu.
+
+Frontend buildataan kansioon:
+
+frontend/dist
+
+Backend tarjoilee frontendin automaattisesti samasta osoitteesta.
+
+## Paikallinen testi Windowsissa
+
+Kaksoisklikkaa:
+
+KAYNNISTA_PAIKALLISESTI.bat
+
+Avaa sen jälkeen:
+
+http://localhost:3001
+
+## Julkaisu Renderiin
+
+### 1. Tee GitHub-repo
+
+1. Mene https://github.com
+2. Luo uusi repository, esimerkiksi:
+   kattokartta
+3. Lataa tämän ZIP-paketin sisältö siihen repositoryyn.
+
+Helpoin aloittelijalle:
+- pura ZIP
+- avaa GitHub repository selaimessa
+- paina Add file / Upload files
+- vedä kaikki puretun kansion tiedostot GitHubiin
+- paina Commit changes
+
+### 2. Luo Render-palvelu
+
+1. Mene https://render.com
+2. Kirjaudu sisään GitHubilla
+3. Paina New +
+4. Valitse Web Service
+5. Valitse GitHub-repo: kattokartta
+
+### 3. Render asetukset
+
+Name:
+kattokartta
+
+Environment:
+Node
+
+Build Command:
+npm run render-build
+
+Start Command:
+npm start
+
+Plan:
+Free riittää testiin.
+
+### 4. Julkaise
+
+Paina Create Web Service.
+
+Render rakentaa sovelluksen ja antaa osoitteen, esimerkiksi:
+
+https://kattokartta.onrender.com
+
+## Tärkeää
+
+Renderin ilmaisversio voi nukahtaa, jos sitä ei käytetä hetkeen.
+Ensimmäinen avaus voi silloin kestää vähän.
+
+Oma sijainti toimii parhaiten Renderin HTTPS-osoitteessa.
+
+
+
+KORJAUS:
+Frontend build-komento on nyt oikein:
+
+npm run build --prefix frontend
+
+ja frontend käyttää komentoa:
+
+vite build
+
+Jos Renderissä tulee virhe, varmista nämä asetukset:
+
+Build Command:
+npm run render-build
+
+Start Command:
+npm start
