@@ -111,3 +111,8 @@ Start Command: npm start
 Zoom-korjaus:
 - Kartta siirtyy haettuun paikkaan tai omaan sijaintiin vain kerran.
 - Sen jälkeen käyttäjä voi zoomata ja liikuttaa karttaa normaalisti.
+
+
+Lisäkorjaus omaan sijaintiin:
+- Kartta keskittää oman sijainnin vain silloin kun sijainti haetaan.
+- Sijainnin jälkeen zoomaus ja kartan siirtäminen pysyy käyttäjän hallinnassa.

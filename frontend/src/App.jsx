@@ -12,23 +12,30 @@ import {
 
 function MapMover({ lat, lon, centerLat, centerLon, moveKey }) {
   const map = useMap();
+  const lastMoveKeyRef = useRef(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (Number.isFinite(lat) && Number.isFinite(lon)) {
-      map.flyTo([lat, lon], Math.max(map.getZoom(), 10), {
-        animate: true,
-        duration: 0.7
-      });
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+
+      if (Number.isFinite(centerLat) && Number.isFinite(centerLon)) {
+        map.setView([centerLat, centerLon], 8, { animate: false });
+      }
     }
+  }, [centerLat, centerLon, map]);
+
+  useEffect(() => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+    if (lastMoveKeyRef.current === moveKey) return;
+
+    lastMoveKeyRef.current = moveKey;
+
+    map.flyTo([lat, lon], Math.max(map.getZoom(), 10), {
+      animate: true,
+      duration: 0.6
+    });
   }, [lat, lon, moveKey, map]);
-
-  useEffect(() => {
-    if (!Number.isFinite(lat) && !Number.isFinite(lon) && Number.isFinite(centerLat) && Number.isFinite(centerLon)) {
-      map.setView([centerLat, centerLon], 8, { animate: false });
-    }
-    // Tämä ajetaan tarkoituksella vain alussa.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return null;
 }
