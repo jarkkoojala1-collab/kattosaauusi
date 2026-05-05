@@ -113,6 +113,7 @@ Zoom-korjaus:
 - Sen jälkeen käyttäjä voi zoomata ja liikuttaa karttaa normaalisti.
 
 
-Lisäkorjaus omaan sijaintiin:
-- Kartta keskittää oman sijainnin vain silloin kun sijainti haetaan.
-- Sijainnin jälkeen zoomaus ja kartan siirtäminen pysyy käyttäjän hallinnassa.
+Korjaus:
+- Edellisen version rikkonut muutos peruttu.
+- Oman sijainnin zoomauskorjaus tehty varovaisemmin.
+- Sivun pitäisi jälleen käynnistyä normaalisti.

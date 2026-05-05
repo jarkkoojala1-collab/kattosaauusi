@@ -12,30 +12,23 @@ import {
 
 function MapMover({ lat, lon, centerLat, centerLon, moveKey }) {
   const map = useMap();
-  const lastMoveKeyRef = useRef(null);
-  const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true;
-
-      if (Number.isFinite(centerLat) && Number.isFinite(centerLon)) {
-        map.setView([centerLat, centerLon], 8, { animate: false });
-      }
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      map.flyTo([lat, lon], Math.max(map.getZoom(), 10), {
+        animate: true,
+        duration: 0.7
+      });
     }
-  }, [centerLat, centerLon, map]);
+  }, [lat, lon, moveKey, map]);
 
   useEffect(() => {
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
-    if (lastMoveKeyRef.current === moveKey) return;
-
-    lastMoveKeyRef.current = moveKey;
-
-    map.flyTo([lat, lon], Math.max(map.getZoom(), 10), {
-      animate: true,
-      duration: 0.6
-    });
-  }, [lat, lon, moveKey, map]);
+    if (!Number.isFinite(lat) && !Number.isFinite(lon) && Number.isFinite(centerLat) && Number.isFinite(centerLon)) {
+      map.setView([centerLat, centerLon], 8, { animate: false });
+    }
+    // Tämä ajetaan tarkoituksella vain alussa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }
@@ -263,7 +256,8 @@ export default function App() {
   }, [radarPlaying, radarFrames.length]);
 
   useEffect(() => {
-    if (!selectedPlace || !points.length) return;
+    if (!selectedPlace || selectedPlace.isOwnLocation || !points.length) return;
+
     const updated = points.find((point) => point.name === selectedPlace.name);
     if (updated) {
       setSelectedPlace((current) => ({
@@ -275,7 +269,7 @@ export default function App() {
         source: updated.source
       }));
     }
-  }, [points, selectedPlace]);
+  }, [points, selectedPlace?.name, selectedPlace?.isOwnLocation]);
 
   function clearSelection() {
     setCity("");
@@ -337,7 +331,8 @@ export default function App() {
             ok: result.ok,
             score: result.score,
             source: result.source,
-            distanceKm: result.distanceKm
+            distanceKm: result.distanceKm,
+            isOwnLocation: true
           });
           setSelectedMoveKey((value) => value + 1);
           setHourlyForecast(result.hourly || []);
