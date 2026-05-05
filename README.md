@@ -117,3 +117,11 @@ Korjaus:
 - Edellisen version rikkonut muutos peruttu.
 - Oman sijainnin zoomauskorjaus tehty varovaisemmin.
 - Sivun pitäisi jälleen käynnistyä normaalisti.
+
+
+
+VALKOISEN SIVUN KORJAUS:
+- Kartan keskitys tehty turvallisemmaksi.
+- Oma sijainti ei enää pakota karttaa jatkuvasti.
+- Frontend käyttää Renderissä samaa osoitetta API-kutsuihin.
+- Backend tarjoilee frontendin Renderissä.
