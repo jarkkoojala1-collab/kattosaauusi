@@ -106,3 +106,8 @@ node --check backend/server.js
 Render-asetukset:
 Build Command: npm run render-build
 Start Command: npm start
+
+
+Zoom-korjaus:
+- Kartta siirtyy haettuun paikkaan tai omaan sijaintiin vain kerran.
+- Sen jälkeen käyttäjä voi zoomata ja liikuttaa karttaa normaalisti.

@@ -10,16 +10,25 @@ import {
   useMap
 } from "react-leaflet";
 
-function MapMover({ position, center }) {
+function MapMover({ lat, lon, centerLat, centerLon, moveKey }) {
   const map = useMap();
 
   useEffect(() => {
-    if (position) {
-      map.setView(position, 10, { animate: true });
-    } else if (center) {
-      map.setView(center, 8, { animate: false });
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      map.flyTo([lat, lon], Math.max(map.getZoom(), 10), {
+        animate: true,
+        duration: 0.7
+      });
     }
-  }, [position, center, map]);
+  }, [lat, lon, moveKey, map]);
+
+  useEffect(() => {
+    if (!Number.isFinite(lat) && !Number.isFinite(lon) && Number.isFinite(centerLat) && Number.isFinite(centerLon)) {
+      map.setView([centerLat, centerLon], 8, { animate: false });
+    }
+    // Tämä ajetaan tarkoituksella vain alussa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 }
@@ -323,6 +332,7 @@ export default function App() {
             source: result.source,
             distanceKm: result.distanceKm
           });
+          setSelectedMoveKey((value) => value + 1);
           setHourlyForecast(result.hourly || []);
           setForecastSource(result.source || "");
           setShowPanel(true);
@@ -366,6 +376,7 @@ export default function App() {
       }
 
       setSelectedPlace(result);
+      setSelectedMoveKey((value) => value + 1);
       setForecastSource(result.source || "");
       await loadPlaceForecast(city);
       setShowPanel(true);
@@ -394,6 +405,7 @@ export default function App() {
 
     setCity(point.name);
     setSelectedPlace(place);
+    setSelectedMoveKey((value) => value + 1);
     setForecastSource(point.source || "");
     setShowPanel(true);
     setErrorText("");
@@ -438,7 +450,13 @@ export default function App() {
         className="map"
         zoomControl={false}
       >
-        <MapMover position={selectedPlace ? [selectedPlace.lat, selectedPlace.lon] : null} center={center} />
+        <MapMover
+          lat={selectedPlace?.lat}
+          lon={selectedPlace?.lon}
+          centerLat={center?.[0]}
+          centerLon={center?.[1]}
+          moveKey={selectedMoveKey}
+        />
 
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
