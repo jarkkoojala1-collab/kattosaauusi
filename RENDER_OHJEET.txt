@@ -125,3 +125,15 @@ VALKOISEN SIVUN KORJAUS:
 - Oma sijainti ei enää pakota karttaa jatkuvasti.
 - Frontend käyttää Renderissä samaa osoitetta API-kutsuihin.
 - Backend tarjoilee frontendin Renderissä.
+
+
+
+TESTATTU KORJAUS:
+- frontend build testattu komennolla: npm run build --prefix frontend
+- backend syntax testattu komennolla: node --check backend/server.js
+- frontend/package.json siistitty
+- lisätty virheruutu, jotta mahdollinen frontend-virhe ei näy valkoisena sivuna
+
+Render:
+Build Command: npm run render-build
+Start Command: npm start
