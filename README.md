@@ -160,3 +160,10 @@ KORJAUS:
 - Korjattu frontend-virhe: selectedMoveKey is not defined.
 - Lisätty puuttuva selectedMoveKey-tila.
 - Haun, karttapisteen ja oman sijainnin karttasiirtymä toimii ilman virhettä.
+
+
+
+KORJAUS:
+- Korjattu Render build -virhe: sh: 1: vite: not found
+- Build-komento on nyt: npx vite build --root frontend
+- Render asentaa paketit juureen ja ajaa Viten juuresta.
