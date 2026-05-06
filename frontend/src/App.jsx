@@ -137,6 +137,7 @@ export default function App() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [selectedMoveKey, setSelectedMoveKey] = useState(0);
   const [userLocation, setUserLocation] = useState(null);
   const [hourlyForecast, setHourlyForecast] = useState([]);
   const [forecastSource, setForecastSource] = useState("");

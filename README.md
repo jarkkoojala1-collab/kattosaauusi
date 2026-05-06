@@ -153,3 +153,10 @@ Start Command: npm start
 
 Paina Renderissä:
 Manual Deploy -> Clear build cache & deploy
+
+
+
+KORJAUS:
+- Korjattu frontend-virhe: selectedMoveKey is not defined.
+- Lisätty puuttuva selectedMoveKey-tila.
+- Haun, karttapisteen ja oman sijainnin karttasiirtymä toimii ilman virhettä.
