@@ -137,3 +137,19 @@ TESTATTU KORJAUS:
 Render:
 Build Command: npm run render-build
 Start Command: npm start
+
+
+
+TÄRKEÄ KORJAUS:
+Tämä versio EI käytä enää komentoja:
+npm install --prefix backend
+npm install --prefix frontend
+
+Render asentaa kaikki paketit yhdestä juuritason package.json-tiedostosta.
+
+Render-asetukset:
+Build Command: npm run render-build
+Start Command: npm start
+
+Paina Renderissä:
+Manual Deploy -> Clear build cache & deploy
