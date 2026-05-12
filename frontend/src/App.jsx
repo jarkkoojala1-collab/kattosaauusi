@@ -128,10 +128,11 @@ export default function App() {
   const [showNames, setShowNames] = useState(false);
   const [showRadar, setShowRadar] = useState(false);
   const [showColorAreas, setShowColorAreas] = useState(true);
-  const [showPanel, setShowPanel] = useState(true);
+  const [showPanel, setShowPanel] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showNightForecast, setShowNightForecast] = useState(false);
   const [largeMapPoints, setLargeMapPoints] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   const [city, setCity] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
@@ -446,6 +447,31 @@ export default function App() {
         </div>
       </div>
 
+      {showWelcome && (
+        <div className="welcome-card">
+          <div className="welcome-title">Tervetuloa röiukot 👋</div>
+          <div className="welcome-text">
+            Tästä näet nopeasti missä on sopiva sää kattopinnoitukseen.
+            Valitse aika alhaalta, paina kartalta paikkaa tai hae paikkakunta.
+          </div>
+          <div className="welcome-actions">
+            <button type="button" onClick={() => setShowWelcome(false)}>
+              Selvä
+            </button>
+            <button
+              type="button"
+              className="secondary-welcome"
+              onClick={() => {
+                setShowWelcome(false);
+                setShowPanel(true);
+              }}
+            >
+              Avaa haku
+            </button>
+          </div>
+        </div>
+      )}
+
       <MapContainer
         center={center}
         zoom={8}
@@ -477,13 +503,13 @@ export default function App() {
               <Circle
                 key={`area-${point.name}-${point.lat}-${point.lon}`}
                 center={[point.lat, point.lon]}
-                radius={26000}
+                radius={18000}
                 pathOptions={{
                   color,
                   fillColor: color,
-                  fillOpacity: 0.22,
-                  weight: 0.6,
-                  opacity: 0.22
+                  fillOpacity: 0.085,
+                  weight: 0,
+                  opacity: 0
                 }}
                 interactive={false}
               />

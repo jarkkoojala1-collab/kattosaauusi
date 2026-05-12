@@ -102,9 +102,12 @@ function roundToNextHour(date) {
 function makeTimeSteps() {
   const start = roundToNextHour(new Date());
   const steps = [];
-  for (let i = 0; i < 24; i += 1) {
-    steps.push(addHours(start, i * 3));
+
+  // 3 vuorokautta tunnin välein
+  for (let i = 0; i < 72; i += 1) {
+    steps.push(addHours(start, i));
   }
+
   return steps;
 }
 
