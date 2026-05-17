@@ -10,7 +10,7 @@ import {
   useMap
 } from "react-leaflet";
 
-function MapMover({ lat, lon, centerLat, centerLon, moveKey, areaMoveKey }) {
+function MapMover({ lat, lon, centerLat, centerLon, moveKey, areaMoveKey, areaZoom = 8 }) {
   const map = useMap();
   const lastMoveKeyRef = useRef(null);
   const lastAreaMoveKeyRef = useRef(null);
@@ -21,11 +21,10 @@ function MapMover({ lat, lon, centerLat, centerLon, moveKey, areaMoveKey }) {
 
     lastAreaMoveKeyRef.current = areaMoveKey;
 
-    map.flyTo([centerLat, centerLon], 8, {
-      animate: true,
-      duration: 0.7
+    map.setView([centerLat, centerLon], areaZoom, {
+      animate: true
     });
-  }, [centerLat, centerLon, areaMoveKey, map]);
+  }, [centerLat, centerLon, areaMoveKey, areaZoom, map]);
 
   useEffect(() => {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
@@ -131,6 +130,8 @@ const AREA_CONFIG = {
     name: "Uusimaa",
     centerName: "Nurmijärvi",
     center: [60.4647, 24.8073],
+    radiusKm: 150,
+    zoom: 8,
     bounds: [
       [58.9, 21.6],
       [62.0, 27.7]
@@ -140,12 +141,33 @@ const AREA_CONFIG = {
     name: "Pirkanmaa",
     centerName: "Tampere",
     center: [61.4978, 23.761],
+    radiusKm: 150,
+    zoom: 8,
     bounds: [
       [59.9, 20.8],
       [63.0, 26.7]
     ]
   }
 };
+
+
+function distanceKm(lat1, lon1, lat2, lon2) {
+  const toRad = (value) => (value * Math.PI) / 180;
+  const earthRadiusKm = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+
+  return 2 * earthRadiusKm * Math.asin(Math.sqrt(a));
+}
+
+function isInsideArea(point, area) {
+  if (!point || !area) return false;
+  return distanceKm(area.center[0], area.center[1], point.lat, point.lon) <= area.radiusKm + 2;
+}
 
 export default function App() {
   const [forecast, setForecast] = useState(null);
@@ -206,9 +228,10 @@ export default function App() {
   const selectedTime =
     timelineItems.find((item) => item.time === selectedTimeKey) || timelineItems[0];
 
-  const points = selectedTime?.points || [];
   const activeArea = AREA_CONFIG[selectedArea] || AREA_CONFIG.uusimaa;
-  const center = forecast?.center ? [forecast.center.lat, forecast.center.lon] : activeArea.center;
+  const rawPoints = selectedTime?.points || [];
+  const points = rawPoints.filter((point) => isInsideArea(point, activeArea));
+  const center = activeArea.center;
   const mapBounds = activeArea.bounds;
   const selectedRadarFrame = radarFrames[radarIndex];
 
@@ -261,10 +284,11 @@ export default function App() {
   }, [hourlyForecast, showNightForecast]);
 
   useEffect(() => {
-    // Valittu alue vaihtuu: poistetaan vanhan alueen pisteet heti
+    // Valittu alue vaihtuu: poistetaan vanhan alueen data välittömästi
     setForecast(null);
     setSelectedTimeKey("");
     setSelectedPlace(null);
+    setCity("");
     setHourlyForecast([]);
     setForecastSource("");
     setErrorText("");
@@ -274,19 +298,36 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
+    const requestedArea = selectedArea;
 
     setLoadingMap(true);
 
-    fetch(`${API_BASE}/api/forecast-map?area=${selectedArea}`)
+    fetch(`${API_BASE}/api/forecast-map?area=${requestedArea}`)
       .then((response) => {
         if (!response.ok) throw new Error("Backend ei vastannut oikein");
         return response.json();
       })
       .then((items) => {
         if (cancelled) return;
-        if (items?.area && items.area !== selectedArea) return;
+        if (!items) return;
 
-        setForecast(items);
+        const active = AREA_CONFIG[requestedArea] || AREA_CONFIG.uusimaa;
+
+        const cleanedItems = {
+          ...items,
+          area: requestedArea,
+          center: {
+            name: active.centerName,
+            lat: active.center[0],
+            lon: active.center[1]
+          },
+          times: (items.times || []).map((timeItem) => ({
+            ...timeItem,
+            points: (timeItem.points || []).filter((point) => isInsideArea(point, active))
+          }))
+        };
+
+        setForecast(cleanedItems);
         setLoadingMap(false);
       })
       .catch((error) => {
@@ -636,6 +677,7 @@ export default function App() {
       )}
 
       <MapContainer
+        key={selectedArea}
         center={center}
         zoom={8}
         minZoom={7}
@@ -650,6 +692,7 @@ export default function App() {
           centerLon={center?.[1]}
           moveKey={selectedMoveKey}
           areaMoveKey={areaMoveKey}
+          areaZoom={activeArea.zoom}
         />
 
         <TileLayer

@@ -1,9 +1,13 @@
-# Kattokartta - aluevaihto final
+# Kattokartta - aluevaihto varma korjaus
 
 Korjattu:
-- setAreaMoveKey is not defined -virhe poistettu.
-- areaMoveKey-tila lisätty.
-- Alueen vaihto tyhjentää vanhat pisteet ja keskittää kartan oikealle alueelle.
+- Aluevaihdossa vanhan alueen pisteet poistetaan välittömästi.
+- Kartta keskitetään valitun alueen keskelle.
+- Pirkanmaa keskitetään Tampereelle.
+- Uusimaa keskitetään Nurmijärvelle.
+- Frontend suodattaa pisteet vielä varmistuksena valitun alueen 150 km säteelle.
+- Kartta remountataan aluevaihdossa, joten vanha karttakeskitys ei jää päälle.
+- Myöhässä palaava vanhan alueen vastaus ei voi jäädä näkyviin.
 
 Render-asetukset:
 
