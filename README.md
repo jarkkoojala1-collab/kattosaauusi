@@ -1,13 +1,10 @@
-# Kattokartta - moderni virallinen versio
+# Kattokartta - aluevalinta
 
-Muutokset:
-- poistettu epävirallinen “röiukot”-aloitusteksti
-- kirjautumisnäkymä muutettu virallisemmaksi
-- tervetulokortti muutettu neutraaliksi ja ammattimaisemmaksi
-- otsikointi ja käyttöliittymä viimeistelty modernimpaan yrityskäyttöön sopivaan suuntaan
+Lisätty asetuksiin aluevalinta:
+- Uusimaa: nykyinen Nurmijärvi + 150 km
+- Pirkanmaa: Tampere + 150 km
 
-Oletustunnukset testiin:
-admin / kattosaa
+Karttadata, rajaus, paikkamäärä, haku ja oma sijainti huomioivat valitun alueen.
 
 Render-asetukset:
 

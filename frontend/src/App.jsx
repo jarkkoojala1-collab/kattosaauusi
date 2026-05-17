@@ -132,6 +132,8 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showNightForecast, setShowNightForecast] = useState(false);
   const [largeMapPoints, setLargeMapPoints] = useState(false);
+  const [selectedArea, setSelectedArea] = useState("uusimaa");
+  const [selectedArea, setSelectedArea] = useState("uusimaa");
   const [showWelcome, setShowWelcome] = useState(true);
 
   const [city, setCity] = useState("");
@@ -230,7 +232,14 @@ export default function App() {
   }, [hourlyForecast, showNightForecast]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/forecast-map`)
+    // Valittu alue vaihtuu: tyhjennetään aiempi paikkavalinta
+    setSelectedPlace(null);
+    setHourlyForecast([]);
+    setForecastSource("");
+  }, [selectedArea]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/forecast-map?area=${selectedArea}`)
       .then((response) => {
         if (!response.ok) throw new Error("Backend ei vastannut oikein");
         return response.json();
@@ -243,7 +252,7 @@ export default function App() {
         setErrorText(error.message);
         setLoadingMap(false);
       });
-  }, [API_BASE]);
+  }, [API_BASE, selectedArea]);
 
   useEffect(() => {
     fetch("https://api.rainviewer.com/public/weather-maps.json")
@@ -341,7 +350,7 @@ export default function App() {
 
   async function loadPlaceForecast(placeName) {
     const response = await fetch(
-      `${API_BASE}/api/place-forecast?city=${encodeURIComponent(placeName)}`
+      `${API_BASE}/api/place-forecast?city=${encodeURIComponent(placeName)}&area=${selectedArea}`
     );
     const result = await response.json();
 
@@ -371,7 +380,7 @@ export default function App() {
 
         try {
           const response = await fetch(
-            `${API_BASE}/api/location-forecast?lat=${lat}&lon=${lon}&time=${encodeURIComponent(time)}`
+            `${API_BASE}/api/location-forecast?lat=${lat}&lon=${lon}&time=${encodeURIComponent(time)}&area=${selectedArea}`
           );
           const result = await response.json();
 
@@ -428,7 +437,7 @@ export default function App() {
 
     try {
       const response = await fetch(
-        `${API_BASE}/api/search?city=${encodeURIComponent(city)}&time=${encodeURIComponent(time)}`
+        `${API_BASE}/api/search?city=${encodeURIComponent(city)}&time=${encodeURIComponent(time)}&area=${selectedArea}`
       );
       const result = await response.json();
 
@@ -537,7 +546,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <div className="topbar">
-        <div className="topbar-title">Kattosää · pinnoitusennuste</div>
+        <div className="topbar-title">Kattosää · {selectedArea === "pirkanmaa" ? "Pirkanmaa" : "Uusimaa"}</div>
         <div className="topbar-actions">
           <button className="ghost-location-button" onClick={useOwnLocation}>
             {locating ? "Haetaan sijaintia..." : "Oma sijainti"}
@@ -756,7 +765,7 @@ export default function App() {
               <div>
                 <div className="sidebar-title">Sääennuste</div>
                 <div className="sidebar-subtitle">
-                  Hae paikka tai paina kartan pistettä. Kartalla näkyy Nurmijärven 150 km alue.
+                  Hae paikka tai paina kartan pistettä. {selectedArea === "pirkanmaa" ? "Kartalla näkyy Tampereen 150 km alue." : "Kartalla näkyy Nurmijärven 150 km alue."}
                 </div>
               </div>
               <button className="close-panel-button" onClick={() => setShowPanel(false)}>
@@ -790,7 +799,7 @@ export default function App() {
               <Stat label="Valittu aika" value={selectedTime ? formatTime(selectedTime.time) : "-"} />
               <Stat label="Koko alue OK" value={`${okPercent}%`} />
               <Stat label="Paikkoja kartalla" value={forecast?.placeCount ?? "-"} />
-              <Stat label="Rajaus" value="150 km Nurmijärveltä" />
+              <Stat label="Rajaus" value={selectedArea === "pirkanmaa" ? "150 km Tampereelta" : "150 km Nurmijärveltä"} />
             </section>
 
             {selectedPlace ? (
@@ -885,6 +894,26 @@ export default function App() {
 
               {showSettings && (
                 <div className="settings-content">
+                  <div className="setting-group">
+                    <div className="setting-label">Alue</div>
+                    <div className="area-selector">
+                      <button
+                        type="button"
+                        className={selectedArea === "uusimaa" ? "active" : ""}
+                        onClick={() => setSelectedArea("uusimaa")}
+                      >
+                        Uusimaa
+                      </button>
+                      <button
+                        type="button"
+                        className={selectedArea === "pirkanmaa" ? "active" : ""}
+                        onClick={() => setSelectedArea("pirkanmaa")}
+                      >
+                        Pirkanmaa
+                      </button>
+                    </div>
+                  </div>
+
                   <label className="switch-row">
                     <input
                       type="checkbox"

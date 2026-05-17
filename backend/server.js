@@ -11,8 +11,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const frontendDistPath = path.join(__dirname, "..", "frontend", "dist");
 
-const NURMIJARVI = { name: "Nurmijärvi", lat: 60.4647, lon: 24.8073 };
-const MAX_DISTANCE_KM = 150;
+const AREAS = {
+  uusimaa: { id: "uusimaa", name: "Uusimaa", centerName: "Nurmijärvi", lat: 60.4647, lon: 24.8073, radiusKm: 150 },
+  pirkanmaa: { id: "pirkanmaa", name: "Pirkanmaa", centerName: "Tampere", lat: 61.4978, lon: 23.7610, radiusKm: 150 }
+};
+
+function getArea(areaId) {
+  return AREAS[areaId] || AREAS.uusimaa;
+}
+
+const DEFAULT_AREA = AREAS.uusimaa;
+const NURMIJARVI = { name: DEFAULT_AREA.centerName, lat: DEFAULT_AREA.lat, lon: DEFAULT_AREA.lon };
+const MAX_DISTANCE_KM = DEFAULT_AREA.radiusKm;
 
 const allPlaces = [
 
@@ -54,8 +64,36 @@ const allPlaces = [
   { name: "Tampere", lat: 61.4978, lon: 23.7610 },
   { name: "Valkeakoski", lat: 61.2642, lon: 24.0312 },
   { name: "Akaa", lat: 61.1667, lon: 23.8667 },
-  { name: "Lempäälä", lat: 61.3167, lon: 23.7500 }
-
+  { name: "Lempäälä", lat: 61.3167, lon: 23.7500 },
+  { name: "Pirkkala", lat: 61.4613, lon: 23.6320 },
+  { name: "Ylöjärvi", lat: 61.5563, lon: 23.5961 },
+  { name: "Nokia", lat: 61.4667, lon: 23.5000 },
+  { name: "Kangasala", lat: 61.4638, lon: 24.0651 },
+  { name: "Orivesi", lat: 61.6777, lon: 24.3572 },
+  { name: "Vesilahti", lat: 61.3167, lon: 23.6167 },
+  { name: "Hämeenkyrö", lat: 61.6381, lon: 23.1953 },
+  { name: "Ikaalinen", lat: 61.7697, lon: 23.0658 },
+  { name: "Parkano", lat: 62.0167, lon: 23.0167 },
+  { name: "Virrat", lat: 62.2476, lon: 23.7800 },
+  { name: "Mänttä-Vilppula", lat: 62.0300, lon: 24.6300 },
+  { name: "Ruovesi", lat: 61.9858, lon: 24.0575 },
+  { name: "Juupajoki", lat: 61.8000, lon: 24.3667 },
+  { name: "Pälkäne", lat: 61.3340, lon: 24.2710 },
+  { name: "Urjala", lat: 61.0833, lon: 23.5333 },
+  { name: "Punkalaidun", lat: 61.1167, lon: 23.1000 },
+  { name: "Sastamala", lat: 61.3406, lon: 22.9086 },
+  { name: "Kuhmoinen", lat: 61.5667, lon: 25.1833 },
+  { name: "Jämsä", lat: 61.8642, lon: 25.1900 },
+  { name: "Keuruu", lat: 62.2600, lon: 24.7067 },
+  { name: "Muurame", lat: 62.1333, lon: 25.6667 },
+  { name: "Jyväskylä", lat: 62.2426, lon: 25.7473 },
+  { name: "Kokemäki", lat: 61.2565, lon: 22.3564 },
+  { name: "Harjavalta", lat: 61.3167, lon: 22.1333 },
+  { name: "Pori", lat: 61.4851, lon: 21.7972 },
+  { name: "Rauma", lat: 61.1280, lon: 21.5113 },
+  { name: "Loimaa", lat: 60.8497, lon: 23.0561 },
+  { name: "Huittinen", lat: 61.1833, lon: 22.7000 },
+  { name: "Eura", lat: 61.1333, lon: 22.1333 },
 ];
 
 function haversineKm(lat1, lon1, lat2, lon2) {
@@ -69,16 +107,21 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   return 2 * earthRadiusKm * Math.asin(Math.sqrt(a));
 }
 
-const places = allPlaces
-  .filter((place) => haversineKm(NURMIJARVI.lat, NURMIJARVI.lon, place.lat, place.lon) <= MAX_DISTANCE_KM)
-  .map((place) => ({
-    ...place,
-    distanceKm: Math.round(haversineKm(NURMIJARVI.lat, NURMIJARVI.lon, place.lat, place.lon))
-  }))
-  .sort((a, b) => a.distanceKm - b.distanceKm);
+function getPlacesForArea(areaId = "uusimaa") {
+  const area = getArea(areaId);
 
-let cachedForecast = null;
-let cacheTime = 0;
+  return allPlaces
+    .filter((place) => haversineKm(area.lat, area.lon, place.lat, place.lon) <= area.radiusKm)
+    .map((place) => ({
+      ...place,
+      distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon))
+    }))
+    .sort((a, b) => a.distanceKm - b.distanceKm);
+}
+
+const places = getPlacesForArea("uusimaa");
+
+const forecastCache = new Map();
 const CACHE_DURATION_MS = 60 * 60 * 1000;
 const pointForecastCache = new Map();
 const POINT_CACHE_DURATION_MS = 60 * 60 * 1000;
@@ -290,7 +333,9 @@ async function fetchPointForecast(lat, lon) {
   return result;
 }
 
-async function fetchForecastPlaces() {
+async function fetchForecastPlaces(areaId = "uusimaa") {
+  const area = getArea(areaId);
+  const places = getPlacesForArea(area.id);
   const timeSteps = makeTimeSteps();
   const timeBuckets = timeSteps.map((time) => ({
     time: time.toISOString(),
@@ -359,7 +404,7 @@ async function fetchForecastPlaces() {
 }
 
 async function geocodeCity(city) {
-  const known = places.find((p) => p.name.toLowerCase() === city.toLowerCase());
+  const known = allPlaces.find((p) => p.name.toLowerCase() === city.toLowerCase());
   if (known) return known;
 
   const searchUrl =
@@ -431,24 +476,33 @@ function makeHourlyRows(forecasts) {
 
 app.get("/api/forecast-map", async (req, res) => {
   try {
+    const areaId = String(req.query.area || "uusimaa");
+    const area = getArea(areaId);
+    const cached = forecastCache.get(area.id);
     const now = Date.now();
-    if (cachedForecast && now - cacheTime < CACHE_DURATION_MS) return res.json(cachedForecast);
 
-    console.log("Haetaan ennustekarttaa...");
-    const times = await fetchForecastPlaces();
+    if (cached && now - cached.cacheTime < CACHE_DURATION_MS) {
+      return res.json(cached.data);
+    }
 
-    cachedForecast = {
+    console.log(`Haetaan ennustekarttaa alueelle ${area.name}...`);
+    const times = await fetchForecastPlaces(area.id);
+    const areaPlaces = getPlacesForArea(area.id);
+
+    const data = {
       generatedAt: new Date().toISOString(),
       source: "FMI primary, Open-Meteo fallback",
-      mode: "nurmijarvi-150km-color-areas",
-      center: NURMIJARVI,
-      radiusKm: MAX_DISTANCE_KM,
-      placeCount: places.length,
+      mode: `${area.id}-150km-color-areas`,
+      area: area.id,
+      areaName: area.name,
+      center: { name: area.centerName, lat: area.lat, lon: area.lon },
+      radiusKm: area.radiusKm,
+      placeCount: areaPlaces.length,
       times
     };
 
-    cacheTime = now;
-    res.json(cachedForecast);
+    forecastCache.set(area.id, { cacheTime: now, data });
+    res.json(data);
   } catch (error) {
     console.error("Backend error:", error.message);
     res.status(500).json({ error: "Backend error", details: error.message });
@@ -474,7 +528,7 @@ app.get("/api/search", async (req, res) => {
       ok: isGood(weather),
       score: scoreWeather(weather),
       source: result.source,
-      distanceKm: place.distanceKm
+      distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon))
     });
   } catch (error) {
     console.error("Search error:", error.message);
@@ -485,6 +539,7 @@ app.get("/api/search", async (req, res) => {
 app.get("/api/place-forecast", async (req, res) => {
   try {
     const city = String(req.query.city || "").trim();
+    const area = getArea(String(req.query.area || "uusimaa"));
     if (!city) return res.status(400).json({ error: "Paikkakunta puuttuu" });
 
     const place = await geocodeCity(city);
@@ -495,7 +550,7 @@ app.get("/api/place-forecast", async (req, res) => {
       lat: place.lat,
       lon: place.lon,
       source: result.source,
-      distanceKm: place.distanceKm,
+      distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon)),
       hourly: makeHourlyRows(result.forecasts)
     });
   } catch (error) {
@@ -509,6 +564,7 @@ app.get("/api/location-forecast", async (req, res) => {
     const lat = Number.parseFloat(String(req.query.lat || ""));
     const lon = Number.parseFloat(String(req.query.lon || ""));
     const timeIso = req.query.time ? String(req.query.time) : new Date().toISOString();
+    const area = getArea(String(req.query.area || "uusimaa"));
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return res.status(400).json({ error: "Sijainti puuttuu" });
 
     const result = await fetchPointForecast(lat, lon);
@@ -524,7 +580,7 @@ app.get("/api/location-forecast", async (req, res) => {
       ok: isGood(weather),
       score: scoreWeather(weather),
       source: result.source,
-      distanceKm: Math.round(haversineKm(NURMIJARVI.lat, NURMIJARVI.lon, lat, lon)),
+      distanceKm: Math.round(haversineKm(area.lat, area.lon, lat, lon)),
       hourly: makeHourlyRows(result.forecasts)
     });
   } catch (error) {

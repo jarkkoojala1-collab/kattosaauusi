@@ -1009,3 +1009,38 @@ body {
 .welcome-actions .secondary-welcome {
   box-shadow: none;
 }
+
+
+.setting-group {
+  padding: 10px 0 14px;
+}
+
+.setting-label {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.area-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.area-selector button {
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  border-radius: 16px;
+  padding: 11px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.area-selector button.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+}
