@@ -597,7 +597,7 @@ export default function App() {
               <label>Käyttäjätunnus<input
                   value={loginUser}
                   onChange={(event) => setLoginUser(event.target.value)}
-                  placeholder="admin"
+                  placeholder="käyttäjätunnus"
                   autoComplete="username"
                 />
               </label>
@@ -605,7 +605,7 @@ export default function App() {
               <label>Salasana<input
                   value={loginPassword}
                   onChange={(event) => setLoginPassword(event.target.value)}
-                  placeholder="kattosaa"
+                  placeholder="salasana"
                   type="password"
                   autoComplete="current-password"
                 />
@@ -617,10 +617,6 @@ export default function App() {
                 {loginLoading ? "Kirjaudutaan..." : "Kirjaudu"}
               </button>
             </form>
-
-            <div className="login-hint">
-              Oletustunnus testiin: <strong>admin</strong> / <strong>kattosaa</strong>
-            </div>
           </div>
         </div>
       </div>
