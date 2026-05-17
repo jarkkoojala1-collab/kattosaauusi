@@ -587,16 +587,14 @@ export default function App() {
       <div className="app-shell">
         <div className="login-screen">
           <div className="login-card">
-            <div className="login-badge">Kattosää</div>
+            <div className="login-badge"><img src="/logo.png" alt="" /> Kattosää</div>
             <h1>Tervetuloa Kattosäähän</h1>
             <p>
               Kirjaudu sisään ja tarkista työmaiden sääikkunat kattopinnoitusta varten.
             </p>
 
             <form className="login-form" onSubmit={login}>
-              <label>
-                Käyttäjätunnus
-                <input
+              <label>Käyttäjätunnus<input
                   value={loginUser}
                   onChange={(event) => setLoginUser(event.target.value)}
                   placeholder="admin"
@@ -604,9 +602,7 @@ export default function App() {
                 />
               </label>
 
-              <label>
-                Salasana
-                <input
+              <label>Salasana<input
                   value={loginPassword}
                   onChange={(event) => setLoginPassword(event.target.value)}
                   placeholder="kattosaa"
@@ -635,7 +631,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <div className="topbar">
-        <div className="topbar-title">Kattosää · {selectedArea === "pirkanmaa" ? "Pirkanmaa" : "Uusimaa"}</div>
+        <div className="topbar-title"><img src="/logo.png" alt="" /> Kattosää · {selectedArea === "pirkanmaa" ? "Pirkanmaa" : "Uusimaa"}</div>
         <div className="topbar-actions">
           <button className="ghost-location-button" onClick={useOwnLocation}>
             {locating ? "Haetaan sijaintia..." : "Oma sijainti"}

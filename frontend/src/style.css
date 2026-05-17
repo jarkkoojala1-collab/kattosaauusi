@@ -1044,3 +1044,96 @@ body {
   color: white;
   box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
 }
+
+
+/* Logo / PWA viimeistely */
+.topbar-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.topbar-title img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.login-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-badge img {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Tietokoneella ennustepaneeli käyttäytyy ponnahdusikkunana */
+@media (min-width: 901px) {
+  .panel-overlay {
+    background: rgba(15, 23, 42, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+  }
+
+  .sidebar.fullscreen {
+    position: relative;
+    inset: auto;
+    width: min(880px, calc(100vw - 56px));
+    height: min(860px, calc(100vh - 56px));
+    border-radius: 30px;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    box-shadow: 0 30px 90px rgba(15, 23, 42, 0.30);
+  }
+
+  .sidebar-top {
+    position: sticky;
+    top: -18px;
+    z-index: 5;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    padding-top: 6px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.75);
+  }
+
+  .forecast-panel,
+  .settings-card,
+  .search-card,
+  .summary-strip {
+    max-width: 100%;
+  }
+}
+
+/* Puhelimella pidetään käyttö etusijalla: paneeli koko näytölle */
+@media (max-width: 900px) {
+  .panel-overlay {
+    background: rgba(248, 250, 252, 0.98);
+  }
+
+  .sidebar.fullscreen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar-title img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .login-card h1 {
+    font-size: 28px;
+  }
+}

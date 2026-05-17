@@ -1,13 +1,17 @@
-# Kattokartta - aluevaihto varma korjaus
+# Kattokartta - logo, PWA-kuvake ja paneelimuutos
 
-Korjattu:
-- Aluevaihdossa vanhan alueen pisteet poistetaan välittömästi.
-- Kartta keskitetään valitun alueen keskelle.
-- Pirkanmaa keskitetään Tampereelle.
-- Uusimaa keskitetään Nurmijärvelle.
-- Frontend suodattaa pisteet vielä varmistuksena valitun alueen 150 km säteelle.
-- Kartta remountataan aluevaihdossa, joten vanha karttakeskitys ei jää päälle.
-- Myöhässä palaava vanhan alueen vastaus ei voi jäädä näkyviin.
+Lisätty:
+- Kattosää-logo sovellukseen.
+- favicon.png selaimen välilehdelle.
+- apple-touch-icon.png iPhonen aloitusnäytölle.
+- manifest.webmanifest Android/PWA-asennusta varten.
+- Tietokoneella ennustepaneeli näyttää ponnahdusikkunalta.
+- Puhelimella ennustepaneeli säilyy koko näytön käytettävyysnäkymänä.
+- Kirjautumisvalikon tekstit: Käyttäjätunnus ja Salasana.
+
+Puhelimeen tallennus:
+- iPhone: Safari → Jaa → Lisää Koti-valikkoon.
+- Android: Chrome → valikko → Lisää aloitusnäyttöön / Asenna sovellus.
 
 Render-asetukset:
 
