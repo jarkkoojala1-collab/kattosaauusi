@@ -183,7 +183,7 @@ export default function App() {
   const [largeMapPoints, setLargeMapPoints] = useState(false);
   const [selectedArea, setSelectedArea] = useState("uusimaa");
   const [areaMoveKey, setAreaMoveKey] = useState(0);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [city, setCity] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
@@ -342,7 +342,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [API_BASE, selectedArea]);
+  }, [API_BASE, selectedArea, refreshKey]);
 
   useEffect(() => {
     fetch("https://api.rainviewer.com/public/weather-maps.json")
@@ -410,7 +410,6 @@ export default function App() {
       setAuthToken(result.token);
       setLoginPassword("");
       setLoginError("");
-      setShowWelcome(true);
     } catch (error) {
       setLoginError(error.message);
     } finally {
@@ -426,7 +425,18 @@ export default function App() {
     setSelectedPlace(null);
     setHourlyForecast([]);
     setShowPanel(false);
-    setShowWelcome(false);
+  }
+
+  function refreshForecast() {
+    setForecast(null);
+    setSelectedTimeKey("");
+    setSelectedPlace(null);
+    setHourlyForecast([]);
+    setForecastSource("");
+    setErrorText("");
+    setLoadingMap(true);
+    setAreaMoveKey((value) => value + 1);
+    setRefreshKey((value) => value + 1);
   }
 
   function clearSelection() {
@@ -652,8 +662,8 @@ export default function App() {
           <button className="ghost-location-button" onClick={useOwnLocation}>
             {locating ? "Haetaan sijaintia..." : "Oma sijainti"}
           </button>
-          <button className="ghost-location-button logout-button" onClick={logout}>
-            Kirjaudu ulos
+          <button className="ghost-location-button refresh-button" onClick={refreshForecast}>
+            Päivitä
           </button>
           {!showPanel && (
           <button className="open-panel-button" onClick={() => setShowPanel(true)}>
@@ -662,33 +672,7 @@ export default function App() {
         )}
         </div>
       </div>
-
-      {showWelcome && (
-        <div className="welcome-card">
-          <div className="welcome-title">Tervetuloa Kattosäähän</div>
-          <div className="welcome-text">
-            Tarkista nopeasti, missä sääolosuhteet soveltuvat kattopinnoitukseen.
-            Valitse ajankohta, hae paikkakunta tai avaa ennuste kartalta.
-          </div>
-          <div className="welcome-actions">
-            <button type="button" onClick={() => setShowWelcome(false)}>
-              Jatka
-            </button>
-            <button
-              type="button"
-              className="secondary-welcome"
-              onClick={() => {
-                setShowWelcome(false);
-                setShowPanel(true);
-              }}
-            >
-              Avaa ennuste
-            </button>
-          </div>
-        </div>
-      )}
-
-      <MapContainer
+<MapContainer
         key={selectedArea}
         center={center}
         zoom={8}
@@ -1059,6 +1043,14 @@ export default function App() {
                     />
                     <span>Isommat karttapisteet</span>
                   </label>
+
+                  <button
+                    type="button"
+                    className="settings-logout-button"
+                    onClick={logout}
+                  >
+                    Kirjaudu ulos
+                  </button>
 
                   {showRadar && (
                     <div className="radar-controls">

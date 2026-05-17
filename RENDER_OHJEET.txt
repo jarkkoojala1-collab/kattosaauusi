@@ -1,13 +1,11 @@
-# Kattokartta - salasanapopup lisätty
+# Kattokartta - ulkoasupäivitys
 
 Muutokset:
-- kirjautumisruutuun lisätty väliaikainen ponnahdusikkuna
-- popup näyttää testikäyttäjätunnuksen ja salasanan
-- popupin voi sulkea X-painikkeesta
-
-Väliaikainen kirjautumistieto:
-Käyttäjätunnus: admin
-Salasana: kattosaa
+- poistettu tervetuloa-ponnahdusikkuna
+- ulkoasua modernisoitu ja lisätty värejä
+- Kirjaudu ulos -painike siirretty asetuksiin
+- yläpalkkiin lisätty Päivitä-painike
+- Päivitä hakee ennusteen uudelleen ja keskittää kartan alueeseen
 
 Render-asetukset:
 
