@@ -160,6 +160,7 @@ export default function App() {
   const [showNightForecast, setShowNightForecast] = useState(false);
   const [largeMapPoints, setLargeMapPoints] = useState(false);
   const [selectedArea, setSelectedArea] = useState("uusimaa");
+  const [areaMoveKey, setAreaMoveKey] = useState(0);
   const [showWelcome, setShowWelcome] = useState(true);
 
   const [city, setCity] = useState("");

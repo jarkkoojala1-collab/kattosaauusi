@@ -1,11 +1,9 @@
-# Kattokartta - aluevaihto korjattu
+# Kattokartta - aluevaihto final
 
 Korjattu:
-- Kun Pirkanmaa valitaan, Uusimaan pisteet ja värialueet poistuvat heti.
-- Kun Uusimaa valitaan, Pirkanmaan pisteet ja värialueet poistuvat heti.
-- Kartta keskittyy Pirkanmaalla Tampereelle.
-- Kartta keskittyy Uudellamaalla Nurmijärvelle.
-- Myöhässä palaava vanhan alueen säädata ei enää voi ylikirjoittaa uutta aluetta.
+- setAreaMoveKey is not defined -virhe poistettu.
+- areaMoveKey-tila lisätty.
+- Alueen vaihto tyhjentää vanhat pisteet ja keskittää kartan oikealle alueelle.
 
 Render-asetukset:
 
