@@ -1,11 +1,9 @@
-# Kattokartta - ulkoasupäivitys
+# Kattokartta - kirjautumissivun taustakuva
 
 Muutokset:
-- poistettu tervetuloa-ponnahdusikkuna
-- ulkoasua modernisoitu ja lisätty värejä
-- Kirjaudu ulos -painike siirretty asetuksiin
-- yläpalkkiin lisätty Päivitä-painike
-- Päivitä hakee ennusteen uudelleen ja keskittää kartan alueeseen
+- lisätty kirjautumissivun taustalle kuva, jossa näkyy paljon erivärisiä kattoja
+- taustakuva tuodaan tiedostosta /frontend/public/login-roofs-bg.jpg
+- kirjautumiskortti säilyy helposti luettavana kuvan päällä
 
 Render-asetukset:
 
