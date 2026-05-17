@@ -41,6 +41,41 @@ function MapMover({ lat, lon, centerLat, centerLon, moveKey, areaMoveKey, areaZo
   return null;
 }
 
+function MapSizeFixer({ triggerKey }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const refresh = () => {
+      requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+      });
+    };
+
+    const timers = [
+      setTimeout(refresh, 80),
+      setTimeout(refresh, 300),
+      setTimeout(refresh, 900)
+    ];
+
+    window.addEventListener("resize", refresh);
+    window.addEventListener("orientationchange", refresh);
+    window.visualViewport?.addEventListener("resize", refresh);
+    window.visualViewport?.addEventListener("scroll", refresh);
+
+    refresh();
+
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("resize", refresh);
+      window.removeEventListener("orientationchange", refresh);
+      window.visualViewport?.removeEventListener("resize", refresh);
+      window.visualViewport?.removeEventListener("scroll", refresh);
+    };
+  }, [map, triggerKey]);
+
+  return null;
+}
+
 function getColor(point) {
   if (!point) return "#94a3b8";
   if (point.ok) return "#16a34a";
@@ -184,6 +219,7 @@ export default function App() {
   const [selectedArea, setSelectedArea] = useState("uusimaa");
   const [areaMoveKey, setAreaMoveKey] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
 
   const [city, setCity] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
@@ -257,6 +293,17 @@ export default function App() {
     if (!selectedTime?.totalCount) return 0;
     return Math.round((selectedTime.okCount / selectedTime.totalCount) * 100);
   }, [selectedTime]);
+
+  useEffect(() => {
+    // iPhone Safari / PWA: Leaflet voi jäädä harmaaksi, jos koko muuttuu kesken latauksen.
+    const timers = [
+      setTimeout(() => setMapRefreshKey((value) => value + 1), 80),
+      setTimeout(() => setMapRefreshKey((value) => value + 1), 350),
+      setTimeout(() => setMapRefreshKey((value) => value + 1), 900)
+    ];
+
+    return () => timers.forEach(clearTimeout);
+  }, [showPanel, selectedArea, selectedTimeKey, forecast?.generatedAt]);
 
   const visibleHourlyForecast = useMemo(() => {
     const rows = showNightForecast
@@ -437,6 +484,7 @@ export default function App() {
     setLoadingMap(true);
     setAreaMoveKey((value) => value + 1);
     setRefreshKey((value) => value + 1);
+    setMapRefreshKey((value) => value + 1);
   }
 
   function clearSelection() {
@@ -691,9 +739,15 @@ export default function App() {
           areaZoom={activeArea.zoom}
         />
 
+        <MapSizeFixer triggerKey={`${selectedArea}-${selectedTimeKey}-${showPanel}-${mapRefreshKey}`} />
+
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          keepBuffer={6}
+          updateWhenIdle={false}
+          updateWhenZooming={false}
+          maxNativeZoom={19}
         />
 
         {showColorAreas &&

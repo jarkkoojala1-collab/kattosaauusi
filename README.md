@@ -1,12 +1,11 @@
-# Kattokartta - taustakuva korjattu
+# Kattokartta - iPhone karttakorjaus
 
-Korjattu:
-- kirjautumissivun taustakuva näkyy nyt varmasti koko ruudulla
-- taustakuvaa on hieman tummennettu ja pehmennetty, jotta kirjautumiskortti erottuu
-- CSS:ään lisätty vahva override, ettei aiemmat taustasäännöt jää päälle
-
-Taustakuva:
-frontend/public/login-roofs-bg.jpg
+Korjattu/parannettu:
+- Leaflet-kartalle lisätty automaattinen invalidateSize-korjaus.
+- Kartta päivittää kokonsa useamman kerran avauksen, aluevaihdon, aikavalinnan ja paneelin muutosten jälkeen.
+- iPhone Safari / PWA -käytössä harmaaksi jääviä kartta-alueita pitäisi tulla selvästi vähemmän.
+- Karttatiilille lisätty suurempi keepBuffer.
+- CSS:ssä käytetään paremmin mobiiliselainten dvh/svh-korkeuksia.
 
 Render-asetukset:
 
