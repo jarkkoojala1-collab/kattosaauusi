@@ -5,7 +5,6 @@ import {
   Circle,
   CircleMarker,
   Popup,
-  Marker,
   Tooltip,
   useMap
 } from "react-leaflet";
@@ -720,6 +719,10 @@ export default function App() {
         )}
         </div>
       </div>
+      <div className="map-hint">
+        Ps. Pirkanmaa löytyy asetuksista
+      </div>
+
 <MapContainer
         key={selectedArea}
         center={center}
@@ -852,7 +855,16 @@ export default function App() {
         )}
 
         {selectedPlace && (
-          <Marker position={[selectedPlace.lat, selectedPlace.lon]}>
+          <CircleMarker
+            center={[selectedPlace.lat, selectedPlace.lon]}
+            radius={10}
+            pathOptions={{
+              color: "#0f4c81",
+              fillColor: "#2563eb",
+              fillOpacity: 1,
+              weight: 3
+            }}
+          >
             <Popup>
               <div className="popup">
                 <strong>{selectedPlace.name}</strong>
@@ -864,7 +876,7 @@ export default function App() {
                 <p>Etäisyys Nurmijärveltä: {selectedPlace.distanceKm ?? "-"} km</p>
               </div>
             </Popup>
-          </Marker>
+          </CircleMarker>
         )}
       </MapContainer>
 

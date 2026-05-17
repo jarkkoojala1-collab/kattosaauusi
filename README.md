@@ -1,11 +1,9 @@
-# Kattokartta - iPhone karttakorjaus
+# Kattokartta - sijaintimerkki ja Pirkanmaa-vinkki
 
-Korjattu/parannettu:
-- Leaflet-kartalle lisätty automaattinen invalidateSize-korjaus.
-- Kartta päivittää kokonsa useamman kerran avauksen, aluevaihdon, aikavalinnan ja paneelin muutosten jälkeen.
-- iPhone Safari / PWA -käytössä harmaaksi jääviä kartta-alueita pitäisi tulla selvästi vähemmän.
-- Karttatiilille lisätty suurempi keepBuffer.
-- CSS:ssä käytetään paremmin mobiiliselainten dvh/svh-korkeuksia.
+Korjattu:
+- Oman sijainnin / valitun sijainnin yläpuolella näkyneet kysymysmerkit poistettu.
+- Leafletin oletusmarker korvattu CircleMarkerilla, jolloin marker-kuvatiedostoja ei tarvita.
+- Kartalle lisätty pieni teksti: Ps. Pirkanmaa löytyy asetuksista.
 
 Render-asetukset:
 
