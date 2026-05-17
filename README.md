@@ -1,19 +1,13 @@
-# Kattokartta - appimainen kirjautuminen
+# Kattokartta - moderni virallinen versio
 
-Lisätty:
-- appimainen kirjautumisruutu
-- käyttäjätunnus/salasana backendin kautta
-- uloskirjautuminen
-- sovellus avautuu vasta kirjautumisen jälkeen
+Muutokset:
+- poistettu epävirallinen “röiukot”-aloitusteksti
+- kirjautumisnäkymä muutettu virallisemmaksi
+- tervetulokortti muutettu neutraaliksi ja ammattimaisemmaksi
+- otsikointi ja käyttöliittymä viimeistelty modernimpaan yrityskäyttöön sopivaan suuntaan
 
 Oletustunnukset testiin:
 admin / kattosaa
-
-Renderissä voit vaihtaa tunnukset Environment Variables -kohdasta:
-
-LOGIN_USER
-LOGIN_PASSWORD
-LOGIN_TOKEN
 
 Render-asetukset:
 

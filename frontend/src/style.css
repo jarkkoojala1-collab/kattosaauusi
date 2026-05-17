@@ -958,3 +958,54 @@ body {
     display: none;
   }
 }
+
+/* Modernimpi ja virallisempi viimeistely */
+.topbar-title {
+  letter-spacing: -0.01em;
+}
+
+.login-screen {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 32%),
+    linear-gradient(180deg, #f8fafc 0%, #eef4fb 100%);
+}
+
+.login-card {
+  border-radius: 28px;
+}
+
+.login-badge {
+  background: #eef2ff;
+  color: #1d4ed8;
+  letter-spacing: 0.02em;
+}
+
+.login-card h1 {
+  font-size: 32px;
+  letter-spacing: -0.03em;
+}
+
+.login-card p,
+.welcome-text {
+  color: #475569;
+}
+
+.welcome-card {
+  border-radius: 22px;
+}
+
+.welcome-title {
+  font-size: 21px;
+  letter-spacing: -0.02em;
+}
+
+.welcome-actions button,
+.login-form button,
+.open-panel-button,
+.search-row button {
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+}
+
+.welcome-actions .secondary-welcome {
+  box-shadow: none;
+}

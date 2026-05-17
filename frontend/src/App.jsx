@@ -490,9 +490,9 @@ export default function App() {
         <div className="login-screen">
           <div className="login-card">
             <div className="login-badge">Kattosää</div>
-            <h1>Tervetuloa röiukot 👋</h1>
+            <h1>Tervetuloa Kattosäähän</h1>
             <p>
-              Kirjaudu sisään ja tarkista nopeasti missä on sopiva sää kattopinnoitukseen.
+              Kirjaudu sisään ja tarkista työmaiden sääikkunat kattopinnoitusta varten.
             </p>
 
             <form className="login-form" onSubmit={login}>
@@ -537,7 +537,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <div className="topbar">
-        <div className="topbar-title">Pinnoituskeli · Nurmijärvi + 150 km</div>
+        <div className="topbar-title">Kattosää · pinnoitusennuste</div>
         <div className="topbar-actions">
           <button className="ghost-location-button" onClick={useOwnLocation}>
             {locating ? "Haetaan sijaintia..." : "Oma sijainti"}
@@ -555,14 +555,14 @@ export default function App() {
 
       {showWelcome && (
         <div className="welcome-card">
-          <div className="welcome-title">Tervetuloa röiukot 👋</div>
+          <div className="welcome-title">Tervetuloa Kattosäähän</div>
           <div className="welcome-text">
-            Tästä näet nopeasti missä on sopiva sää kattopinnoitukseen.
-            Valitse aika alhaalta, paina kartalta paikkaa tai hae paikkakunta.
+            Tarkista nopeasti, missä sääolosuhteet soveltuvat kattopinnoitukseen.
+            Valitse ajankohta, hae paikkakunta tai avaa ennuste kartalta.
           </div>
           <div className="welcome-actions">
             <button type="button" onClick={() => setShowWelcome(false)}>
-              Selvä
+              Jatka
             </button>
             <button
               type="button"
@@ -572,7 +572,7 @@ export default function App() {
                 setShowPanel(true);
               }}
             >
-              Avaa haku
+              Avaa ennuste
             </button>
           </div>
         </div>
