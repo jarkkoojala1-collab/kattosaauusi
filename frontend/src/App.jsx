@@ -152,6 +152,13 @@ export default function App() {
 
   const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : "";
 
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem("kattokarttaToken") || "");
+  const [loginUser, setLoginUser] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+
+
   const timelineItems = useMemo(
     () => (forecast?.times || []).filter((item) => isTimelineDayHour(item.time)),
     [forecast]
@@ -276,6 +283,52 @@ export default function App() {
       }));
     }
   }, [points, selectedPlace?.name, selectedPlace?.isOwnLocation]);
+
+  async function login(event) {
+    event.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+
+    try {
+      const response = await fetch(`${API_BASE}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: loginUser.trim(),
+          password: loginPassword
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.token) {
+        throw new Error(result.error || "Kirjautuminen epäonnistui");
+      }
+
+      localStorage.setItem("kattokarttaToken", result.token);
+      setAuthToken(result.token);
+      setLoginPassword("");
+      setLoginError("");
+      setShowWelcome(true);
+    } catch (error) {
+      setLoginError(error.message);
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem("kattokarttaToken");
+    setAuthToken("");
+    setLoginUser("");
+    setLoginPassword("");
+    setSelectedPlace(null);
+    setHourlyForecast([]);
+    setShowPanel(false);
+    setShowWelcome(false);
+  }
 
   function clearSelection() {
     setCity("");
@@ -431,6 +484,56 @@ export default function App() {
       ? `${radarHost}${selectedRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
       : null;
 
+  if (!authToken) {
+    return (
+      <div className="app-shell">
+        <div className="login-screen">
+          <div className="login-card">
+            <div className="login-badge">Kattosää</div>
+            <h1>Tervetuloa röiukot 👋</h1>
+            <p>
+              Kirjaudu sisään ja tarkista nopeasti missä on sopiva sää kattopinnoitukseen.
+            </p>
+
+            <form className="login-form" onSubmit={login}>
+              <label>
+                Käyttäjätunnus
+                <input
+                  value={loginUser}
+                  onChange={(event) => setLoginUser(event.target.value)}
+                  placeholder="admin"
+                  autoComplete="username"
+                />
+              </label>
+
+              <label>
+                Salasana
+                <input
+                  value={loginPassword}
+                  onChange={(event) => setLoginPassword(event.target.value)}
+                  placeholder="kattosaa"
+                  type="password"
+                  autoComplete="current-password"
+                />
+              </label>
+
+              {loginError && <div className="login-error">{loginError}</div>}
+
+              <button type="submit" disabled={loginLoading}>
+                {loginLoading ? "Kirjaudutaan..." : "Kirjaudu"}
+              </button>
+            </form>
+
+            <div className="login-hint">
+              Oletustunnus testiin: <strong>admin</strong> / <strong>kattosaa</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
   return (
     <div className="app-shell">
       <div className="topbar">
@@ -438,6 +541,9 @@ export default function App() {
         <div className="topbar-actions">
           <button className="ghost-location-button" onClick={useOwnLocation}>
             {locating ? "Haetaan sijaintia..." : "Oma sijainti"}
+          </button>
+          <button className="ghost-location-button logout-button" onClick={logout}>
+            Kirjaudu ulos
           </button>
           {!showPanel && (
           <button className="open-panel-button" onClick={() => setShowPanel(true)}>

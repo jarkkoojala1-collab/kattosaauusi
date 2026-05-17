@@ -1,11 +1,19 @@
-# Kattokartta - tunnin välein ja tervetuloa
+# Kattokartta - appimainen kirjautuminen
 
-Muutokset:
-- Kartan ennusteet ovat tunnin välein.
-- Kartan värialueet ovat läpinäkyvämmät, jotta päällekkäisyys ei tummenna karttaa niin voimakkaasti.
-- Sovellus avautuu ensin karttanäkymään.
-- Alussa näkyy tervetulotoivotus röiukoille.
-- Paneelin saa auki Avaa ennuste -napista tai tervetulokortin Avaa haku -napista.
+Lisätty:
+- appimainen kirjautumisruutu
+- käyttäjätunnus/salasana backendin kautta
+- uloskirjautuminen
+- sovellus avautuu vasta kirjautumisen jälkeen
+
+Oletustunnukset testiin:
+admin / kattosaa
+
+Renderissä voit vaihtaa tunnukset Environment Variables -kohdasta:
+
+LOGIN_USER
+LOGIN_PASSWORD
+LOGIN_TOKEN
 
 Render-asetukset:
 

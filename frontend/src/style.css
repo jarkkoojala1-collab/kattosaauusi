@@ -668,6 +668,125 @@ body {
   font-size: 13px;
 }
 
+
+.login-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.22), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(22, 163, 74, 0.18), transparent 34%),
+    linear-gradient(180deg, #f8fafc 0%, #eaf2ff 100%);
+}
+
+.login-card {
+  width: min(430px, 100%);
+  padding: 24px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(16px);
+}
+
+.login-badge {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 950;
+  margin-bottom: 14px;
+}
+
+.login-card h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.05;
+  font-weight: 950;
+}
+
+.login-card p {
+  margin: 10px 0 18px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.login-form input {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: white;
+  padding: 14px 15px;
+  font-size: 16px;
+  outline: none;
+}
+
+.login-form input:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+}
+
+.login-form button {
+  border: 0;
+  border-radius: 18px;
+  padding: 14px 16px;
+  background: var(--blue);
+  color: white;
+  font-weight: 950;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-form button:disabled {
+  background: #94a3b8;
+  cursor: wait;
+}
+
+.login-error {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.login-hint {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.logout-button {
+  background: #fff1f2 !important;
+  color: #991b1b !important;
+}
+
 @media (max-width: 900px) {
   .summary-strip {
     grid-template-columns: 1fr 1fr;

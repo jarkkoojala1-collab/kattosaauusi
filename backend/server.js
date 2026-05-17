@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -531,6 +532,40 @@ app.get("/api/location-forecast", async (req, res) => {
     res.status(500).json({ error: "Oman sijainnin ennustetta ei voitu hakea", details: error.message });
   }
 });
+
+
+const LOGIN_USER = process.env.LOGIN_USER || "admin";
+const LOGIN_PASSWORD = process.env.LOGIN_PASSWORD || "kattosaa";
+const LOGIN_TOKEN = process.env.LOGIN_TOKEN || "kattokartta-local-token";
+
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body || {};
+
+  if (username === LOGIN_USER && password === LOGIN_PASSWORD) {
+    return res.json({
+      ok: true,
+      token: LOGIN_TOKEN,
+      user: username
+    });
+  }
+
+  return res.status(401).json({
+    ok: false,
+    error: "Väärä käyttäjätunnus tai salasana"
+  });
+});
+
+app.get("/api/session", (req, res) => {
+  const auth = req.headers.authorization || "";
+  const token = auth.replace("Bearer ", "");
+
+  if (token === LOGIN_TOKEN) {
+    return res.json({ ok: true });
+  }
+
+  return res.status(401).json({ ok: false });
+});
+
 
 app.use(express.static(frontendDistPath));
 
