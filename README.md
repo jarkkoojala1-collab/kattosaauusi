@@ -1,9 +1,12 @@
-# Kattokartta - kirjautumissivun taustakuva
+# Kattokartta - taustakuva korjattu
 
-Muutokset:
-- lisätty kirjautumissivun taustalle kuva, jossa näkyy paljon erivärisiä kattoja
-- taustakuva tuodaan tiedostosta /frontend/public/login-roofs-bg.jpg
-- kirjautumiskortti säilyy helposti luettavana kuvan päällä
+Korjattu:
+- kirjautumissivun taustakuva näkyy nyt varmasti koko ruudulla
+- taustakuvaa on hieman tummennettu ja pehmennetty, jotta kirjautumiskortti erottuu
+- CSS:ään lisätty vahva override, ettei aiemmat taustasäännöt jää päälle
+
+Taustakuva:
+frontend/public/login-roofs-bg.jpg
 
 Render-asetukset:
 
