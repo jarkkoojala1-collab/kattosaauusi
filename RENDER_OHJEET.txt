@@ -1,12 +1,11 @@
-# Kattokartta - aluevalinta korjattu
+# Kattokartta - aluevaihto korjattu
 
 Korjattu:
-- selectedArea oli lisätty vahingossa kahteen kertaan.
-- Build-virhe "selectedArea has already been declared" poistettu.
-
-Ominaisuudet:
-- Uusimaa: Nurmijärvi + 150 km
-- Pirkanmaa: Tampere + 150 km
+- Kun Pirkanmaa valitaan, Uusimaan pisteet ja värialueet poistuvat heti.
+- Kun Uusimaa valitaan, Pirkanmaan pisteet ja värialueet poistuvat heti.
+- Kartta keskittyy Pirkanmaalla Tampereelle.
+- Kartta keskittyy Uudellamaalla Nurmijärvelle.
+- Myöhässä palaava vanhan alueen säädata ei enää voi ylikirjoittaa uutta aluetta.
 
 Render-asetukset:
 

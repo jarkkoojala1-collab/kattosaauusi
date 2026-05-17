@@ -10,17 +10,22 @@ import {
   useMap
 } from "react-leaflet";
 
-function MapMover({ lat, lon, centerLat, centerLon, moveKey }) {
+function MapMover({ lat, lon, centerLat, centerLon, moveKey, areaMoveKey }) {
   const map = useMap();
-  const hasCenteredRef = useRef(false);
   const lastMoveKeyRef = useRef(null);
+  const lastAreaMoveKeyRef = useRef(null);
 
   useEffect(() => {
-    if (!hasCenteredRef.current && Number.isFinite(centerLat) && Number.isFinite(centerLon)) {
-      hasCenteredRef.current = true;
-      map.setView([centerLat, centerLon], 8, { animate: false });
-    }
-  }, [centerLat, centerLon, map]);
+    if (!Number.isFinite(centerLat) || !Number.isFinite(centerLon)) return;
+    if (lastAreaMoveKeyRef.current === areaMoveKey) return;
+
+    lastAreaMoveKeyRef.current = areaMoveKey;
+
+    map.flyTo([centerLat, centerLon], 8, {
+      animate: true,
+      duration: 0.7
+    });
+  }, [centerLat, centerLon, areaMoveKey, map]);
 
   useEffect(() => {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
@@ -120,6 +125,28 @@ function Stat({ label, value }) {
   );
 }
 
+
+const AREA_CONFIG = {
+  uusimaa: {
+    name: "Uusimaa",
+    centerName: "Nurmijärvi",
+    center: [60.4647, 24.8073],
+    bounds: [
+      [58.9, 21.6],
+      [62.0, 27.7]
+    ]
+  },
+  pirkanmaa: {
+    name: "Pirkanmaa",
+    centerName: "Tampere",
+    center: [61.4978, 23.761],
+    bounds: [
+      [59.9, 20.8],
+      [63.0, 26.7]
+    ]
+  }
+};
+
 export default function App() {
   const [forecast, setForecast] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
@@ -179,7 +206,9 @@ export default function App() {
     timelineItems.find((item) => item.time === selectedTimeKey) || timelineItems[0];
 
   const points = selectedTime?.points || [];
-  const center = forecast?.center ? [forecast.center.lat, forecast.center.lon] : [60.4647, 24.8073];
+  const activeArea = AREA_CONFIG[selectedArea] || AREA_CONFIG.uusimaa;
+  const center = forecast?.center ? [forecast.center.lat, forecast.center.lon] : activeArea.center;
+  const mapBounds = activeArea.bounds;
   const selectedRadarFrame = radarFrames[radarIndex];
 
   const timelineDays = useMemo(() => {
@@ -231,26 +260,45 @@ export default function App() {
   }, [hourlyForecast, showNightForecast]);
 
   useEffect(() => {
-    // Valittu alue vaihtuu: tyhjennetään aiempi paikkavalinta
+    // Valittu alue vaihtuu: poistetaan vanhan alueen pisteet heti
+    setForecast(null);
+    setSelectedTimeKey("");
     setSelectedPlace(null);
     setHourlyForecast([]);
     setForecastSource("");
+    setErrorText("");
+    setLoadingMap(true);
+    setAreaMoveKey((value) => value + 1);
   }, [selectedArea]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    setLoadingMap(true);
+
     fetch(`${API_BASE}/api/forecast-map?area=${selectedArea}`)
       .then((response) => {
         if (!response.ok) throw new Error("Backend ei vastannut oikein");
         return response.json();
       })
       .then((items) => {
+        if (cancelled) return;
+        if (items?.area && items.area !== selectedArea) return;
+
         setForecast(items);
         setLoadingMap(false);
       })
       .catch((error) => {
+        if (cancelled) return;
+
         setErrorText(error.message);
+        setForecast(null);
         setLoadingMap(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [API_BASE, selectedArea]);
 
   useEffect(() => {
@@ -590,10 +638,7 @@ export default function App() {
         center={center}
         zoom={8}
         minZoom={7}
-        maxBounds={[
-          [59.0, 22.0],
-          [61.95, 27.5],
-        ]}
+        maxBounds={mapBounds}
         className="map"
         zoomControl={false}
       >
@@ -603,6 +648,7 @@ export default function App() {
           centerLat={center?.[0]}
           centerLon={center?.[1]}
           moveKey={selectedMoveKey}
+          areaMoveKey={areaMoveKey}
         />
 
         <TileLayer
@@ -899,14 +945,14 @@ export default function App() {
                       <button
                         type="button"
                         className={selectedArea === "uusimaa" ? "active" : ""}
-                        onClick={() => setSelectedArea("uusimaa")}
+                        onClick={() => selectedArea !== "uusimaa" && setSelectedArea("uusimaa")}
                       >
                         Uusimaa
                       </button>
                       <button
                         type="button"
                         className={selectedArea === "pirkanmaa" ? "active" : ""}
-                        onClick={() => setSelectedArea("pirkanmaa")}
+                        onClick={() => selectedArea !== "pirkanmaa" && setSelectedArea("pirkanmaa")}
                       >
                         Pirkanmaa
                       </button>
