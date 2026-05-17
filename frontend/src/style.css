@@ -1137,3 +1137,42 @@ body {
     font-size: 28px;
   }
 }
+
+
+.password-popup {
+  position: relative;
+  margin: 14px 0 16px;
+  padding: 14px 42px 14px 14px;
+  border-radius: 18px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #0f172a;
+}
+
+.password-popup-title {
+  font-size: 13px;
+  font-weight: 950;
+  color: #1d4ed8;
+  margin-bottom: 6px;
+}
+
+.password-popup-text {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.password-popup-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #1e293b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}

@@ -208,6 +208,7 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [showPasswordHint, setShowPasswordHint] = useState(true);
 
 
   const timelineItems = useMemo(
@@ -592,6 +593,25 @@ export default function App() {
             <p>
               Kirjaudu sisään ja tarkista työmaiden sääikkunat kattopinnoitusta varten.
             </p>
+
+
+            {showPasswordHint && (
+              <div className="password-popup">
+                <button
+                  type="button"
+                  className="password-popup-close"
+                  onClick={() => setShowPasswordHint(false)}
+                  aria-label="Sulje salasanavinkki"
+                >
+                  ×
+                </button>
+                <div className="password-popup-title">Väliaikainen kirjautumistieto</div>
+                <div className="password-popup-text">
+                  Käyttäjätunnus: <strong>admin</strong><br />
+                  Salasana: <strong>kattosaa</strong>
+                </div>
+              </div>
+            )}
 
             <form className="login-form" onSubmit={login}>
               <label>Käyttäjätunnus<input

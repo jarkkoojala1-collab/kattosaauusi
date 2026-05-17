@@ -1,9 +1,13 @@
-# Kattokartta - kirjautumistekstit korjattu
+# Kattokartta - salasanapopup lisätty
 
 Muutokset:
-- poistettu kirjautumisruudusta näkyvät testitunnukset admin / kattosaa
-- käyttäjätunnuskentän placeholder: käyttäjätunnus
-- salasanakentän placeholder: salasana
+- kirjautumisruutuun lisätty väliaikainen ponnahdusikkuna
+- popup näyttää testikäyttäjätunnuksen ja salasanan
+- popupin voi sulkea X-painikkeesta
+
+Väliaikainen kirjautumistieto:
+Käyttäjätunnus: admin
+Salasana: kattosaa
 
 Render-asetukset:
 
