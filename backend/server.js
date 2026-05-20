@@ -160,7 +160,7 @@ function isGood(weather) {
     weather &&
     weather.temp > 5 &&
     weather.wind < 10 &&
-    weather.humidity < 70 &&
+    weather.humidity < 78 &&
     weather.precipitation <= 0.1
   );
 }
@@ -170,8 +170,8 @@ function scoreWeather(weather) {
   let score = 100;
   if (weather.temp <= 5) score -= 45;
   else if (weather.temp < 8) score -= 15;
-  if (weather.humidity >= 70) score -= 45;
-  else if (weather.humidity > 65) score -= 15;
+  if (weather.humidity >= 78) score -= 45;
+  else if (weather.humidity > 73) score -= 15;
   if (weather.wind >= 10) score -= 30;
   else if (weather.wind > 7) score -= 10;
   if (weather.precipitation > 0.1) score -= 60;
