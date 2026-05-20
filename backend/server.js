@@ -474,6 +474,15 @@ function makeHourlyRows(forecasts) {
   }));
 }
 
+
+app.get("/api/health", (req, res) => {
+  res.json({
+    ok: true,
+    service: "Kattosää backend",
+    time: new Date().toISOString()
+  });
+});
+
 app.get("/api/forecast-map", async (req, res) => {
   try {
     const areaId = String(req.query.area || "uusimaa");
@@ -513,26 +522,41 @@ app.get("/api/search", async (req, res) => {
   try {
     const city = String(req.query.city || "").trim();
     const timeIso = req.query.time ? String(req.query.time) : new Date().toISOString();
-    if (!city) return res.status(400).json({ error: "Paikkakunta puuttuu" });
+    const area = getArea(String(req.query.area || "uusimaa"));
+
+    if (!city) {
+      return res.status(400).json({ error: "Paikkakunta puuttuu" });
+    }
 
     const place = await geocodeCity(city);
-    const result = await fetchPointForecast(place.lat, place.lon);
-    const weather = pickNearestForecast(result.forecasts, timeIso);
+
+    if (!place || !Number.isFinite(Number(place.lat)) || !Number.isFinite(Number(place.lon))) {
+      return res.status(404).json({ error: "Paikkakuntaa ei löytynyt" });
+    }
+
+    const forecast = await fetchSingleForecast(place.lat, place.lon, timeIso);
+
+    if (!forecast || !forecast.weather) {
+      return res.status(502).json({ error: "Sääennustetta ei saatu haetulle paikkakunnalle" });
+    }
 
     res.json({
-      name: place.name,
-      lat: place.lat,
-      lon: place.lon,
-      time: timeIso,
-      weather,
-      ok: isGood(weather),
-      score: scoreWeather(weather),
-      source: result.source,
-      distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon))
+      name: place.name || city,
+      lat: Number(place.lat),
+      lon: Number(place.lon),
+      time: forecast.time || timeIso,
+      weather: forecast.weather,
+      ok: forecast.ok,
+      score: forecast.score,
+      source: forecast.source || "FMI / Open-Meteo",
+      distanceKm: Math.round(haversineKm(area.lat, area.lon, Number(place.lat), Number(place.lon)))
     });
   } catch (error) {
     console.error("Search error:", error.message);
-    res.status(500).json({ error: "Hakua ei voitu suorittaa", details: error.message });
+    res.status(500).json({
+      error: "Hakua ei voitu suorittaa",
+      details: error.message
+    });
   }
 });
 

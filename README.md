@@ -1,9 +1,16 @@
-# Kattokartta - sijaintimerkki ja Pirkanmaa-vinkki
+# Kattokartta perusversio - haku korjattu
 
 Korjattu:
-- Oman sijainnin / valitun sijainnin yläpuolella näkyneet kysymysmerkit poistettu.
-- Leafletin oletusmarker korvattu CircleMarkerilla, jolloin marker-kuvatiedostoja ei tarvita.
-- Kartalle lisätty pieni teksti: Ps. Pirkanmaa löytyy asetuksista.
+- Paikkakuntahaku /api/search tehty varmemmaksi.
+- Haku palauttaa nyt aina lat/lon, jos paikkakunta löytyy.
+- Frontend tarkistaa, että haun tuloksessa on validit koordinaatit.
+- Jos paikka löytyy mutta tuntiennuste epäonnistuu, sovellus ei enää kaadu.
+- Backendiin lisätty /api/health.
+- Backendin syntaksi tarkistettu.
+- npm install ja npm run build testattu onnistuneesti.
+
+Testaa Renderissä:
+https://SINUN-OSOITE.onrender.com/api/health
 
 Render-asetukset:
 

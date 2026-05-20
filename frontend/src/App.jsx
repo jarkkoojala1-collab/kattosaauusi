@@ -198,6 +198,11 @@ function distanceKm(lat1, lon1, lat2, lon2) {
   return 2 * earthRadiusKm * Math.asin(Math.sqrt(a));
 }
 
+
+function hasValidCoordinates(item) {
+  return Number.isFinite(Number(item?.lat)) && Number.isFinite(Number(item?.lon));
+}
+
 function isInsideArea(point, area) {
   if (!point || !area) return false;
   return distanceKm(area.center[0], area.center[1], point.lat, point.lon) <= area.radiusKm + 2;
@@ -573,7 +578,10 @@ export default function App() {
 
   async function searchCity(event) {
     event.preventDefault();
-    if (!city.trim()) {
+
+    const query = city.trim();
+
+    if (!query) {
       inputRef.current?.focus();
       return;
     }
@@ -584,18 +592,36 @@ export default function App() {
 
     try {
       const response = await fetch(
-        `${API_BASE}/api/search?city=${encodeURIComponent(city)}&time=${encodeURIComponent(time)}&area=${selectedArea}`
+        `${API_BASE}/api/search?city=${encodeURIComponent(query)}&time=${encodeURIComponent(time)}&area=${selectedArea}`
       );
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Hakua ei voitu suorittaa");
+        throw new Error(result.error || result.details || "Hakua ei voitu suorittaa");
       }
 
-      setSelectedPlace(result);
+      if (!Number.isFinite(Number(result.lat)) || !Number.isFinite(Number(result.lon))) {
+        throw new Error("Haun tuloksesta puuttui sijainti");
+      }
+
+      const place = {
+        ...result,
+        lat: Number(result.lat),
+        lon: Number(result.lon)
+      };
+
+      setCity(place.name || query);
+      setSelectedPlace(place);
       setSelectedMoveKey((value) => value + 1);
-      setForecastSource(result.source || "");
-      await loadPlaceForecast(city);
+      setForecastSource(place.source || "");
+
+      try {
+        await loadPlaceForecast(place.name || query);
+      } catch (forecastError) {
+        setHourlyForecast([]);
+        setErrorText(`Paikka löytyi, mutta tuntiennustetta ei saatu: ${forecastError.message}`);
+      }
+
       setShowPanel(true);
     } catch (error) {
       setErrorText(error.message);
@@ -854,7 +880,7 @@ export default function App() {
           </>
         )}
 
-        {selectedPlace && (
+        {selectedPlace && hasValidCoordinates(selectedPlace) && (
           <CircleMarker
             center={[selectedPlace.lat, selectedPlace.lon]}
             radius={10}
