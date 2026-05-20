@@ -1,15 +1,10 @@
-# Kattokartta - hakuehdotukset
+# Kattokartta - hakuehdotukset heti kentän alla
 
-Lisätty:
-- Hakukenttä ehdottaa paikkakuntia kirjoittaessa.
-- Esimerkiksi "kirk" ehdottaa Kirkkonummea.
-- Backendissä uusi endpoint: /api/suggest?q=kirk&area=uusimaa
-- Ehdotukset suosivat ensin valitun alueen paikkoja ja sitten muita tunnettuja paikkoja.
-- Ehdotuksen valinta hakee ennusteen suoraan.
-
-Muut mukana:
-- Kosteusraja 78 %
-- Haku toimii fetchPointForecast + pickNearestForecast -logiikalla.
+Muutokset:
+- Hakuehdotukset näkyvät nyt suoraan hakukentän alapuolella.
+- Ehdotuslista on kiinnitetty inputin omaan wrapperiin.
+- Hae-painike pysyy hakukentän oikealla puolella.
+- Mobiilissa lista pysyy kentän alla ja saa tarvittaessa oman scrollauksen.
 
 Render-asetukset:
 

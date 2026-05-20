@@ -582,7 +582,7 @@ export default function App() {
   useEffect(() => {
     const query = city.trim();
 
-    if (query.length < 2 || selectedPlace?.name === query) {
+    if (query.length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -599,8 +599,9 @@ export default function App() {
         const result = await response.json();
 
         if (!cancelled && response.ok) {
-          setSuggestions(result.suggestions || []);
-          setShowSuggestions((result.suggestions || []).length > 0);
+          const items = result.suggestions || [];
+          setSuggestions(items);
+          setShowSuggestions(items.length > 0);
         }
       } catch {
         if (!cancelled) {
@@ -618,7 +619,7 @@ export default function App() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [city, selectedArea, API_BASE, selectedPlace?.name]);
+  }, [city, selectedArea, API_BASE]);
 
   async function chooseSuggestion(suggestion) {
     const name = suggestion.name;
@@ -1009,40 +1010,53 @@ export default function App() {
 
             <form className="search-card" onSubmit={searchCity}>
               <div className="search-row">
-                <input
-                  ref={inputRef}
-                  value={city}
-                  onChange={(event) => {
-                    setCity(event.target.value);
-                    setShowSuggestions(true);
-                  }}
-                  onFocus={() => {
-                    if (suggestions.length > 0) setShowSuggestions(true);
-                  }}
-                  onBlur={() => {
-                    setTimeout(() => setShowSuggestions(false), 150);
-                  }}
-                  placeholder="Hae paikkakunta, esim. Nurmijärvi"
-                />
-              {showSuggestions && (
-                <div className="suggestions-list">
-                  {suggestions.map((suggestion) => (
-                    <button
-                      type="button"
-                      key={`${suggestion.name}-${suggestion.lat}-${suggestion.lon}`}
-                      onClick={() => chooseSuggestion(suggestion)}
-                    >
-                      <strong>{suggestion.name}</strong>
-                      <span>{suggestion.distanceKm} km valitusta aluekeskuksesta</span>
-                    </button>
-                  ))}
+                <div className="search-input-wrap">
+                  <input
+                    ref={inputRef}
+                    value={city}
+                    onChange={(event) => {
+                      setCity(event.target.value);
+                      setShowSuggestions(event.target.value.trim().length >= 2);
+                    }}
+                    onFocus={() => {
+                      if (city.trim().length >= 2 && suggestions.length > 0) {
+                        setShowSuggestions(true);
+                      }
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setShowSuggestions(false), 180);
+                    }}
+                    placeholder="Hae paikkakunta, esim. Nurmijärvi"
+                  />
+
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="suggestions-list">
+                      {suggestions.map((suggestion) => (
+                        <button
+                          type="button"
+                          key={`${suggestion.name}-${suggestion.lat}-${suggestion.lon}`}
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            chooseSuggestion(suggestion);
+                          }}
+                        >
+                          <strong>{suggestion.name}</strong>
+                          <span>{suggestion.distanceKm} km aluekeskuksesta</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {suggestionsLoading && city.trim().length >= 2 && (
+                    <div className="suggestions-loading">Haetaan ehdotuksia...</div>
+                  )}
                 </div>
-              )}
 
                 <button type="submit" disabled={searchLoading}>
                   {searchLoading ? "..." : "Hae"}
                 </button>
               </div>
+
               <button
                 type="button"
                 className="location-search-button"

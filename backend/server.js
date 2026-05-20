@@ -521,64 +521,46 @@ app.get("/api/forecast-map", async (req, res) => {
 
 app.get("/api/suggest", (req, res) => {
   try {
-    const query = String(req.query.q || "").trim().toLowerCase();
+    const query = String(req.query.q || "").trim().toLocaleLowerCase("fi-FI");
     const area = getArea(String(req.query.area || "uusimaa"));
-    const areaPlaces = getPlacesForArea(area.id);
 
     if (query.length < 2) {
       return res.json({ suggestions: [] });
     }
 
-    const exactStarts = areaPlaces
-      .filter((place) => place.name.toLowerCase().startsWith(query))
-      .map((place) => ({
-        name: place.name,
-        lat: Number(place.lat),
-        lon: Number(place.lon),
-        distanceKm: place.distanceKm,
-        area: area.id,
-        matchType: "area"
-      }));
-
-    const broaderStarts = allPlaces
-      .filter((place) => place.name.toLowerCase().startsWith(query))
-      .map((place) => ({
-        name: place.name,
-        lat: Number(place.lat),
-        lon: Number(place.lon),
-        distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon)),
-        area: area.id,
-        matchType: "all"
-      }));
-
-    const contains = allPlaces
-      .filter((place) => {
-        const name = place.name.toLowerCase();
-        return !name.startsWith(query) && name.includes(query);
-      })
-      .map((place) => ({
-        name: place.name,
-        lat: Number(place.lat),
-        lon: Number(place.lon),
-        distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon)),
-        area: area.id,
-        matchType: "contains"
-      }));
-
+    const normalize = (value) => String(value || "").toLocaleLowerCase("fi-FI");
+    const areaPlaces = getPlacesForArea(area.id);
+    const source = [...areaPlaces, ...allPlaces];
     const seen = new Set();
-    const suggestions = [...exactStarts, ...broaderStarts, ...contains]
-      .filter((item) => {
-        const key = item.name.toLowerCase();
+
+    const suggestions = source
+      .map((place) => {
+        const name = place.name;
+        const lowerName = normalize(name);
+        let rank = 99;
+
+        if (lowerName.startsWith(query)) rank = 0;
+        else if (lowerName.includes(query)) rank = 1;
+
+        return {
+          name,
+          lat: Number(place.lat),
+          lon: Number(place.lon),
+          distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon)),
+          rank
+        };
+      })
+      .filter((place) => place.rank < 99 && Number.isFinite(place.lat) && Number.isFinite(place.lon))
+      .filter((place) => {
+        const key = normalize(place.name);
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
       })
       .sort((a, b) => {
-        if (a.matchType !== b.matchType) {
-          const order = { area: 0, all: 1, contains: 2 };
-          return order[a.matchType] - order[b.matchType];
-        }
-        return a.distanceKm - b.distanceKm;
+        if (a.rank !== b.rank) return a.rank - b.rank;
+        if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+        return a.name.localeCompare(b.name, "fi");
       })
       .slice(0, 8);
 
