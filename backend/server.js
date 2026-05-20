@@ -534,9 +534,10 @@ app.get("/api/search", async (req, res) => {
       return res.status(404).json({ error: "Paikkakuntaa ei löytynyt" });
     }
 
-    const forecast = await fetchSingleForecast(place.lat, place.lon, timeIso);
+    const result = await fetchPointForecast(Number(place.lat), Number(place.lon));
+    const weather = pickNearestForecast(result.forecasts || [], timeIso);
 
-    if (!forecast || !forecast.weather) {
+    if (!weather) {
       return res.status(502).json({ error: "Sääennustetta ei saatu haetulle paikkakunnalle" });
     }
 
@@ -544,11 +545,11 @@ app.get("/api/search", async (req, res) => {
       name: place.name || city,
       lat: Number(place.lat),
       lon: Number(place.lon),
-      time: forecast.time || timeIso,
-      weather: forecast.weather,
-      ok: forecast.ok,
-      score: forecast.score,
-      source: forecast.source || "FMI / Open-Meteo",
+      time: weather.time || timeIso,
+      weather,
+      ok: isGood(weather),
+      score: scoreWeather(weather),
+      source: result.source || "FMI / Open-Meteo",
       distanceKm: Math.round(haversineKm(area.lat, area.lon, Number(place.lat), Number(place.lon)))
     });
   } catch (error) {

@@ -1,16 +1,11 @@
-# Kattokartta perusversio - haku korjattu
+# Kattokartta perusversio - haku final
 
 Korjattu:
-- Paikkakuntahaku /api/search tehty varmemmaksi.
-- Haku palauttaa nyt aina lat/lon, jos paikkakunta löytyy.
-- Frontend tarkistaa, että haun tuloksessa on validit koordinaatit.
-- Jos paikka löytyy mutta tuntiennuste epäonnistuu, sovellus ei enää kaadu.
-- Backendiin lisätty /api/health.
+- Poistettu virheellinen fetchSingleForecast-kutsu.
+- /api/search käyttää nyt olemassa olevaa fetchPointForecast + pickNearestForecast -logiikkaa.
+- Paikkakuntahaku palauttaa lat/lon, valitun hetken sään, ok-arvon ja pistemäärän.
 - Backendin syntaksi tarkistettu.
 - npm install ja npm run build testattu onnistuneesti.
-
-Testaa Renderissä:
-https://SINUN-OSOITE.onrender.com/api/health
 
 Render-asetukset:
 
