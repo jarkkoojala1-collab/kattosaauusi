@@ -1,10 +1,12 @@
-# Kattokartta - hakuehdotukset heti kentän alla
+# Kattokartta - tummateema
 
 Muutokset:
-- Hakuehdotukset näkyvät nyt suoraan hakukentän alapuolella.
-- Ehdotuslista on kiinnitetty inputin omaan wrapperiin.
-- Hae-painike pysyy hakukentän oikealla puolella.
-- Mobiilissa lista pysyy kentän alla ja saa tarvittaessa oman scrollauksen.
+- Sovellus muutettu tummateemaiseksi.
+- Tummat paneelit, hakukenttä, hakuehdotukset ja ennustekortit.
+- Karttaa tummennettu hieman, jotta säävärit erottuvat paremmin.
+- Kirjautumissivu muutettu tummaksi.
+- PWA/theme-color vaihdettu tummaksi.
+- Mukana edelleen hakuehdotukset heti hakukentän alla ja kosteusraja 78 %.
 
 Render-asetukset:
 
