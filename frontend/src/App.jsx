@@ -226,6 +226,9 @@ export default function App() {
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
 
   const [city, setCity] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -576,12 +579,59 @@ export default function App() {
     );
   }
 
-  async function searchCity(event) {
-    event.preventDefault();
-
+  useEffect(() => {
     const query = city.trim();
 
-    if (!query) {
+    if (query.length < 2 || selectedPlace?.name === query) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setSuggestionsLoading(true);
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/api/suggest?q=${encodeURIComponent(query)}&area=${selectedArea}`
+        );
+        const result = await response.json();
+
+        if (!cancelled && response.ok) {
+          setSuggestions(result.suggestions || []);
+          setShowSuggestions((result.suggestions || []).length > 0);
+        }
+      } catch {
+        if (!cancelled) {
+          setSuggestions([]);
+          setShowSuggestions(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setSuggestionsLoading(false);
+        }
+      }
+    }, 180);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [city, selectedArea, API_BASE, selectedPlace?.name]);
+
+  async function chooseSuggestion(suggestion) {
+    const name = suggestion.name;
+    setCity(name);
+    setSuggestions([]);
+    setShowSuggestions(false);
+    await searchForCity(name);
+  }
+
+  async function searchForCity(query) {
+    const cleanQuery = query.trim();
+
+    if (!cleanQuery) {
       inputRef.current?.focus();
       return;
     }
@@ -589,10 +639,12 @@ export default function App() {
     const time = selectedTime?.time || new Date().toISOString();
     setSearchLoading(true);
     setErrorText("");
+    setSuggestions([]);
+    setShowSuggestions(false);
 
     try {
       const response = await fetch(
-        `${API_BASE}/api/search?city=${encodeURIComponent(query)}&time=${encodeURIComponent(time)}&area=${selectedArea}`
+        `${API_BASE}/api/search?city=${encodeURIComponent(cleanQuery)}&time=${encodeURIComponent(time)}&area=${selectedArea}`
       );
       const result = await response.json();
 
@@ -610,13 +662,13 @@ export default function App() {
         lon: Number(result.lon)
       };
 
-      setCity(place.name || query);
+      setCity(place.name || cleanQuery);
       setSelectedPlace(place);
       setSelectedMoveKey((value) => value + 1);
       setForecastSource(place.source || "");
 
       try {
-        await loadPlaceForecast(place.name || query);
+        await loadPlaceForecast(place.name || cleanQuery);
       } catch (forecastError) {
         setHourlyForecast([]);
         setErrorText(`Paikka löytyi, mutta tuntiennustetta ei saatu: ${forecastError.message}`);
@@ -631,6 +683,11 @@ export default function App() {
     } finally {
       setSearchLoading(false);
     }
+  }
+
+  async function searchCity(event) {
+    event.preventDefault();
+    await searchForCity(city);
   }
 
   async function selectMapPoint(point) {
@@ -955,9 +1012,33 @@ export default function App() {
                 <input
                   ref={inputRef}
                   value={city}
-                  onChange={(event) => setCity(event.target.value)}
+                  onChange={(event) => {
+                    setCity(event.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => {
+                    if (suggestions.length > 0) setShowSuggestions(true);
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowSuggestions(false), 150);
+                  }}
                   placeholder="Hae paikkakunta, esim. Nurmijärvi"
                 />
+              {showSuggestions && (
+                <div className="suggestions-list">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      type="button"
+                      key={`${suggestion.name}-${suggestion.lat}-${suggestion.lon}`}
+                      onClick={() => chooseSuggestion(suggestion)}
+                    >
+                      <strong>{suggestion.name}</strong>
+                      <span>{suggestion.distanceKm} km valitusta aluekeskuksesta</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
                 <button type="submit" disabled={searchLoading}>
                   {searchLoading ? "..." : "Hae"}
                 </button>

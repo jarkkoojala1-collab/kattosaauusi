@@ -518,6 +518,77 @@ app.get("/api/forecast-map", async (req, res) => {
   }
 });
 
+
+app.get("/api/suggest", (req, res) => {
+  try {
+    const query = String(req.query.q || "").trim().toLowerCase();
+    const area = getArea(String(req.query.area || "uusimaa"));
+    const areaPlaces = getPlacesForArea(area.id);
+
+    if (query.length < 2) {
+      return res.json({ suggestions: [] });
+    }
+
+    const exactStarts = areaPlaces
+      .filter((place) => place.name.toLowerCase().startsWith(query))
+      .map((place) => ({
+        name: place.name,
+        lat: Number(place.lat),
+        lon: Number(place.lon),
+        distanceKm: place.distanceKm,
+        area: area.id,
+        matchType: "area"
+      }));
+
+    const broaderStarts = allPlaces
+      .filter((place) => place.name.toLowerCase().startsWith(query))
+      .map((place) => ({
+        name: place.name,
+        lat: Number(place.lat),
+        lon: Number(place.lon),
+        distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon)),
+        area: area.id,
+        matchType: "all"
+      }));
+
+    const contains = allPlaces
+      .filter((place) => {
+        const name = place.name.toLowerCase();
+        return !name.startsWith(query) && name.includes(query);
+      })
+      .map((place) => ({
+        name: place.name,
+        lat: Number(place.lat),
+        lon: Number(place.lon),
+        distanceKm: Math.round(haversineKm(area.lat, area.lon, place.lat, place.lon)),
+        area: area.id,
+        matchType: "contains"
+      }));
+
+    const seen = new Set();
+    const suggestions = [...exactStarts, ...broaderStarts, ...contains]
+      .filter((item) => {
+        const key = item.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .sort((a, b) => {
+        if (a.matchType !== b.matchType) {
+          const order = { area: 0, all: 1, contains: 2 };
+          return order[a.matchType] - order[b.matchType];
+        }
+        return a.distanceKm - b.distanceKm;
+      })
+      .slice(0, 8);
+
+    res.json({ suggestions });
+  } catch (error) {
+    console.error("Suggest error:", error.message);
+    res.status(500).json({ error: "Ehdotuksia ei voitu hakea", details: error.message });
+  }
+});
+
 app.get("/api/search", async (req, res) => {
   try {
     const city = String(req.query.city || "").trim();
