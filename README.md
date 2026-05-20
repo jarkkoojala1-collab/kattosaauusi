@@ -1,12 +1,12 @@
-# Kattokartta - tummateema
+# Kattokartta - vaalea ja selkeä teema
 
 Muutokset:
-- Sovellus muutettu tummateemaiseksi.
-- Tummat paneelit, hakukenttä, hakuehdotukset ja ennustekortit.
-- Karttaa tummennettu hieman, jotta säävärit erottuvat paremmin.
-- Kirjautumissivu muutettu tummaksi.
-- PWA/theme-color vaihdettu tummaksi.
-- Mukana edelleen hakuehdotukset heti hakukentän alla ja kosteusraja 78 %.
+- Palautettu vaaleampi, yksinkertaisempi teema.
+- Käytettävyyttä painotettu: vaaleat paneelit, selkeä kontrasti ja vähemmän hälyä.
+- Poistettu kartan päältä teksti: "Ps. Pirkanmaa löytyy asetuksista".
+- Hakuehdotukset säilyvät heti hakukentän alapuolella.
+- Kosteusraja 78 % säilyy.
+- Haku ja hakuehdotukset säilyvät mukana.
 
 Render-asetukset:
 

@@ -803,10 +803,6 @@ export default function App() {
         )}
         </div>
       </div>
-      <div className="map-hint">
-        Ps. Pirkanmaa löytyy asetuksista
-      </div>
-
 <MapContainer
         key={selectedArea}
         center={center}
