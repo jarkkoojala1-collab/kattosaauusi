@@ -86,16 +86,32 @@ function SafeRadarZoom({ enabled, activeRadarArea, refreshKey }) {
       return;
     }
 
-    // Sadetutka toimii luotettavimmin, kun näkymä pidetään yksinkertaisena:
-    // rajattu alue, kiinteä aloituszoom ja tiukka min/max zoom.
     map.setMinZoom(RADAR_MIN_ZOOM);
     map.setMaxZoom(RADAR_MAX_ZOOM);
     map.setMaxBounds(activeRadarArea.bounds);
-    map.setView(activeRadarArea.center, activeRadarArea.zoom, { animate: false });
+
+    const safeZoom = Math.min(activeRadarArea.zoom, RADAR_MAX_ZOOM);
+    map.setView(activeRadarArea.center, safeZoom, { animate: false });
+
+    const keepSafeZoom = () => {
+      if (map.getZoom() > RADAR_MAX_ZOOM) {
+        map.setZoom(RADAR_MAX_ZOOM, { animate: false });
+      }
+      if (map.getZoom() < RADAR_MIN_ZOOM) {
+        map.setZoom(RADAR_MIN_ZOOM, { animate: false });
+      }
+    };
+
+    map.on("zoomend", keepSafeZoom);
 
     setTimeout(() => {
+      keepSafeZoom();
       map.invalidateSize({ animate: false });
     }, 120);
+
+    return () => {
+      map.off("zoomend", keepSafeZoom);
+    };
   }, [enabled, activeRadarArea, refreshKey, map]);
 
   return null;
@@ -276,7 +292,7 @@ function isInsideArea(point, area) {
 
 
 const RADAR_MIN_ZOOM = 5;
-const RADAR_MAX_ZOOM = 8;
+const RADAR_MAX_ZOOM = 7;
 
 const RADAR_AREA_CONFIG = {
   uusimaa: {
@@ -927,8 +943,7 @@ export default function App() {
   return (
     <div className={`app-shell ${rainMode ? "rain-mode-active" : ""}`}>
       <div className="topbar">
-        <div className="topbar-title"><img src="/logo.png" alt="" /> Kattosää · {selectedArea === "pirkanmaa" ? "Pirkanmaa" : "Uusimaa"}</div>
-        {autoAreaMessage && (
+{autoAreaMessage && (
           <div className="auto-area-message">
             {autoAreaMessage}
             <button type="button" onClick={() => setAutoAreaMessage("")}>×</button>

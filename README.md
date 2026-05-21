@@ -1,17 +1,14 @@
-# Kattokartta - sadetutkan kartta ja asetukset korjattu
+# Kattokartta - sadetutka zoom ja mobiilitopbar korjattu
 
 Korjattu:
-- Sadetutkassa ei enää näy isoa vaaleaa suorakulmiota kartan päällä.
-- Sadetutkan oma karttapohja täyttää koko näkymän.
-- Sadetutkan tiilikerroksistä poistettu bounds-rajaus, joka aiheutti suorakulmaisen laatikon.
-- Asetuksista poistettu erillinen Sadetutka-valinta.
-- Sadetutkaa ohjataan vain yläpalkin Sadetutka / Pinnoituskartta -napista.
-- Sadetutkan aluekohtainen keskitys säilyy:
-  - Uusimaa / Etelä-Suomi
-  - Pirkanmaa / Tampereen seutu
-- Sadetutkan alapalkki säilyy mukana.
-- Mobiilioptimoinnit säilyvät mukana.
-- Pinnoituskartta toimii edelleen normaalisti.
+- Sadetutkan lähin zoom-taso poistettu käytöstä.
+- Sadetutkan maksimizoom on nyt 7.
+- Käyttäjä ei pääse zoomaamaan siihen tasoon, jossa sadetutkakerros ei näy oikein.
+- Yläkulman Kattosää · Uusimaa/Pirkanmaa -otsikko poistettu näkyvistä.
+- Puhelimella yläpalkin painikkeille jää enemmän tilaa.
+- Mobiilissa yläpalkin painikkeet asetellaan tasaisesti neljään sarakkeeseen.
+- Sadetutkan karttapohjakorjaus ja asetuksista poistettu Sadetutka-valinta säilyvät mukana.
+- Pinnoituskartassa normaali zoomaus säilyy.
 
 Render-asetukset:
 

@@ -2628,3 +2628,44 @@ input::placeholder {
 .settings-field-radar {
   display: none !important;
 }
+
+
+/* Sadetutkan lähin zoom-taso poistettu käytöstä */
+.rain-mode-active .leaflet-container {
+  cursor: grab;
+}
+
+
+/* Mobiilitopbar: otsikko poistettu, painikkeille enemmän tilaa */
+.topbar {
+  justify-content: flex-end !important;
+}
+
+.topbar-actions {
+  margin-left: auto;
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    padding: 7px !important;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 6px !important;
+  }
+
+  .topbar-actions button {
+    width: 100%;
+    min-width: 0 !important;
+    padding: 8px 6px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+  }
+
+  .auto-area-message {
+    top: 58px !important;
+  }
+}
