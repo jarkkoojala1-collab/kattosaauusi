@@ -75,6 +75,29 @@ function MapSizeFixer({ triggerKey }) {
   return null;
 }
 
+function RadarZoomLimiter({ enabled }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!enabled) {
+      map.setMaxZoom(18);
+      return;
+    }
+
+    // RainViewerin tutkatiilet eivät näy luotettavasti kaikilla suurilla zoomeilla.
+    // Rajoitetaan sadetutkatilassa zoom turvalliseen tasoon ja skaalataan lähin toimiva tiili.
+    map.setMaxZoom(10);
+
+    if (map.getZoom() > 10) {
+      map.setZoom(10, { animate: false });
+    }
+
+    setTimeout(() => map.invalidateSize({ animate: false }), 80);
+  }, [map, enabled]);
+
+  return null;
+}
+
 
 function formatRainTime(iso) {
   if (!iso) return "ei näkyvissä";
@@ -929,6 +952,7 @@ export default function App() {
             <div>
               <strong>Sadetutka</strong>
               <span>Viimeiset 3 h + lähisadearvio</span>
+              <small>Sadetutkassa zoom on rajoitettu toimiville tasoille.</small>
             </div>
             <button type="button" onClick={() => loadRainNowcast()} disabled={rainLoading}>
               {rainLoading ? "Haetaan..." : "Päivitä"}
@@ -995,6 +1019,7 @@ export default function App() {
         center={center}
         zoom={8}
         minZoom={7}
+        maxZoom={rainMode ? 10 : 18}
         maxBounds={mapBounds}
         className="map"
         zoomControl={false}
@@ -1009,7 +1034,9 @@ export default function App() {
           areaZoom={activeArea.zoom}
         />
 
-        <MapSizeFixer triggerKey={`${selectedArea}-${selectedTimeKey}-${showPanel}-${mapRefreshKey}`} />
+        <MapSizeFixer triggerKey={`${selectedArea}-${selectedTimeKey}-${showPanel}-${mapRefreshKey}-${rainMode}`} />
+
+        <RadarZoomLimiter enabled={rainMode} />
 
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
@@ -1082,8 +1109,15 @@ export default function App() {
           <TileLayer
             key={radarUrl}
             url={radarUrl}
-            opacity={rainMode ? 0.68 : 0.52}
+            opacity={rainMode ? 0.78 : 0.56}
             zIndex={650}
+            maxNativeZoom={10}
+            maxZoom={10}
+            minNativeZoom={0}
+            tileSize={256}
+            keepBuffer={4}
+            updateWhenIdle={false}
+            updateWhenZooming={false}
             attribution='Sadetutka &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
           />
         )}

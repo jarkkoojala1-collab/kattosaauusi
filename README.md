@@ -1,23 +1,12 @@
-# Kattokartta - huoltotila kirjautumisella
+# Kattokartta - sadetutkan zoom korjattu
 
-Lisätty:
-- Sivusto on kirjautumisen takana.
-- Kirjautumissivu kertoo, että sivusto on huoltotilassa / suljetussa testikäytössä.
-- Oletustunnus:
-  Käyttäjätunnus: kattosaa
-  Salasana: pinnoitus
-
-Renderissä voit vaihtaa tunnukset Environment Variables -kohdassa:
-
-KATTOSAA_USER
-KATTOSAA_PASSWORD
-
-Esimerkiksi:
-KATTOSAA_USER = omaadmin
-KATTOSAA_PASSWORD = vahvasalasana
-
-Tärkeää:
-Tämä on kevyt huolto-/testikäyttölukitus. Se ei ole vielä varsinainen yrityskäyttäjien tietoturvamalli tai Supabase/Clerk-kirjautuminen.
+Korjattu:
+- Sadetutka ei enää pyydä toimimattomia suuria zoom-tasoja.
+- Sadetutkatilassa kartan maksimizoom rajoitetaan tasoon 10.
+- Jos käyttäjä avaa sadetutkan liian suurella zoomilla, kartta palautetaan automaattisesti zoomiin 10.
+- Sadetutkakerrokselle lisätty maxNativeZoom=10 ja maxZoom=10.
+- Sadetutkan opacityä nostettu, jotta sateet erottuvat paremmin.
+- Pinnoituskarttaan palatessa normaali zoom palautuu käyttöön.
 
 Render-asetukset:
 
