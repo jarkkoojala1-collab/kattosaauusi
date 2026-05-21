@@ -75,10 +75,31 @@ function MapSizeFixer({ triggerKey }) {
   return null;
 }
 
+
+function formatRainTime(iso) {
+  if (!iso) return "ei näkyvissä";
+  return new Date(iso).toLocaleTimeString("fi-FI", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function rainRiskLabel(risk) {
+  if (risk === "korkea") return "Korkea";
+  if (risk === "keskitaso") return "Keskitaso";
+  return "Matala";
+}
+
+function rainRiskClass(risk) {
+  if (risk === "korkea") return "rain-high";
+  if (risk === "keskitaso") return "rain-medium";
+  return "rain-low";
+}
+
 function getColor(point) {
   if (!point) return "#94a3b8";
   if (point.ok) return "#16a34a";
-  if (point.score >= 70) return "#f59e0b";
+  if ((point.score ?? 0) >= 60) return "#f59e0b";
   return "#dc2626";
 }
 
@@ -142,10 +163,29 @@ function isForecastDayHour(iso) {
   return h >= 6 && h <= 21;
 }
 
+
+function pickNearestHourlyRow(rows, targetTime = new Date()) {
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+
+  const target = new Date(targetTime).getTime();
+  let best = rows[0];
+  let bestDiff = Number.POSITIVE_INFINITY;
+
+  for (const row of rows) {
+    const diff = Math.abs(new Date(row.time).getTime() - target);
+    if (diff < bestDiff) {
+      best = row;
+      bestDiff = diff;
+    }
+  }
+
+  return best;
+}
+
 function coatingClass(row) {
   if (!row) return "";
   if (row.ok) return "coating-good";
-  if ((row.score ?? 0) >= 70) return "coating-warn";
+  if ((row.score ?? 0) >= 60) return "coating-warn";
   return "coating-bad";
 }
 
@@ -243,6 +283,10 @@ export default function App() {
   const [radarIndex, setRadarIndex] = useState(0);
   const [radarPlaying, setRadarPlaying] = useState(false);
   const [radarError, setRadarError] = useState("");
+  const [rainMode, setRainMode] = useState(false);
+  const [rainNowcast, setRainNowcast] = useState(null);
+  const [rainLoading, setRainLoading] = useState(false);
+  const [rainError, setRainError] = useState("");
 
   const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : "";
 
@@ -414,6 +458,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // Sadetutka-tila hakee lähisade-ennusteen valitulle paikalle / omalle sijainnille.
+    if (!rainMode) return;
+    loadRainNowcast();
+  }, [rainMode, selectedPlace?.lat, selectedPlace?.lon, userLocation?.lat, userLocation?.lon, selectedArea]);
+
+  useEffect(() => {
     if (!radarPlaying || !radarFrames.length) return;
     const timer = setInterval(() => {
       setRadarIndex((current) => (current + 1) % radarFrames.length);
@@ -513,8 +563,30 @@ export default function App() {
       throw new Error(result.error || "Tuntiennustetta ei voitu hakea");
     }
 
-    setHourlyForecast(result.hourly || []);
+    const hourly = result.hourly || [];
+    const currentRow = pickNearestHourlyRow(hourly, new Date());
+
+    setHourlyForecast(hourly);
     setForecastSource(result.source || "");
+
+    if (currentRow) {
+      setSelectedPlace((current) => {
+        if (!current) return current;
+
+        return {
+          ...current,
+          name: result.name || current.name,
+          lat: Number(result.lat ?? current.lat),
+          lon: Number(result.lon ?? current.lon),
+          time: currentRow.time,
+          weather: currentRow.weather,
+          ok: currentRow.ok,
+          score: currentRow.score,
+          source: result.source || current.source,
+          distanceKm: result.distanceKm ?? current.distanceKm
+        };
+      });
+    }
   }
 
 
@@ -719,6 +791,39 @@ export default function App() {
     }
   }
 
+  async function loadRainNowcast() {
+    const target =
+      selectedPlace && hasValidCoordinates(selectedPlace)
+        ? selectedPlace
+        : userLocation
+          ? { name: "Oma sijainti", lat: userLocation.lat, lon: userLocation.lon }
+          : { name: activeArea.centerName, lat: activeArea.center[0], lon: activeArea.center[1] };
+
+    setRainLoading(true);
+    setRainError("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/rain-nowcast?lat=${encodeURIComponent(target.lat)}&lon=${encodeURIComponent(target.lon)}`
+      );
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || result.details || "Lähisadetta ei voitu hakea");
+      }
+
+      setRainNowcast({
+        ...result,
+        placeName: target.name
+      });
+    } catch (error) {
+      setRainError(error.message);
+      setRainNowcast(null);
+    } finally {
+      setRainLoading(false);
+    }
+  }
+
   const radarUrl =
     showRadar && selectedRadarFrame && radarHost
       ? `${radarHost}${selectedRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
@@ -730,9 +835,10 @@ export default function App() {
         <div className="login-screen">
           <div className="login-card">
             <div className="login-badge"><img src="/logo.png" alt="" /> Kattosää</div>
-            <h1>Tervetuloa Kattosäähän</h1>
+            <div className="huoltokatko-note">Huoltotila / suljettu testikäyttö</div>
+            <h1>Kattosää on huoltotilassa</h1>
             <p>
-              Kirjaudu sisään ja tarkista työmaiden sääikkunat kattopinnoitusta varten.
+              Sivusto on väliaikaisesti suljettu. Pääsy on vain testikäyttäjille ja ylläpidolle.
             </p>
 
 
@@ -746,10 +852,10 @@ export default function App() {
                 >
                   ×
                 </button>
-                <div className="password-popup-title">Väliaikainen kirjautumistieto</div>
+                <div className="password-popup-title">Huoltotilan kirjautuminen</div>
                 <div className="password-popup-text">
-                  Käyttäjätunnus: <strong>admin</strong><br />
-                  Salasana: <strong>kattosaa</strong>
+                  Käyttäjätunnus: <strong>kattosaa</strong><br />
+                  Salasana: <strong>pinnoitus</strong>
                 </div>
               </div>
             )}
@@ -758,7 +864,7 @@ export default function App() {
               <label>Käyttäjätunnus<input
                   value={loginUser}
                   onChange={(event) => setLoginUser(event.target.value)}
-                  placeholder="käyttäjätunnus"
+                  placeholder="Käyttäjätunnus"
                   autoComplete="username"
                 />
               </label>
@@ -766,7 +872,7 @@ export default function App() {
               <label>Salasana<input
                   value={loginPassword}
                   onChange={(event) => setLoginPassword(event.target.value)}
-                  placeholder="salasana"
+                  placeholder="Salasana"
                   type="password"
                   autoComplete="current-password"
                 />
@@ -793,6 +899,19 @@ export default function App() {
           <button className="ghost-location-button" onClick={useOwnLocation}>
             {locating ? "Haetaan sijaintia..." : "Oma sijainti"}
           </button>
+          <button
+            className={`ghost-location-button radar-mode-button ${rainMode ? "active" : ""}`}
+            onClick={() => {
+              setRainMode((value) => {
+                const next = !value;
+                setShowRadar(next);
+                setRadarPlaying(next);
+                return next;
+              });
+            }}
+          >
+            {rainMode ? "Pinnoituskartta" : "Sadetutka"}
+          </button>
           <button className="ghost-location-button refresh-button" onClick={refreshForecast}>
             Päivitä
           </button>
@@ -803,6 +922,74 @@ export default function App() {
         )}
         </div>
       </div>
+
+      {rainMode && (
+        <div className="rain-radar-panel">
+          <div className="rain-radar-head">
+            <div>
+              <strong>Sadetutka</strong>
+              <span>Viimeiset 3 h + lähisadearvio</span>
+            </div>
+            <button type="button" onClick={() => loadRainNowcast()} disabled={rainLoading}>
+              {rainLoading ? "Haetaan..." : "Päivitä"}
+            </button>
+          </div>
+
+          <div className="radar-actions compact">
+            <button
+              type="button"
+              onClick={() => setRadarPlaying((value) => !value)}
+              disabled={!radarFrames.length}
+            >
+              {radarPlaying ? "Tauko" : "Toista"}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setRadarIndex((current) => (current <= 0 ? radarFrames.length - 1 : current - 1))
+              }
+              disabled={!radarFrames.length}
+            >
+              ◀
+            </button>
+            <button
+              type="button"
+              onClick={() => setRadarIndex((current) => (current + 1) % radarFrames.length)}
+              disabled={!radarFrames.length}
+            >
+              ▶
+            </button>
+            <span>{selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ei tutkakuvaa"}</span>
+          </div>
+
+          {rainNowcast && (
+            <div className={`rain-summary ${rainRiskClass(rainNowcast.summary?.risk)}`}>
+              <div>
+                <span>Kohde</span>
+                <strong>{rainNowcast.placeName || "Valittu sijainti"}</strong>
+              </div>
+              <div>
+                <span>Saderiski 2 h</span>
+                <strong>{rainRiskLabel(rainNowcast.summary?.risk)}</strong>
+              </div>
+              <div>
+                <span>Ensimmäinen sade</span>
+                <strong>{formatRainTime(rainNowcast.summary?.firstRainAt)}</strong>
+              </div>
+              <div>
+                <span>Max sade</span>
+                <strong>{(rainNowcast.summary?.maxPrecipitationRate ?? 0).toFixed(1)} mm/h</strong>
+              </div>
+              <p>{rainNowcast.summary?.recommendation}</p>
+              <small>Lähde: {rainNowcast.source}</small>
+            </div>
+          )}
+
+          {rainError && <div className="rain-error">{rainError}</div>}
+          {radarError && <div className="rain-error">{radarError}</div>}
+        </div>
+      )}
+
 <MapContainer
         key={selectedArea}
         center={center}
@@ -833,7 +1020,7 @@ export default function App() {
           maxNativeZoom={19}
         />
 
-        {showColorAreas &&
+        {!rainMode && showColorAreas &&
           points.map((point) => {
             const color = getColor(point);
             return (
@@ -853,7 +1040,7 @@ export default function App() {
             );
           })}
 
-        {points.map((point, index) => {
+        {!rainMode && points.map((point, index) => {
           const color = getColor(point);
           return (
             <CircleMarker
@@ -895,7 +1082,7 @@ export default function App() {
           <TileLayer
             key={radarUrl}
             url={radarUrl}
-            opacity={0.52}
+            opacity={rainMode ? 0.68 : 0.52}
             zIndex={650}
             attribution='Sadetutka &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
           />
@@ -1064,8 +1251,6 @@ export default function App() {
             </form>
 
             <section className="summary-strip">
-              <Stat label="Valittu aika" value={selectedTime ? formatTime(selectedTime.time) : "-"} />
-              <Stat label="Koko alue OK" value={`${okPercent}%`} />
               <Stat label="Paikkoja kartalla" value={forecast?.placeCount ?? "-"} />
               <Stat label="Rajaus" value={selectedArea === "pirkanmaa" ? "150 km Tampereelta" : "150 km Nurmijärveltä"} />
             </section>
@@ -1090,7 +1275,7 @@ export default function App() {
                 <div className={`current-forecast-box large ${coatingClass(selectedPlace)}`}>
                   <div className="current-icon">{getWeatherIcon(selectedPlace.weather)}</div>
                   <div className="current-main">
-                    <div className="current-label">Valittu hetki</div>
+                    <div className="current-label">Nykyhetken ennuste</div>
                     <div className="current-temp">{selectedPlace.weather?.temp ?? "-"} °C</div>
                   </div>
                   <div className="current-details">

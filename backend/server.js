@@ -192,11 +192,11 @@ function pickNearestForecast(forecasts, targetTime) {
   return best;
 }
 
-async function fetchWithTimeout(url, timeoutMs = 4500) {
+async function fetchWithTimeout(url, timeoutMs = 4500, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { signal: controller.signal });
+    return await fetch(url, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
@@ -475,6 +475,161 @@ function makeHourlyRows(forecasts) {
 }
 
 
+
+const nowcastCache = new Map();
+const NOWCAST_CACHE_DURATION_MS = 5 * 60 * 1000;
+
+async function fetchMetNowcast(lat, lon) {
+  const roundedLat = Number(lat).toFixed(4);
+  const roundedLon = Number(lon).toFixed(4);
+  const cacheKey = `${roundedLat},${roundedLon}`;
+  const cached = nowcastCache.get(cacheKey);
+
+  if (cached && Date.now() - cached.time < NOWCAST_CACHE_DURATION_MS) {
+    return cached.value;
+  }
+
+  const url =
+    "https://api.met.no/weatherapi/nowcast/2.0/complete" +
+    `?lat=${encodeURIComponent(roundedLat)}` +
+    `&lon=${encodeURIComponent(roundedLon)}`;
+
+  const response = await fetchWithTimeout(url, 6000, {
+    headers: {
+      "User-Agent": "Kattosaa/1.0 jarkko.ojala1@gmail.com"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`MET Norway nowcast status ${response.status}`);
+  }
+
+  const data = await response.json();
+  const rows = (data?.properties?.timeseries || []).slice(0, 24).map((item) => {
+    const details = item?.data?.instant?.details || {};
+    const next1h = item?.data?.next_1_hours?.details || {};
+
+    const precipitationRate =
+      details.precipitation_rate ??
+      details.precipitation_amount ??
+      next1h.precipitation_amount ??
+      0;
+
+    return {
+      time: item.time,
+      precipitationRate: Number(precipitationRate) || 0,
+      airTemperature: details.air_temperature,
+      source: "MET Norway Nowcast"
+    };
+  });
+
+  if (!rows.length) {
+    throw new Error("MET Norway nowcast returned no values");
+  }
+
+  const result = {
+    source: "MET Norway Nowcast / api.met.no",
+    updatedAt: new Date().toISOString(),
+    rows
+  };
+
+  nowcastCache.set(cacheKey, { time: Date.now(), value: result });
+  return result;
+}
+
+function summarizeRainRisk(rows) {
+  const nextTwoHours = rows.slice(0, 12);
+  const rainyRows = nextTwoHours.filter((row) => row.precipitationRate > 0.05);
+  const heavyRows = nextTwoHours.filter((row) => row.precipitationRate >= 1);
+
+  let risk = "matala";
+  let recommendation = "Sadetta ei näy lähitunneilla. Pinnoituksen voi arvioida normaalien säärajojen mukaan.";
+
+  if (heavyRows.length > 0) {
+    risk = "korkea";
+    recommendation = "Sadetta näyttää olevan tulossa lähitunneille. Älä aloita riskialtista pinnoitusta ilman uutta tarkistusta.";
+  } else if (rainyRows.length > 0) {
+    risk = "keskitaso";
+    recommendation = "Lähitunneilla näkyy sadekuurojen mahdollisuus. Tarkista tilanne uudelleen ennen pitkää työvaihetta.";
+  }
+
+  const firstRain = rainyRows[0];
+
+  return {
+    risk,
+    firstRainAt: firstRain?.time || null,
+    maxPrecipitationRate: Math.max(0, ...nextTwoHours.map((row) => row.precipitationRate || 0)),
+    rainySlots: rainyRows.length,
+    recommendation
+  };
+}
+
+
+
+app.get("/api/rain-nowcast", async (req, res) => {
+  try {
+    let lat = Number(req.query.lat);
+    let lon = Number(req.query.lon);
+    const city = String(req.query.city || "").trim();
+
+    if ((!Number.isFinite(lat) || !Number.isFinite(lon)) && city) {
+      const place = await geocodeCity(city);
+      lat = Number(place.lat);
+      lon = Number(place.lon);
+    }
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      return res.status(400).json({ error: "Sijainti puuttuu" });
+    }
+
+    const result = await fetchMetNowcast(lat, lon);
+    const summary = summarizeRainRisk(result.rows);
+
+    res.json({
+      lat,
+      lon,
+      source: result.source,
+      updatedAt: result.updatedAt,
+      summary,
+      rows: result.rows
+    });
+  } catch (error) {
+    console.error("Rain nowcast error:", error.message);
+
+    // Fallback: käytetään olemassa olevaa ennustedataa, jos MET nowcast ei onnistu.
+    try {
+      const lat = Number(req.query.lat);
+      const lon = Number(req.query.lon);
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        throw error;
+      }
+
+      const forecast = await fetchPointForecast(lat, lon);
+      const rows = (forecast.forecasts || []).slice(0, 12).map((weather) => ({
+        time: weather.time,
+        precipitationRate: Number(weather.precipitation || 0),
+        airTemperature: weather.temp,
+        source: forecast.source
+      }));
+
+      res.json({
+        lat,
+        lon,
+        source: `${forecast.source} lähisadevaralähde`,
+        updatedAt: new Date().toISOString(),
+        summary: summarizeRainRisk(rows),
+        rows
+      });
+    } catch {
+      res.status(500).json({
+        error: "Lähisadetta ei voitu hakea",
+        details: error.message
+      });
+    }
+  }
+});
+
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
@@ -673,18 +828,21 @@ const LOGIN_PASSWORD = process.env.LOGIN_PASSWORD || "kattosaa";
 const LOGIN_TOKEN = process.env.LOGIN_TOKEN || "kattokartta-local-token";
 
 app.post("/api/login", (req, res) => {
-  const { username, password } = req.body || {};
+  const username = String(req.body?.username || "").trim();
+  const password = String(req.body?.password || "");
 
-  if (username === LOGIN_USER && password === LOGIN_PASSWORD) {
+  const validUsername = process.env.KATTOSAA_USER || "kattosaa";
+  const validPassword = process.env.KATTOSAA_PASSWORD || "pinnoitus";
+
+  if (username === validUsername && password === validPassword) {
     return res.json({
-      ok: true,
-      token: LOGIN_TOKEN,
-      user: username
+      token: "kattosaa-maintenance-access",
+      username,
+      mode: "maintenance"
     });
   }
 
-  return res.status(401).json({
-    ok: false,
+  res.status(401).json({
     error: "Väärä käyttäjätunnus tai salasana"
   });
 });

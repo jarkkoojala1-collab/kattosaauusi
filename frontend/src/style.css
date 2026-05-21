@@ -1780,3 +1780,198 @@ input::placeholder {
 .map-hint {
   display: none !important;
 }
+
+
+/* Selkeä välitilan keltainen keli */
+.timeline-hour.warn,
+.weather-table-row.coating-warn,
+.current-forecast-box.coating-warn,
+.status-pill.coating-warn {
+  background: #fff6d6 !important;
+  border-color: #facc15 !important;
+  color: #854d0e !important;
+}
+
+
+/* Sadetutka v1 */
+.radar-mode-button.active {
+  background: linear-gradient(135deg, #0f4c81 0%, #2563eb 100%) !important;
+  color: white !important;
+}
+
+.rain-radar-panel {
+  position: absolute;
+  z-index: 1400;
+  left: 14px;
+  top: 78px;
+  width: min(420px, calc(100vw - 28px));
+  padding: 12px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(191, 219, 254, 0.95);
+  box-shadow: 0 20px 54px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(14px);
+}
+
+.rain-radar-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.rain-radar-head strong,
+.rain-radar-head span {
+  display: block;
+}
+
+.rain-radar-head strong {
+  color: var(--text);
+  font-size: 17px;
+}
+
+.rain-radar-head span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rain-radar-head button,
+.radar-actions.compact button {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 10px;
+  font-weight: 950;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+}
+
+.rain-radar-head button:disabled,
+.radar-actions.compact button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.radar-actions.compact {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.radar-actions.compact span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.rain-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  border-radius: 20px;
+  padding: 10px;
+  border: 1px solid #dbeafe;
+  background: #f8fafc;
+}
+
+.rain-summary > div {
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.rain-summary span,
+.rain-summary small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.rain-summary strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.rain-summary p {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 750;
+}
+
+.rain-summary small {
+  grid-column: 1 / -1;
+}
+
+.rain-summary.rain-low {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+
+.rain-summary.rain-medium {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.rain-summary.rain-high {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.rain-error {
+  margin-top: 8px;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: #fff1f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+@media (max-width: 760px) {
+  .rain-radar-panel {
+    top: 66px;
+    left: 8px;
+    width: calc(100vw - 16px);
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+
+  .rain-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Huoltotila / suljettu kirjautuminen */
+.huoltokatko-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.login-card h1 {
+  margin-top: 6px;
+}
+
+.login-card p {
+  max-width: 420px;
+}
