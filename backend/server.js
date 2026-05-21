@@ -566,6 +566,97 @@ function summarizeRainRisk(rows) {
 
 
 
+
+async function fetchRainForecastGrid(areaId = "uusimaa") {
+  const area = getArea(areaId);
+  const places = getPlacesForArea(area.id)
+    .filter((place) => Number.isFinite(Number(place.lat)) && Number.isFinite(Number(place.lon)))
+    .slice(0, 40);
+
+  const rowsByHour = [0, 1, 2].map((hour) => ({
+    hour,
+    time: null,
+    points: []
+  }));
+
+  const fetchOne = async (place) => {
+    try {
+      const nowcast = await fetchMetNowcast(place.lat, place.lon);
+      return {
+        place,
+        rows: nowcast.rows || [],
+        source: nowcast.source || "MET Norway Nowcast"
+      };
+    } catch (error) {
+      // Varalähteenä käytetään olemassa olevaa piste-ennustettä.
+      const forecast = await fetchPointForecast(place.lat, place.lon);
+      const rows = (forecast.forecasts || []).slice(0, 3).map((weather) => ({
+        time: weather.time,
+        precipitationRate: Number(weather.precipitation || 0),
+        airTemperature: weather.temp,
+        source: forecast.source
+      }));
+
+      return {
+        place,
+        rows,
+        source: `${forecast.source} varalähde`
+      };
+    }
+  };
+
+  const results = await Promise.allSettled(places.map(fetchOne));
+
+  for (const result of results) {
+    if (result.status !== "fulfilled") continue;
+
+    const { place, rows, source } = result.value;
+
+    rowsByHour.forEach((bucket, index) => {
+      const row = rows[index] || rows[0];
+      if (!row) return;
+
+      if (!bucket.time) bucket.time = row.time;
+
+      bucket.points.push({
+        name: place.name,
+        lat: Number(place.lat),
+        lon: Number(place.lon),
+        precipitation: Number(row.precipitationRate || 0),
+        temp: row.airTemperature,
+        source
+      });
+    });
+  }
+
+  return rowsByHour.map((bucket, index) => ({
+    ...bucket,
+    time: bucket.time || new Date(Date.now() + index * 60 * 60 * 1000).toISOString()
+  }));
+}
+
+
+
+app.get("/api/rain-forecast-map", async (req, res) => {
+  try {
+    const area = getArea(String(req.query.area || "uusimaa"));
+    const hours = await fetchRainForecastGrid(area.id);
+
+    res.json({
+      area: area.id,
+      source: "MET Norway Nowcast / avoin sade-ennuste",
+      hours
+    });
+  } catch (error) {
+    console.error("Rain forecast map error:", error.message);
+    res.status(500).json({
+      error: "Sade-ennustekarttaa ei voitu hakea",
+      details: error.message
+    });
+  }
+});
+
+
 app.get("/api/rain-nowcast", async (req, res) => {
   try {
     let lat = Number(req.query.lat);

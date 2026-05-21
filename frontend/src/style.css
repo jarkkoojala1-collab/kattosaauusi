@@ -2682,3 +2682,36 @@ input::placeholder {
   font-size: 12px;
   font-weight: 850;
 }
+
+
+/* Oikea sade-ennustekartta: ei toteutunut tutka */
+.rain-forecast-circle {
+  mix-blend-mode: multiply;
+}
+
+.rain-bottom-note,
+.rain-forecast-error {
+  margin-top: 6px;
+  padding: 7px 9px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.rain-bottom-note {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.rain-forecast-error {
+  background: #fff1f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+
+/* Korjattu sade-ennuste: pisteet perustuvat MET Norway Nowcastiin */
+.rain-mode-active .rain-forecast-circle {
+  mix-blend-mode: multiply;
+}

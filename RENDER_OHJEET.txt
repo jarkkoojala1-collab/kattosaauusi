@@ -1,16 +1,18 @@
-# Kattokartta - sade-ennuste seuraavat 2 h
+# Kattokartta - sade-ennuste korjattu
 
-Muutokset:
-- Sadetutkakartta ei enää käytä toteutuneita sadekuvia.
-- RainVieweristä käytetään nyt data.radar.nowcast -ennustekuvia.
-- Slideri alkaa ensimmäisestä ennustekuvasta ja näyttää tulevaa sadetta.
-- Jos ennustekuvia ei ole saatavilla, sovellus näyttää virheilmoituksen eikä näytä toteutunutta sadetta harhaanjohtavasti.
-- Yläpalkin nappiteksti muutettu selkeämmäksi: Sade-ennuste.
-- Alapalkkiin lisätty virheilmoituspaikka, jos ennustekuvia ei saada.
-- Muu mobiilioptimointi ja aluekohtainen keskitys säilyvät mukana.
-
-Huomio:
-RainViewerin nowcast-ennusteiden määrä ja aikaväli riippuvat palvelun kulloinkin palauttamasta datasta.
+Korjattu:
+- Sade-ennuste ei käytä RainViewerin toteutuneita tutkakuvia.
+- Sade-ennuste ei myöskään yritä näyttää RainViewerin nowcast-tiiliä.
+- Lisätty backend-reitti /api/rain-forecast-map.
+- Backend hakee ennusteen MET Norway Nowcastista alueen pisteille.
+- Ennuste näyttää 0–2 h:
+  - Nyt
+  - +1 h
+  - +2 h
+- Kartalle piirretään ennustettu sademäärä pisteittäin.
+- Jos MET Nowcast ei onnistu jollekin pisteelle, käytetään varalähteenä olemassa olevaa piste-ennustettä.
+- Slideri vaihtaa oikeaa ennustetuntia.
+- Tämä on nyt sade-ennustekartta, ei toteutunut sadetutka.
 
 Render-asetukset:
 

@@ -138,6 +138,25 @@ function rainRiskClass(risk) {
   return "rain-low";
 }
 
+
+function rainForecastColor(amount) {
+  const value = Number(amount || 0);
+  if (value >= 3) return "#ef4444";
+  if (value >= 1) return "#facc15";
+  if (value >= 0.2) return "#22c55e";
+  if (value > 0) return "#60a5fa";
+  return "#94a3b8";
+}
+
+function rainForecastRadius(amount) {
+  const value = Number(amount || 0);
+  if (value >= 3) return 24000;
+  if (value >= 1) return 20000;
+  if (value >= 0.2) return 16000;
+  if (value > 0) return 12000;
+  return 6500;
+}
+
 function getColor(point) {
   if (!point) return "#94a3b8";
   if (point.ok) return "#16a34a";
@@ -366,6 +385,9 @@ export default function App() {
   const [rainNowcast, setRainNowcast] = useState(null);
   const [rainLoading, setRainLoading] = useState(false);
   const [rainError, setRainError] = useState("");
+  const [rainForecastMap, setRainForecastMap] = useState([]);
+  const [rainForecastLoading, setRainForecastLoading] = useState(false);
+  const [rainForecastError, setRainForecastError] = useState("");
 
   const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : "";
 
@@ -527,44 +549,26 @@ export default function App() {
   }, [API_BASE, selectedArea, refreshKey]);
 
   useEffect(() => {
-    fetch("https://api.rainviewer.com/public/weather-maps.json")
-      .then((response) => {
-        if (!response.ok) throw new Error("Sade-ennustetta ei voitu hakea");
-        return response.json();
-      })
-      .then((data) => {
-        const nowcastFrames = data?.radar?.nowcast || [];
-        setRadarHost(data.host || "https://tilecache.rainviewer.com");
-
-        if (!nowcastFrames.length) {
-          setRadarFrames([]);
-          setRadarIndex(0);
-          throw new Error("Sadetutkan ennustekuvia ei ole juuri nyt saatavilla");
-        }
-
-        setRadarFrames(nowcastFrames);
-        setRadarIndex(0);
-        setRadarError("");
-      })
-      .catch((error) => setRadarError(error.message));
+    // Sade-ennustetila ei käytä toteutuneita RainViewer-tutkakuvia.
   }, []);
 
   useEffect(() => {
-    // Sadetutka seuraa valittua aluetta ja keskittää kartan uudelleen.
+    // Sade-ennuste seuraa valittua aluetta ja keskittää kartan uudelleen.
     if (!rainMode) return;
     setMapRefreshKey((value) => value + 1);
   }, [rainMode, selectedArea]);
 
   useEffect(() => {
-    // Sadetutka-tila hakee lähisade-ennusteen valitulle paikalle / omalle sijainnille.
+    // Sade-ennuste-tila hakee lähisade-ennusteen valitulle paikalle / omalle sijainnille.
     if (!rainMode) return;
     loadRainNowcast();
+    loadRainForecastMap();
   }, [rainMode, selectedPlace?.lat, selectedPlace?.lon, userLocation?.lat, userLocation?.lon, selectedArea]);
 
   useEffect(() => {
     if (!radarPlaying || !radarFrames.length) return;
     const timer = setInterval(() => {
-      setRadarIndex((current) => (current + 1) % radarFrames.length);
+      setRadarIndex((current) => (current + 1) % Math.max(1, rainForecastMap.length));
     }, 700);
     return () => clearInterval(timer);
   }, [radarPlaying, radarFrames.length]);
@@ -903,6 +907,35 @@ export default function App() {
     }
   }
 
+  async function loadRainForecastMap() {
+    setRainForecastLoading(true);
+    setRainForecastError("");
+
+    try {
+      const response = await fetch(`${API_BASE}/api/rain-forecast-map?area=${selectedArea}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || result.details || "Sade-ennustetta ei voitu hakea");
+      }
+
+      const hours = result.hours || [];
+      setRainForecastMap(hours);
+      setRadarIndex(0);
+      setRadarFrames(hours.map((item, index) => ({
+        time: Math.floor(new Date(item.time).getTime() / 1000),
+        path: `rain-forecast-${index}`
+      })));
+      setRainForecastError("");
+      setRadarError("");
+    } catch (error) {
+      setRainForecastMap([]);
+      setRainForecastError(error.message);
+    } finally {
+      setRainForecastLoading(false);
+    }
+  }
+
   async function loadRainNowcast() {
     const target =
       selectedPlace && hasValidCoordinates(selectedPlace)
@@ -994,7 +1027,7 @@ export default function App() {
             setMapRefreshKey((value) => value + 1);
           }}
         >
-          Keskitä sadekartta
+          Keskitä sade-ennustekartta
         </button>
       )}
 
@@ -1002,11 +1035,13 @@ export default function App() {
         <div className="rain-bottom-bar mobile-rain-bar">
           <div className="rain-mobile-header">
             <div>
-              <strong>Sade-ennuste</strong>
+              <strong>Sade-ennuste 0–2 h</strong>
               <span>{activeRadarArea.name}</span>
             </div>
             <span className="rain-time-pill">
-              {selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan"}
+              {rainForecastMap[radarIndex]
+                ? `${radarIndex === 0 ? "Nyt" : `+${radarIndex} h`} · ${formatTime(rainForecastMap[radarIndex].time)}`
+                : "Ladataan"}
             </span>
           </div>
 
@@ -1014,21 +1049,21 @@ export default function App() {
             className="rain-main-slider"
             type="range"
             min="0"
-            max={Math.max(0, radarFrames.length - 1)}
+            max={Math.max(0, rainForecastMap.length - 1)}
             value={radarIndex}
             onChange={(event) => {
               setRadarPlaying(false);
               setRadarIndex(Number(event.target.value));
             }}
-            disabled={!radarFrames.length}
+            disabled={!rainForecastMap.length}
             aria-label="Sade-ennusteen kellonaika"
           />
 
           <div className="rain-mobile-actions">
             <button
               type="button"
-              onClick={() => setRadarIndex((current) => (current <= 0 ? radarFrames.length - 1 : current - 1))}
-              disabled={!radarFrames.length}
+              onClick={() => setRadarIndex((current) => (current <= 0 ? rainForecastMap.length - 1 : current - 1))}
+              disabled={!rainForecastMap.length}
               aria-label="Edellinen tutkakuva"
             >
               ◀
@@ -1037,15 +1072,15 @@ export default function App() {
               type="button"
               className="rain-play-button"
               onClick={() => setRadarPlaying((value) => !value)}
-              disabled={!radarFrames.length}
-              aria-label={radarPlaying ? "Pysäytä sadetutka" : "Toista sadetutka"}
+              disabled={!rainForecastMap.length}
+              aria-label={radarPlaying ? "Pysäytä sade-ennuste" : "Toista sade-ennuste"}
             >
               {radarPlaying ? "Tauko" : "Toista"}
             </button>
             <button
               type="button"
-              onClick={() => setRadarIndex((current) => (current + 1) % radarFrames.length)}
-              disabled={!radarFrames.length}
+              onClick={() => setRadarIndex((current) => (current + 1) % Math.max(1, rainForecastMap.length))}
+              disabled={!rainForecastMap.length}
               aria-label="Seuraava tutkakuva"
             >
               ▶
@@ -1057,6 +1092,8 @@ export default function App() {
               <span><i className="rain-dot rain-dot-heavy"></i> kova</span>
             </div>
           </div>
+          {rainForecastLoading && <div className="rain-bottom-note">Haetaan sade-ennustetta...</div>}
+          {rainForecastError && <div className="rain-forecast-error">{rainForecastError}</div>}
           {radarError && <div className="rain-bottom-error">{radarError}</div>}
         </div>
       )}
@@ -1112,23 +1149,28 @@ export default function App() {
           />
         )}
 
-        {radarTileUrl && (
-          <TileLayer
-            key={radarTileUrl}
-            url={radarTileUrl}
-            opacity={0.84}
-            zIndex={650}
-            minZoom={RADAR_MIN_ZOOM}
-            maxZoom={RADAR_MAX_ZOOM}
-            maxNativeZoom={RADAR_MAX_ZOOM}
-            minNativeZoom={0}
-            tileSize={256}
-            keepBuffer={1}
-            updateWhenIdle={true}
-            updateWhenZooming={false}
-            attribution='Sadetutka &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
-          />
-        )}
+        {rainMode &&
+          rainForecastMap[radarIndex]?.points?.map((point) => {
+            const amount = Number(point.precipitation || 0);
+            if (!Number.isFinite(point.lat) || !Number.isFinite(point.lon)) return null;
+
+            return (
+              <Circle
+                className="rain-forecast-circle"
+                key={`rain-forecast-${radarIndex}-${point.name}-${point.lat}-${point.lon}`}
+                center={[point.lat, point.lon]}
+                radius={rainForecastRadius(amount)}
+                pathOptions={{
+                  color: rainForecastColor(amount),
+                  fillColor: rainForecastColor(amount),
+                  fillOpacity: amount > 0 ? 0.42 : 0.10,
+                  weight: amount > 0 ? 2 : 1,
+                  opacity: amount > 0 ? 0.85 : 0.25
+                }}
+                interactive={false}
+              />
+            );
+          })}
 
         {!rainMode && showColorAreas &&
           points.map((point) => {
@@ -1500,7 +1542,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setRadarPlaying((value) => !value)}
-                          disabled={!radarFrames.length}
+                          disabled={!rainForecastMap.length}
                         >
                           {radarPlaying ? "Tauko" : "Toista"}
                         </button>
@@ -1508,19 +1550,19 @@ export default function App() {
                           type="button"
                           onClick={() =>
                             setRadarIndex((current) =>
-                              current <= 0 ? radarFrames.length - 1 : current - 1
+                              current <= 0 ? rainForecastMap.length - 1 : current - 1
                             )
                           }
-                          disabled={!radarFrames.length}
+                          disabled={!rainForecastMap.length}
                         >
                           ◀
                         </button>
                         <button
                           type="button"
                           onClick={() =>
-                            setRadarIndex((current) => (current + 1) % radarFrames.length)
+                            setRadarIndex((current) => (current + 1) % Math.max(1, rainForecastMap.length))
                           }
-                          disabled={!radarFrames.length}
+                          disabled={!rainForecastMap.length}
                         >
                           ▶
                         </button>
@@ -1529,10 +1571,10 @@ export default function App() {
                       <input
                         type="range"
                         min="0"
-                        max={Math.max(0, radarFrames.length - 1)}
+                        max={Math.max(0, rainForecastMap.length - 1)}
                         value={radarIndex}
                         onChange={(event) => setRadarIndex(Number(event.target.value))}
-                        disabled={!radarFrames.length}
+                        disabled={!rainForecastMap.length}
                       />
 
                       <p className="radar-time">
