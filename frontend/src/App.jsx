@@ -529,14 +529,22 @@ export default function App() {
   useEffect(() => {
     fetch("https://api.rainviewer.com/public/weather-maps.json")
       .then((response) => {
-        if (!response.ok) throw new Error("Sadetutkaa ei voitu hakea");
+        if (!response.ok) throw new Error("Sade-ennustetta ei voitu hakea");
         return response.json();
       })
       .then((data) => {
-        const frames = data?.radar?.past || [];
+        const nowcastFrames = data?.radar?.nowcast || [];
         setRadarHost(data.host || "https://tilecache.rainviewer.com");
-        setRadarFrames(frames);
-        setRadarIndex(Math.max(0, frames.length - 1));
+
+        if (!nowcastFrames.length) {
+          setRadarFrames([]);
+          setRadarIndex(0);
+          throw new Error("Sadetutkan ennustekuvia ei ole juuri nyt saatavilla");
+        }
+
+        setRadarFrames(nowcastFrames);
+        setRadarIndex(0);
+        setRadarError("");
       })
       .catch((error) => setRadarError(error.message));
   }, []);
@@ -964,7 +972,7 @@ export default function App() {
               });
             }}
           >
-            {rainMode ? "Pinnoituskartta" : "Sadetutka"}
+            {rainMode ? "Pinnoituskartta" : "Sade-ennuste"}
           </button>
           <button className="ghost-location-button refresh-button" onClick={refreshForecast}>
             Päivitä
@@ -994,7 +1002,7 @@ export default function App() {
         <div className="rain-bottom-bar mobile-rain-bar">
           <div className="rain-mobile-header">
             <div>
-              <strong>Sadetutka</strong>
+              <strong>Sade-ennuste</strong>
               <span>{activeRadarArea.name}</span>
             </div>
             <span className="rain-time-pill">
@@ -1013,7 +1021,7 @@ export default function App() {
               setRadarIndex(Number(event.target.value));
             }}
             disabled={!radarFrames.length}
-            aria-label="Sadetutkan kellonaika"
+            aria-label="Sade-ennusteen kellonaika"
           />
 
           <div className="rain-mobile-actions">
@@ -1049,6 +1057,7 @@ export default function App() {
               <span><i className="rain-dot rain-dot-heavy"></i> kova</span>
             </div>
           </div>
+          {radarError && <div className="rain-bottom-error">{radarError}</div>}
         </div>
       )}
 <MapContainer
@@ -1529,7 +1538,7 @@ export default function App() {
                       <p className="radar-time">
                         {selectedRadarFrame
                           ? `Tutka: ${formatRadarTime(selectedRadarFrame.time)}`
-                          : "Tutkaa ladataan..."}
+                          : "Ennustetta ladataan..."}
                       </p>
 
                       {radarError && <p className="error-box">{radarError}</p>}

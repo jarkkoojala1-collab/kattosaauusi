@@ -1,14 +1,16 @@
-# Kattokartta - sadetutka zoom ja mobiilitopbar korjattu
+# Kattokartta - sade-ennuste seuraavat 2 h
 
-Korjattu:
-- Sadetutkan lähin zoom-taso poistettu käytöstä.
-- Sadetutkan maksimizoom on nyt 7.
-- Käyttäjä ei pääse zoomaamaan siihen tasoon, jossa sadetutkakerros ei näy oikein.
-- Yläkulman Kattosää · Uusimaa/Pirkanmaa -otsikko poistettu näkyvistä.
-- Puhelimella yläpalkin painikkeille jää enemmän tilaa.
-- Mobiilissa yläpalkin painikkeet asetellaan tasaisesti neljään sarakkeeseen.
-- Sadetutkan karttapohjakorjaus ja asetuksista poistettu Sadetutka-valinta säilyvät mukana.
-- Pinnoituskartassa normaali zoomaus säilyy.
+Muutokset:
+- Sadetutkakartta ei enää käytä toteutuneita sadekuvia.
+- RainVieweristä käytetään nyt data.radar.nowcast -ennustekuvia.
+- Slideri alkaa ensimmäisestä ennustekuvasta ja näyttää tulevaa sadetta.
+- Jos ennustekuvia ei ole saatavilla, sovellus näyttää virheilmoituksen eikä näytä toteutunutta sadetta harhaanjohtavasti.
+- Yläpalkin nappiteksti muutettu selkeämmäksi: Sade-ennuste.
+- Alapalkkiin lisätty virheilmoituspaikka, jos ennustekuvia ei saada.
+- Muu mobiilioptimointi ja aluekohtainen keskitys säilyvät mukana.
+
+Huomio:
+RainViewerin nowcast-ennusteiden määrä ja aikaväli riippuvat palvelun kulloinkin palauttamasta datasta.
 
 Render-asetukset:
 

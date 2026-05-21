@@ -2669,3 +2669,16 @@ input::placeholder {
     top: 58px !important;
   }
 }
+
+
+/* Sade-ennuste: virheilmoitus alapalkissa */
+.rain-bottom-error {
+  margin-top: 6px;
+  padding: 7px 9px;
+  border-radius: 12px;
+  background: #fff1f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  font-size: 12px;
+  font-weight: 850;
+}
