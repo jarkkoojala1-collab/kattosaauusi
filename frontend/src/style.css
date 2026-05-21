@@ -2418,3 +2418,213 @@ input::placeholder {
 .rain-mode-active .timeline-card {
   display: none !important;
 }
+
+
+/* Mobiilioptimointi sadetutkalle */
+.rain-mode-active .open-panel-button {
+  display: none !important;
+}
+
+.rain-recenter-button {
+  position: fixed;
+  z-index: 1650;
+  right: 12px;
+  bottom: 126px;
+  border: 1px solid rgba(191, 219, 254, 0.95);
+  border-radius: 999px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 950;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(12px);
+}
+
+.mobile-rain-bar {
+  border-radius: 24px !important;
+  padding: 10px 12px 11px !important;
+  width: min(680px, calc(100vw - 16px)) !important;
+}
+
+.rain-mobile-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.rain-mobile-header strong,
+.rain-mobile-header span {
+  display: block;
+}
+
+.rain-mobile-header strong {
+  color: #102033;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.rain-mobile-header span {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.rain-time-pill {
+  flex: 0 0 auto;
+  margin-top: 0 !important;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8 !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+}
+
+.rain-main-slider {
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  accent-color: #2563eb;
+  touch-action: pan-x;
+}
+
+.rain-mobile-actions {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rain-mobile-actions button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 950;
+}
+
+.rain-mobile-actions .rain-play-button {
+  width: auto;
+  height: auto;
+  min-width: 72px;
+  background: #2563eb;
+  color: white;
+}
+
+.rain-mobile-actions button:disabled {
+  opacity: 0.55;
+}
+
+.rain-mobile-actions .rain-mini-legend {
+  margin-top: 0;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.rain-mobile-actions .rain-mini-legend span {
+  font-size: 11px;
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .topbar-title {
+    font-size: 13px !important;
+    padding: 7px 9px !important;
+  }
+
+  .topbar-actions {
+    gap: 6px !important;
+  }
+
+  .topbar-actions button {
+    padding: 8px 9px !important;
+    font-size: 12px !important;
+  }
+
+  .rain-recenter-button {
+    right: 8px;
+    bottom: 118px;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .mobile-rain-bar {
+    bottom: max(7px, env(safe-area-inset-bottom)) !important;
+    width: calc(100vw - 10px) !important;
+    padding: 9px 10px 10px !important;
+    border-radius: 18px !important;
+  }
+
+  .rain-mobile-header {
+    margin-bottom: 5px;
+  }
+
+  .rain-mobile-header strong {
+    font-size: 13px;
+  }
+
+  .rain-time-pill {
+    font-size: 11px !important;
+    padding: 4px 7px;
+  }
+
+  .rain-mobile-actions {
+    grid-template-columns: auto auto auto;
+  }
+
+  .rain-mobile-actions .rain-mini-legend {
+    display: none;
+  }
+
+  .rain-mobile-actions button {
+    min-height: 36px;
+    padding: 7px 11px;
+  }
+
+  .rain-mobile-actions .rain-play-button {
+    min-width: 66px;
+  }
+}
+
+/* Sadetutkan kartasta rauhallisempi puhelimella */
+.rain-mode-active .leaflet-control-container {
+  display: none !important;
+}
+
+
+/* Sadetutkan karttanäkymän korjaus: ei suorakulmaista laatikkoa */
+.rain-mode-active .normal-map-base-hidden {
+  opacity: 0 !important;
+}
+
+.rain-mode-active .radar-base-layer {
+  opacity: 1 !important;
+  filter: saturate(0.75) contrast(0.98) brightness(1.02);
+}
+
+.rain-mode-active .leaflet-container {
+  background: #eaf2f8 !important;
+}
+
+.rain-mode-active .leaflet-tile-pane {
+  background: #eaf2f8 !important;
+}
+
+
+/* Asetusten sadetutka-valinta poistettu */
+.settings-radar-toggle,
+.radar-settings-toggle,
+.settings-field-radar {
+  display: none !important;
+}

@@ -75,7 +75,7 @@ function MapSizeFixer({ triggerKey }) {
   return null;
 }
 
-function SafeRadarZoom({ enabled, activeRadarArea }) {
+function SafeRadarZoom({ enabled, activeRadarArea, refreshKey }) {
   const map = useMap();
 
   useEffect(() => {
@@ -96,7 +96,7 @@ function SafeRadarZoom({ enabled, activeRadarArea }) {
     setTimeout(() => {
       map.invalidateSize({ animate: false });
     }, 120);
-  }, [enabled, activeRadarArea, map]);
+  }, [enabled, activeRadarArea, refreshKey, map]);
 
   return null;
 }
@@ -281,10 +281,10 @@ const RADAR_MAX_ZOOM = 8;
 const RADAR_AREA_CONFIG = {
   uusimaa: {
     name: "Etelä-Suomi",
-    center: [60.65, 24.95],
+    center: [60.6, 25.0],
     bounds: [
-      [59.55, 21.6],
-      [61.75, 28.2]
+      [58.6, 17.8],
+      [63.5, 33.0]
     ],
     zoom: 6
   },
@@ -292,8 +292,8 @@ const RADAR_AREA_CONFIG = {
     name: "Pirkanmaa",
     center: [61.5, 23.8],
     bounds: [
-      [60.65, 21.9],
-      [62.55, 25.9]
+      [59.4, 18.4],
+      [64.3, 30.0]
     ],
     zoom: 6
   }
@@ -954,7 +954,7 @@ export default function App() {
           <button className="ghost-location-button refresh-button" onClick={refreshForecast}>
             Päivitä
           </button>
-          {!showPanel && (
+          {!rainMode && !showPanel && (
           <button className="open-panel-button" onClick={() => setShowPanel(true)}>
             Avaa ennuste
           </button>
@@ -963,8 +963,53 @@ export default function App() {
       </div>
 
       {rainMode && (
-        <div className="rain-bottom-bar">
-          <div className="rain-bar-main">
+        <button
+          type="button"
+          className="rain-recenter-button"
+          onClick={() => {
+            setAreaMoveKey((value) => value + 1);
+            setMapRefreshKey((value) => value + 1);
+          }}
+        >
+          Keskitä sadekartta
+        </button>
+      )}
+
+      {rainMode && (
+        <div className="rain-bottom-bar mobile-rain-bar">
+          <div className="rain-mobile-header">
+            <div>
+              <strong>Sadetutka</strong>
+              <span>{activeRadarArea.name}</span>
+            </div>
+            <span className="rain-time-pill">
+              {selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan"}
+            </span>
+          </div>
+
+          <input
+            className="rain-main-slider"
+            type="range"
+            min="0"
+            max={Math.max(0, radarFrames.length - 1)}
+            value={radarIndex}
+            onChange={(event) => {
+              setRadarPlaying(false);
+              setRadarIndex(Number(event.target.value));
+            }}
+            disabled={!radarFrames.length}
+            aria-label="Sadetutkan kellonaika"
+          />
+
+          <div className="rain-mobile-actions">
+            <button
+              type="button"
+              onClick={() => setRadarIndex((current) => (current <= 0 ? radarFrames.length - 1 : current - 1))}
+              disabled={!radarFrames.length}
+              aria-label="Edellinen tutkakuva"
+            >
+              ◀
+            </button>
             <button
               type="button"
               className="rain-play-button"
@@ -972,32 +1017,21 @@ export default function App() {
               disabled={!radarFrames.length}
               aria-label={radarPlaying ? "Pysäytä sadetutka" : "Toista sadetutka"}
             >
-              {radarPlaying ? "⏸" : "▶"}
+              {radarPlaying ? "Tauko" : "Toista"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setRadarIndex((current) => (current + 1) % radarFrames.length)}
+              disabled={!radarFrames.length}
+              aria-label="Seuraava tutkakuva"
+            >
+              ▶
             </button>
 
-            <div className="rain-bar-slider">
-              <div className="rain-bar-time">
-                <strong>Sadetutka</strong>
-                <span>{selectedRadarFrame ? `${formatRadarTime(selectedRadarFrame.time)} · Zoom lukittu` : "Ladataan..."}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max={Math.max(0, radarFrames.length - 1)}
-                value={radarIndex}
-                onChange={(event) => {
-                  setRadarPlaying(false);
-                  setRadarIndex(Number(event.target.value));
-                }}
-                disabled={!radarFrames.length}
-              />
-            </div>
-
-            <div className="rain-bar-legend" aria-label="Sadeasteikko">
-              <span className="rain-dot rain-dot-light" title="Heikko sade"></span>
-              <span className="rain-dot rain-dot-medium" title="Kohtalainen sade"></span>
-              <span className="rain-dot rain-dot-heavy" title="Kova sade"></span>
-              <span className="rain-dot rain-dot-very-heavy" title="Erittäin kova sade"></span>
+            <div className="rain-mini-legend" aria-label="Sadeasteikko">
+              <span><i className="rain-dot rain-dot-light"></i> heikko</span>
+              <span><i className="rain-dot rain-dot-medium"></i> kohtalainen</span>
+              <span><i className="rain-dot rain-dot-heavy"></i> kova</span>
             </div>
           </div>
         </div>
@@ -1011,6 +1045,10 @@ export default function App() {
         maxBounds={rainMode ? activeRadarArea.bounds : mapBounds}
         className="map"
         zoomControl={false}
+        scrollWheelZoom={true}
+        doubleClickZoom={true}
+        touchZoom={true}
+        dragging={true}
       >
         <MapMover
           lat={selectedPlace?.lat}
@@ -1024,7 +1062,7 @@ export default function App() {
 
         <MapSizeFixer triggerKey={`${selectedArea}-${selectedTimeKey}-${showPanel}-${mapRefreshKey}-${rainMode}`} />
 
-        <SafeRadarZoom enabled={rainMode} activeRadarArea={activeRadarArea} />
+        <SafeRadarZoom enabled={rainMode} activeRadarArea={activeRadarArea} refreshKey={mapRefreshKey} />
 
         <TileLayer
           className={rainMode ? "normal-map-base-hidden" : ""}
@@ -1044,8 +1082,6 @@ export default function App() {
             minZoom={RADAR_MIN_ZOOM}
             maxZoom={RADAR_MAX_ZOOM}
             maxNativeZoom={RADAR_MAX_ZOOM}
-            bounds={activeRadarArea.bounds}
-            noWrap={true}
             keepBuffer={1}
             updateWhenIdle={true}
             updateWhenZooming={false}
@@ -1061,10 +1097,8 @@ export default function App() {
             minZoom={RADAR_MIN_ZOOM}
             maxZoom={RADAR_MAX_ZOOM}
             maxNativeZoom={RADAR_MAX_ZOOM}
-            minNativeZoom={RADAR_MIN_ZOOM}
+            minNativeZoom={0}
             tileSize={256}
-            bounds={activeRadarArea.bounds}
-            noWrap={true}
             keepBuffer={1}
             updateWhenIdle={true}
             updateWhenZooming={false}
@@ -1410,26 +1444,7 @@ export default function App() {
                       </button>
                     </div>
                   </div>
-
-                  <label className="switch-row">
-                    <input
-                      type="checkbox"
-                      checked={showColorAreas}
-                      onChange={(event) => setShowColorAreas(event.target.checked)}
-                    />
-                    <span>Näytä koko kartan värialueet</span>
-                  </label>
-
-                  <label className="switch-row">
-                    <input
-                      type="checkbox"
-                      checked={showRadar}
-                      onChange={(event) => setShowRadar(event.target.checked)}
-                    />
-                    <span>Näytä sadetutka</span>
-                  </label>
-
-                  <label className="switch-row">
+<label className="switch-row">
                     <input
                       type="checkbox"
                       checked={showNames}
