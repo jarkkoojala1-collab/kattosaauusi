@@ -2802,3 +2802,21 @@ input::placeholder {
   min-width: 72px;
   text-align: center;
 }
+
+
+/* FMI-tutka + oma liike-ennuste */
+.fmi-radar-overlay {
+  mix-blend-mode: multiply;
+  filter: saturate(1.15) contrast(1.05);
+}
+
+.fmi-radar-source {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #bbf7d0;
+  font-size: 11px;
+  font-weight: 900;
+}

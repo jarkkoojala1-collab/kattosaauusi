@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
+  ImageOverlay,
   Circle,
   Rectangle,
   CircleMarker,
@@ -496,6 +497,8 @@ export default function App() {
   const [rainFallbackSource, setRainFallbackSource] = useState("");
   const [rainFallbackStep, setRainFallbackStep] = useState({ lat: 0.28, lon: 0.42 });
   const [rainVisualMode, setRainVisualMode] = useState("loading");
+  const [fmiRadarFrames, setFmiRadarFrames] = useState([]);
+  const [fmiRadarSource, setFmiRadarSource] = useState("");
 
   const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : "";
 
@@ -532,13 +535,7 @@ export default function App() {
   const center = activeArea.center;
   const mapBounds = activeArea.bounds;
   const selectedRadarFrame = radarFrames[radarIndex];
-  const radarTileUrl =
-    rainMode &&
-    selectedRadarFrame?.path &&
-    radarHost &&
-    selectedRadarFrame.frameType === "radar-now"
-      ? `${radarHost}${selectedRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
-      : null;
+  const radarTileUrl = null;
 
   const timelineDays = useMemo(() => {
     const groups = [];
@@ -660,45 +657,9 @@ export default function App() {
   }, [API_BASE, selectedArea, refreshKey]);
 
   useEffect(() => {
-    fetch("https://api.rainviewer.com/public/weather-maps.json")
-      .then((response) => {
-        if (!response.ok) throw new Error("Tutkakuvaa ei voitu hakea");
-        return response.json();
-      })
-      .then((data) => {
-        const pastFrames = data?.radar?.past || [];
-        const latestPast = pastFrames[pastFrames.length - 1];
-        setRadarHost(data.host || "https://tilecache.rainviewer.com");
-
-        if (latestPast) {
-          setRadarFrames([
-            {
-              ...latestPast,
-              label: "Nyt · tutkakuva",
-              frameType: "radar-now"
-            }
-          ]);
-          setRadarIndex(0);
-          setRadarError("");
-          setRainVisualMode("mixed");
-        } else {
-          setRadarFrames([]);
-          setRadarIndex(0);
-          setRadarError("Tutkakuvaa ei ole saatavilla. Käytetään malliennustetta.");
-          setRainVisualMode("model");
-        }
-
-        // Tulevat ajat haetaan aina malliennusteesta.
-        loadRainFallbackGrid();
-      })
-      .catch((error) => {
-        setRadarFrames([]);
-        setRadarIndex(0);
-        setRadarError(`${error.message}. Käytetään malliennustetta.`);
-        setRainVisualMode("model");
-        loadRainFallbackGrid();
-      });
-  }, [selectedArea]);
+    if (!rainMode) return;
+    loadFmiRadarFrames();
+  }, [rainMode, selectedArea]);
 
   useEffect(() => {
     // Tutka + sade-ennuste seuraa valittua aluetta ja keskittää kartan uudelleen.
@@ -1084,6 +1045,47 @@ export default function App() {
     }
   }
 
+  async function loadFmiRadarFrames() {
+    setRadarError("");
+
+    try {
+      const response = await fetch(`${API_BASE}/api/fmi-radar-frames?area=${selectedArea}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || result.details || "FMI-tutkaa ei voitu hakea");
+      }
+
+      const frames = result.frames || [];
+      if (!frames.length) {
+        throw new Error("FMI-tutkakehyksiä ei saatu");
+      }
+
+      setFmiRadarFrames(frames);
+      setFmiRadarSource(result.source || "FMI tutkakuva + liike-ennuste");
+      setRadarFrames(frames.map((frame, index) => ({
+        time: Math.floor(Date.now() / 1000) + frame.minutes * 60,
+        path: `fmi-${frame.minutes}`,
+        label: frame.label,
+        frameType: frame.frameType,
+        imageUrl: frame.imageUrl,
+        bounds: frame.bounds
+      })));
+      setRadarIndex(0);
+      setRainFallbackGrid([]);
+      setRainFallbackSource("");
+      setRainVisualMode("fmi");
+      return true;
+    } catch (error) {
+      setFmiRadarFrames([]);
+      setFmiRadarSource("");
+      setRadarError(`${error.message}. Käytetään malliennustetta.`);
+      setRainVisualMode("model");
+      loadRainFallbackGrid();
+      return false;
+    }
+  }
+
   async function loadRainFallbackGrid() {
     setRainForecastLoading(true);
     setRainForecastError("");
@@ -1239,7 +1241,7 @@ export default function App() {
         <div className="rain-bottom-bar mobile-rain-bar">
           <div className="rain-mobile-header">
             <div>
-              <strong>Tutka nyt · ennuste 2 h</strong>
+              <strong>FMI-tutkaennuste</strong>
               <span>{activeRadarArea.name}</span>
             </div>
             <span className="rain-time-pill">
@@ -1295,6 +1297,7 @@ export default function App() {
             </div>
           </div>
           {radarError && <div className="rain-bottom-error">{radarError}</div>}
+          {fmiRadarSource && !radarError && <div className="fmi-radar-source">{fmiRadarSource}</div>}
           {!radarError && rainVisualMode === "radar" && (
             <div className="rain-mode-source-line">Tutkakuva nyt · tulevat ajat malliennusteesta</div>
           )}
@@ -1368,6 +1371,19 @@ export default function App() {
             updateWhenIdle={true}
             updateWhenZooming={false}
             attribution='Tutka + sade-ennuste &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
+          />
+        )}
+
+        
+        {rainMode && selectedRadarFrame?.imageUrl && selectedRadarFrame?.bounds && (
+          <ImageOverlay
+            className="fmi-radar-overlay"
+            key={`${selectedRadarFrame.imageUrl}-${radarIndex}`}
+            url={selectedRadarFrame.imageUrl}
+            bounds={selectedRadarFrame.bounds}
+            opacity={selectedRadarFrame.frameType === "fmi-radar-now" ? 0.82 : 0.58}
+            zIndex={660}
+            interactive={false}
           />
         )}
 

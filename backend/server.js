@@ -863,6 +863,171 @@ async function fetchRainModelGrid(areaId = "uusimaa") {
   return value;
 }
 
+
+const fmiRadarImageCache = new Map();
+const FMI_RADAR_CACHE_MS = 4 * 60 * 1000;
+
+function getFmiRadarArea(areaId = "uusimaa") {
+  if (areaId === "pirkanmaa") {
+    return {
+      id: "pirkanmaa",
+      bounds: {
+        south: 60.8,
+        west: 21.8,
+        north: 62.5,
+        east: 26.0
+      },
+      center: [61.5, 23.8]
+    };
+  }
+
+  return {
+    id: "uusimaa",
+    bounds: {
+      south: 59.55,
+      west: 21.5,
+      north: 61.85,
+      east: 28.35
+    },
+    center: [60.65, 24.95]
+  };
+}
+
+function shiftBounds(bounds, minutes) {
+  const eastKmh = Number(process.env.RAIN_MOTION_EAST_KMH || 28);
+  const northKmh = Number(process.env.RAIN_MOTION_NORTH_KMH || 4);
+
+  const hours = Number(minutes || 0) / 60;
+  const kmEast = eastKmh * hours;
+  const kmNorth = northKmh * hours;
+
+  const midLat = (bounds.south + bounds.north) / 2;
+  const latShift = kmNorth / 111;
+  const lonShift = kmEast / (111 * Math.max(0.35, Math.cos((midLat * Math.PI) / 180)));
+
+  return {
+    south: bounds.south + latShift,
+    west: bounds.west + lonShift,
+    north: bounds.north + latShift,
+    east: bounds.east + lonShift
+  };
+}
+
+function boundsToLeaflet(bounds) {
+  return [
+    [bounds.south, bounds.west],
+    [bounds.north, bounds.east]
+  ];
+}
+
+function buildFmiRadarWmsUrl(area, width = 900, height = 700) {
+  const layer = process.env.FMI_RADAR_LAYER || "Radar:suomi_dbz_eureffin";
+  const endpoint = process.env.FMI_RADAR_WMS || "https://openwms.fmi.fi/geoserver/Radar/wms";
+
+  const params = new URLSearchParams({
+    service: "WMS",
+    version: "1.3.0",
+    request: "GetMap",
+    layers: layer,
+    styles: "",
+    format: "image/png",
+    transparent: "true",
+    crs: "EPSG:4326",
+    bbox: `${area.bounds.south},${area.bounds.west},${area.bounds.north},${area.bounds.east}`,
+    width: String(width),
+    height: String(height)
+  });
+
+  return `${endpoint}?${params.toString()}`;
+}
+
+app.get("/api/fmi-radar-image", async (req, res) => {
+  try {
+    const area = getFmiRadarArea(String(req.query.area || "uusimaa"));
+    const cacheKey = `${area.id}:${process.env.FMI_RADAR_LAYER || "Radar:suomi_dbz_eureffin"}`;
+    const cached = fmiRadarImageCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.time < FMI_RADAR_CACHE_MS) {
+      res.setHeader("Content-Type", cached.contentType || "image/png");
+      res.setHeader("Cache-Control", "public, max-age=180");
+      return res.send(cached.buffer);
+    }
+
+    const url = buildFmiRadarWmsUrl(area);
+    const response = await fetchWithTimeout(url, 10000, {
+      headers: {
+        "User-Agent": "Kattosaa/1.0 radar proxy jarkko.ojala1@gmail.com"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`FMI radar WMS status ${response.status}`);
+    }
+
+    const contentType = response.headers.get("content-type") || "image/png";
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    if (!contentType.includes("image")) {
+      throw new Error("FMI radar did not return an image");
+    }
+
+    fmiRadarImageCache.set(cacheKey, {
+      time: Date.now(),
+      buffer,
+      contentType
+    });
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=180");
+    res.send(buffer);
+  } catch (error) {
+    console.error("FMI radar image error:", error.message);
+    res.status(502).json({
+      error: "FMI-tutkakuvaa ei voitu hakea",
+      details: error.message
+    });
+  }
+});
+
+app.get("/api/fmi-radar-frames", async (req, res) => {
+  try {
+    const area = getFmiRadarArea(String(req.query.area || "uusimaa"));
+    const steps = [0, 15, 30, 45, 60, 90, 120];
+
+    const frames = steps.map((minutes) => {
+      const bounds = shiftBounds(area.bounds, minutes);
+      return {
+        minutes,
+        label:
+          minutes === 0
+            ? "Nyt · FMI-tutka"
+            : `+${minutes} min · liike-ennuste`,
+        frameType: minutes === 0 ? "fmi-radar-now" : "fmi-radar-forecast",
+        imageUrl: `/api/fmi-radar-image?area=${encodeURIComponent(area.id)}&v=${Math.floor(Date.now() / FMI_RADAR_CACHE_MS)}`,
+        bounds: boundsToLeaflet(bounds)
+      };
+    });
+
+    res.json({
+      area: area.id,
+      source: "FMI tutkakuva + oma sadealueen liike-ennuste",
+      motion: {
+        eastKmh: Number(process.env.RAIN_MOTION_EAST_KMH || 28),
+        northKmh: Number(process.env.RAIN_MOTION_NORTH_KMH || 4)
+      },
+      frames
+    });
+  } catch (error) {
+    console.error("FMI radar frames error:", error.message);
+    res.status(500).json({
+      error: "FMI-tutkakehyksiä ei voitu muodostaa",
+      details: error.message
+    });
+  }
+});
+
+
 app.get("/api/rain-model-grid", async (req, res) => {
   try {
     const area = getArea(String(req.query.area || "uusimaa"));
