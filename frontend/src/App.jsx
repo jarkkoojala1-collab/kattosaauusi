@@ -80,18 +80,37 @@ function SafeRadarZoom({ enabled, activeRadarArea }) {
 
   useEffect(() => {
     if (!enabled) {
+      map.setMinZoom(0);
       map.setMaxZoom(18);
       map.setMaxBounds(null);
       return;
     }
 
-    map.setMaxZoom(9);
+    map.setMinZoom(RADAR_MIN_ZOOM);
+    map.setMaxZoom(RADAR_MAX_ZOOM);
     map.setMaxBounds(activeRadarArea.bounds);
-    if (map.getZoom() > 9) {
-      map.setZoom(9, { animate: false });
-    }
+
+    const clampZoom = () => {
+      const currentZoom = map.getZoom();
+      if (currentZoom < RADAR_MIN_ZOOM) {
+        map.setZoom(RADAR_MIN_ZOOM, { animate: false });
+      } else if (currentZoom > RADAR_MAX_ZOOM) {
+        map.setZoom(RADAR_MAX_ZOOM, { animate: false });
+      }
+    };
+
     map.setView(activeRadarArea.center, activeRadarArea.zoom, { animate: false });
-    setTimeout(() => map.invalidateSize({ animate: false }), 80);
+    clampZoom();
+    map.on("zoomend", clampZoom);
+
+    setTimeout(() => {
+      clampZoom();
+      map.invalidateSize({ animate: false });
+    }, 80);
+
+    return () => {
+      map.off("zoomend", clampZoom);
+    };
   }, [enabled, map, activeRadarArea]);
 
   return null;
@@ -227,7 +246,7 @@ const AREA_CONFIG = {
     centerName: "Nurmijärvi",
     center: [60.4647, 24.8073],
     radiusKm: 150,
-    zoom: 8,
+    zoom: 7,
     bounds: [
       [58.9, 21.6],
       [62.0, 27.7]
@@ -238,7 +257,7 @@ const AREA_CONFIG = {
     centerName: "Tampere",
     center: [61.4978, 23.761],
     radiusKm: 150,
-    zoom: 8,
+    zoom: 7,
     bounds: [
       [59.9, 20.8],
       [63.0, 26.7]
@@ -270,6 +289,9 @@ function isInsideArea(point, area) {
   return distanceKm(area.center[0], area.center[1], point.lat, point.lon) <= area.radiusKm + 2;
 }
 
+
+const RADAR_MIN_ZOOM = 5;
+const RADAR_MAX_ZOOM = 8;
 
 const RADAR_AREA_CONFIG = {
   uusimaa: {
@@ -971,7 +993,7 @@ export default function App() {
             <div className="rain-bar-slider">
               <div className="rain-bar-time">
                 <strong>Sadetutka</strong>
-                <span>{selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan..."}</span>
+                <span>{selectedRadarFrame ? `${formatRadarTime(selectedRadarFrame.time)} · Zoom lukittu` : "Ladataan..."}</span>
               </div>
               <input
                 type="range"
@@ -999,8 +1021,8 @@ export default function App() {
         key={selectedArea}
         center={rainMode ? activeRadarArea.center : center}
         zoom={rainMode ? activeRadarArea.zoom : 8}
-        minZoom={rainMode ? 4 : 7}
-        maxZoom={rainMode ? 9 : 18}
+        minZoom={rainMode ? RADAR_MIN_ZOOM : 7}
+        maxZoom={rainMode ? RADAR_MAX_ZOOM : 18}
         maxBounds={rainMode ? activeRadarArea.bounds : mapBounds}
         className="map"
         zoomControl={false}
@@ -1020,6 +1042,7 @@ export default function App() {
         <SafeRadarZoom enabled={rainMode} activeRadarArea={activeRadarArea} />
 
         <TileLayer
+          className={rainMode ? "normal-map-base-hidden" : ""}
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           keepBuffer={6}
@@ -1028,14 +1051,32 @@ export default function App() {
           maxNativeZoom={19}
         />
 
+        {rainMode && (
+          <TileLayer
+            className="radar-base-layer"
+            attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap contributors'
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            minZoom={RADAR_MIN_ZOOM}
+            maxZoom={RADAR_MAX_ZOOM}
+            maxNativeZoom={RADAR_MAX_ZOOM}
+            bounds={activeRadarArea.bounds}
+            noWrap={true}
+            keepBuffer={1}
+            updateWhenIdle={true}
+            updateWhenZooming={false}
+          />
+        )}
+
         {radarTileUrl && (
           <TileLayer
             key={radarTileUrl}
             url={radarTileUrl}
-            opacity={0.82}
+            opacity={0.84}
             zIndex={650}
-            maxNativeZoom={8}
-            minNativeZoom={0}
+            minZoom={RADAR_MIN_ZOOM}
+            maxZoom={RADAR_MAX_ZOOM}
+            maxNativeZoom={RADAR_MAX_ZOOM}
+            minNativeZoom={RADAR_MIN_ZOOM}
             tileSize={256}
             bounds={activeRadarArea.bounds}
             noWrap={true}

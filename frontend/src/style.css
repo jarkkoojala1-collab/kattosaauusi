@@ -2402,3 +2402,13 @@ input::placeholder {
 .login-screen {
   display: none !important;
 }
+
+
+/* Sadetutka käyttää omaa karttapohjaa ja lukittuja zoom-tasoja */
+.normal-map-base-hidden {
+  opacity: 0 !important;
+}
+
+.radar-base-layer {
+  filter: saturate(0.7) contrast(0.95) brightness(1.03);
+}

@@ -1,13 +1,13 @@
-# Kattokartta - ilman huoltotila-kirjautumista
+# Kattokartta - sadetutkan zoom lukittu
 
 Muutokset:
-- Huoltotila/kirjautuminen poistettu käytöstä.
-- Sivusto avautuu suoraan sovellukseen.
-- Kirjaudu ulos -painike poistettu asetuksista.
-- Sadetutkan siisti alapalkki säilyy mukana.
-- Uusimaa/Pirkanmaa-sadetutkakeskitys säilyy mukana.
-- Oman sijainnin automaattinen aluevalinta säilyy mukana.
-- autoAreaMessage-korjaus säilyy mukana.
+- Sadetutkatilassa zoom on lukittu turvalliselle välille 5–8.
+- Käyttäjä ei voi zoomata tasoille, joilla sadetutka katoaa.
+- Sadetutka käyttää omaa kevyttä karttapohjaa, ei samaa normaalia pinnoituskartan pohjaa.
+- Normaali karttapohja piilotetaan sadetutkatilassa.
+- Tutkatiilikerros käyttää samoja lukittuja zoom-rajoja.
+- Sadetutkan alapalkki säilyy siistinä.
+- Pinnoituskartassa normaali zoomaus säilyy.
 
 Render-asetukset:
 
