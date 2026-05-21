@@ -292,6 +292,17 @@ const RADAR_AREA_CONFIG = {
   }
 };
 
+
+function chooseAreaByLocation(lat, lon) {
+  const uusimaa = AREA_CONFIG.uusimaa;
+  const pirkanmaa = AREA_CONFIG.pirkanmaa;
+
+  const distanceToUusimaa = distanceKm(lat, lon, uusimaa.center[0], uusimaa.center[1]);
+  const distanceToPirkanmaa = distanceKm(lat, lon, pirkanmaa.center[0], pirkanmaa.center[1]);
+
+  return distanceToPirkanmaa < distanceToUusimaa ? "pirkanmaa" : "uusimaa";
+}
+
 export default function App() {
   const [forecast, setForecast] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
@@ -308,6 +319,7 @@ export default function App() {
   const [areaMoveKey, setAreaMoveKey] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
+  const [autoAreaMessage, setAutoAreaMessage] = useState("");
 
   const [city, setCity] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -334,7 +346,7 @@ export default function App() {
 
   const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : "";
 
-  const [authToken, setAuthToken] = useState(() => localStorage.getItem("kattokarttaToken") || "");
+  const [authToken, setAuthToken] = useState("public-access");
   const [loginUser, setLoginUser] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -905,68 +917,6 @@ export default function App() {
         ? { lat: userLocation.lat, lon: userLocation.lon }
         : { lat: activeArea.center[0], lon: activeArea.center[1] };
 
-  if (!authToken) {
-    return (
-      <div className="app-shell">
-        <div className="login-screen">
-          <div className="login-card">
-            <div className="login-badge"><img src="/logo.png" alt="" /> Kattosää</div>
-            <div className="huoltokatko-note">Huoltotila / suljettu testikäyttö</div>
-            <h1>Kattosää on huoltotilassa</h1>
-            <p>
-              Sivusto on väliaikaisesti suljettu. Pääsy on vain testikäyttäjille ja ylläpidolle.
-            </p>
-
-
-            {showPasswordHint && (
-              <div className="password-popup">
-                <button
-                  type="button"
-                  className="password-popup-close"
-                  onClick={() => setShowPasswordHint(false)}
-                  aria-label="Sulje salasanavinkki"
-                >
-                  ×
-                </button>
-                <div className="password-popup-title">Huoltotilan kirjautuminen</div>
-                <div className="password-popup-text">
-                  Käyttäjätunnus: <strong>kattosaa</strong><br />
-                  Salasana: <strong>pinnoitus</strong>
-                </div>
-              </div>
-            )}
-
-            <form className="login-form" onSubmit={login}>
-              <label>Käyttäjätunnus<input
-                  value={loginUser}
-                  onChange={(event) => setLoginUser(event.target.value)}
-                  placeholder="Käyttäjätunnus"
-                  autoComplete="username"
-                />
-              </label>
-
-              <label>Salasana<input
-                  value={loginPassword}
-                  onChange={(event) => setLoginPassword(event.target.value)}
-                  placeholder="Salasana"
-                  type="password"
-                  autoComplete="current-password"
-                />
-              </label>
-
-              {loginError && <div className="login-error">{loginError}</div>}
-
-              <button type="submit" disabled={loginLoading}>
-                {loginLoading ? "Kirjaudutaan..." : "Kirjaudu"}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-
   return (
     <div className="app-shell">
       <div className="topbar">
@@ -1479,16 +1429,7 @@ export default function App() {
                     />
                     <span>Isommat karttapisteet</span>
                   </label>
-
-                  <button
-                    type="button"
-                    className="settings-logout-button"
-                    onClick={logout}
-                  >
-                    Kirjaudu ulos
-                  </button>
-
-                  {showRadar && (
+{showRadar && (
                     <div className="radar-controls">
                       <div className="radar-actions">
                         <button

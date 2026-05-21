@@ -1,16 +1,13 @@
-# Kattokartta - sadetutkan siisti alapalkki
+# Kattokartta - ilman huoltotila-kirjautumista
 
 Muutokset:
-- Poistettu ruma slider-ponnahdusikkuna kartan päältä.
-- Sadetutkan aikavalitsin on nyt matala, kiinteä alapalkki.
-- Alapalkki sisältää:
-  - Toista/Tauko-painikkeen
-  - kellonajan
-  - liukusäätimen
-  - pienen sadeasteikon värit
-- Mobiilissa alapalkki on entistä matalampi ja piilottaa ylimääräisen tekstin.
-- Sadetutka seuraa edelleen Uusimaa/Pirkanmaa-aluevalintaa.
+- Huoltotila/kirjautuminen poistettu käytöstä.
+- Sivusto avautuu suoraan sovellukseen.
+- Kirjaudu ulos -painike poistettu asetuksista.
+- Sadetutkan siisti alapalkki säilyy mukana.
+- Uusimaa/Pirkanmaa-sadetutkakeskitys säilyy mukana.
 - Oman sijainnin automaattinen aluevalinta säilyy mukana.
+- autoAreaMessage-korjaus säilyy mukana.
 
 Render-asetukset:
 

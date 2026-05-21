@@ -2395,3 +2395,10 @@ input::placeholder {
     display: none;
   }
 }
+
+
+/* Kirjautuminen poistettu */
+.huoltokatko-note,
+.login-screen {
+  display: none !important;
+}
