@@ -2715,3 +2715,13 @@ input::placeholder {
 .rain-mode-active .rain-forecast-circle {
   mix-blend-mode: multiply;
 }
+
+
+/* Sadealue-ennuste: ei palloja */
+.rain-forecast-circle {
+  display: none !important;
+}
+
+.rain-mode-active .leaflet-tile-pane {
+  background: #eaf2f8 !important;
+}

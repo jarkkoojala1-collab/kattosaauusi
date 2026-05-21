@@ -1,18 +1,16 @@
-# Kattokartta - sade-ennuste korjattu
+# Kattokartta - sadealue-ennuste, ei palloja
 
 Korjattu:
-- Sade-ennuste ei käytä RainViewerin toteutuneita tutkakuvia.
-- Sade-ennuste ei myöskään yritä näyttää RainViewerin nowcast-tiiliä.
-- Lisätty backend-reitti /api/rain-forecast-map.
-- Backend hakee ennusteen MET Norway Nowcastista alueen pisteille.
-- Ennuste näyttää 0–2 h:
-  - Nyt
-  - +1 h
-  - +2 h
-- Kartalle piirretään ennustettu sademäärä pisteittäin.
-- Jos MET Nowcast ei onnistu jollekin pisteelle, käytetään varalähteenä olemassa olevaa piste-ennustettä.
-- Slideri vaihtaa oikeaa ennustetuntia.
-- Tämä on nyt sade-ennustekartta, ei toteutunut sadetutka.
+- Palloennuste poistettu näkyvistä.
+- Kartalla näkyy sadealuekerros, ei yksittäisiä palloja.
+- Sadealuekerros käyttää RainViewerin radar.nowcast-ennustekuvia.
+- Toteutunutta radar.past-historiaa ei käytetä.
+- Jos ennustettuja sadealuekuvia ei ole saatavilla, näytetään virhe eikä palloja.
+- Slideri vaihtaa ennustekuvia.
+- Mobiili- ja zoom-korjaukset säilyvät mukana.
+
+Huomio:
+Tämä näyttää sadealueet karttakerroksena. Se ei ole pistepohjainen palloennuste.
 
 Render-asetukset:
 

@@ -549,26 +549,49 @@ export default function App() {
   }, [API_BASE, selectedArea, refreshKey]);
 
   useEffect(() => {
-    // Sade-ennustetila ei käytä toteutuneita RainViewer-tutkakuvia.
+    fetch("https://api.rainviewer.com/public/weather-maps.json")
+      .then((response) => {
+        if (!response.ok) throw new Error("Sadealue-ennustetta ei voitu hakea");
+        return response.json();
+      })
+      .then((data) => {
+        const frames = data?.radar?.nowcast || [];
+        setRadarHost(data.host || "https://tilecache.rainviewer.com");
+
+        if (!frames.length) {
+          setRadarFrames([]);
+          setRadarIndex(0);
+          throw new Error("Sadealue-ennustetta ei ole juuri nyt saatavilla");
+        }
+
+        setRadarFrames(frames);
+        setRadarIndex(0);
+        setRadarError("");
+      })
+      .catch((error) => {
+        setRadarFrames([]);
+        setRadarIndex(0);
+        setRadarError(error.message);
+      });
   }, []);
 
   useEffect(() => {
-    // Sade-ennuste seuraa valittua aluetta ja keskittää kartan uudelleen.
+    // Sadealue-ennuste seuraa valittua aluetta ja keskittää kartan uudelleen.
     if (!rainMode) return;
     setMapRefreshKey((value) => value + 1);
   }, [rainMode, selectedArea]);
 
   useEffect(() => {
-    // Sade-ennuste-tila hakee lähisade-ennusteen valitulle paikalle / omalle sijainnille.
+    // Sadealue-ennuste-tila hakee lähisadealue-ennusteen valitulle paikalle / omalle sijainnille.
     if (!rainMode) return;
     loadRainNowcast();
-    loadRainForecastMap();
+
   }, [rainMode, selectedPlace?.lat, selectedPlace?.lon, userLocation?.lat, userLocation?.lon, selectedArea]);
 
   useEffect(() => {
     if (!radarPlaying || !radarFrames.length) return;
     const timer = setInterval(() => {
-      setRadarIndex((current) => (current + 1) % Math.max(1, rainForecastMap.length));
+      setRadarIndex((current) => (current + 1) % Math.max(1, radarFrames.length));
     }, 700);
     return () => clearInterval(timer);
   }, [radarPlaying, radarFrames.length]);
@@ -916,7 +939,7 @@ export default function App() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || result.details || "Sade-ennustetta ei voitu hakea");
+        throw new Error(result.error || result.details || "Sadealue-ennustetta ei voitu hakea");
       }
 
       const hours = result.hours || [];
@@ -1005,7 +1028,7 @@ export default function App() {
               });
             }}
           >
-            {rainMode ? "Pinnoituskartta" : "Sade-ennuste"}
+            {rainMode ? "Pinnoituskartta" : "Sadealue-ennuste"}
           </button>
           <button className="ghost-location-button refresh-button" onClick={refreshForecast}>
             Päivitä
@@ -1027,7 +1050,7 @@ export default function App() {
             setMapRefreshKey((value) => value + 1);
           }}
         >
-          Keskitä sade-ennustekartta
+          Keskitä sadealue-ennustekartta
         </button>
       )}
 
@@ -1035,13 +1058,11 @@ export default function App() {
         <div className="rain-bottom-bar mobile-rain-bar">
           <div className="rain-mobile-header">
             <div>
-              <strong>Sade-ennuste 0–2 h</strong>
+              <strong>Sadealue-ennuste</strong>
               <span>{activeRadarArea.name}</span>
             </div>
             <span className="rain-time-pill">
-              {rainForecastMap[radarIndex]
-                ? `${radarIndex === 0 ? "Nyt" : `+${radarIndex} h`} · ${formatTime(rainForecastMap[radarIndex].time)}`
-                : "Ladataan"}
+              {selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan"}
             </span>
           </div>
 
@@ -1049,21 +1070,21 @@ export default function App() {
             className="rain-main-slider"
             type="range"
             min="0"
-            max={Math.max(0, rainForecastMap.length - 1)}
+            max={Math.max(0, radarFrames.length - 1)}
             value={radarIndex}
             onChange={(event) => {
               setRadarPlaying(false);
               setRadarIndex(Number(event.target.value));
             }}
-            disabled={!rainForecastMap.length}
-            aria-label="Sade-ennusteen kellonaika"
+            disabled={!radarFrames.length}
+            aria-label="Sadealue-ennusteen kellonaika"
           />
 
           <div className="rain-mobile-actions">
             <button
               type="button"
-              onClick={() => setRadarIndex((current) => (current <= 0 ? rainForecastMap.length - 1 : current - 1))}
-              disabled={!rainForecastMap.length}
+              onClick={() => setRadarIndex((current) => (current <= 0 ? radarFrames.length - 1 : current - 1))}
+              disabled={!radarFrames.length}
               aria-label="Edellinen tutkakuva"
             >
               ◀
@@ -1072,15 +1093,15 @@ export default function App() {
               type="button"
               className="rain-play-button"
               onClick={() => setRadarPlaying((value) => !value)}
-              disabled={!rainForecastMap.length}
-              aria-label={radarPlaying ? "Pysäytä sade-ennuste" : "Toista sade-ennuste"}
+              disabled={!radarFrames.length}
+              aria-label={radarPlaying ? "Pysäytä sadealue-ennuste" : "Toista sadealue-ennuste"}
             >
               {radarPlaying ? "Tauko" : "Toista"}
             </button>
             <button
               type="button"
-              onClick={() => setRadarIndex((current) => (current + 1) % Math.max(1, rainForecastMap.length))}
-              disabled={!rainForecastMap.length}
+              onClick={() => setRadarIndex((current) => (current + 1) % Math.max(1, radarFrames.length))}
+              disabled={!radarFrames.length}
               aria-label="Seuraava tutkakuva"
             >
               ▶
@@ -1092,8 +1113,6 @@ export default function App() {
               <span><i className="rain-dot rain-dot-heavy"></i> kova</span>
             </div>
           </div>
-          {rainForecastLoading && <div className="rain-bottom-note">Haetaan sade-ennustetta...</div>}
-          {rainForecastError && <div className="rain-forecast-error">{rainForecastError}</div>}
           {radarError && <div className="rain-bottom-error">{radarError}</div>}
         </div>
       )}
@@ -1149,28 +1168,23 @@ export default function App() {
           />
         )}
 
-        {rainMode &&
-          rainForecastMap[radarIndex]?.points?.map((point) => {
-            const amount = Number(point.precipitation || 0);
-            if (!Number.isFinite(point.lat) || !Number.isFinite(point.lon)) return null;
-
-            return (
-              <Circle
-                className="rain-forecast-circle"
-                key={`rain-forecast-${radarIndex}-${point.name}-${point.lat}-${point.lon}`}
-                center={[point.lat, point.lon]}
-                radius={rainForecastRadius(amount)}
-                pathOptions={{
-                  color: rainForecastColor(amount),
-                  fillColor: rainForecastColor(amount),
-                  fillOpacity: amount > 0 ? 0.42 : 0.10,
-                  weight: amount > 0 ? 2 : 1,
-                  opacity: amount > 0 ? 0.85 : 0.25
-                }}
-                interactive={false}
-              />
-            );
-          })}
+        {radarTileUrl && (
+          <TileLayer
+            key={radarTileUrl}
+            url={radarTileUrl}
+            opacity={0.84}
+            zIndex={650}
+            minZoom={RADAR_MIN_ZOOM}
+            maxZoom={RADAR_MAX_ZOOM}
+            maxNativeZoom={RADAR_MAX_ZOOM}
+            minNativeZoom={0}
+            tileSize={256}
+            keepBuffer={1}
+            updateWhenIdle={true}
+            updateWhenZooming={false}
+            attribution='Sadealue-ennuste &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
+          />
+        )}
 
         {!rainMode && showColorAreas &&
           points.map((point) => {
@@ -1542,7 +1556,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setRadarPlaying((value) => !value)}
-                          disabled={!rainForecastMap.length}
+                          disabled={!radarFrames.length}
                         >
                           {radarPlaying ? "Tauko" : "Toista"}
                         </button>
@@ -1550,19 +1564,19 @@ export default function App() {
                           type="button"
                           onClick={() =>
                             setRadarIndex((current) =>
-                              current <= 0 ? rainForecastMap.length - 1 : current - 1
+                              current <= 0 ? radarFrames.length - 1 : current - 1
                             )
                           }
-                          disabled={!rainForecastMap.length}
+                          disabled={!radarFrames.length}
                         >
                           ◀
                         </button>
                         <button
                           type="button"
                           onClick={() =>
-                            setRadarIndex((current) => (current + 1) % Math.max(1, rainForecastMap.length))
+                            setRadarIndex((current) => (current + 1) % Math.max(1, radarFrames.length))
                           }
-                          disabled={!rainForecastMap.length}
+                          disabled={!radarFrames.length}
                         >
                           ▶
                         </button>
@@ -1571,10 +1585,10 @@ export default function App() {
                       <input
                         type="range"
                         min="0"
-                        max={Math.max(0, rainForecastMap.length - 1)}
+                        max={Math.max(0, radarFrames.length - 1)}
                         value={radarIndex}
                         onChange={(event) => setRadarIndex(Number(event.target.value))}
-                        disabled={!rainForecastMap.length}
+                        disabled={!radarFrames.length}
                       />
 
                       <p className="radar-time">
