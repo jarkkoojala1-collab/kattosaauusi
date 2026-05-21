@@ -1,12 +1,13 @@
-# Kattokartta - sadetutkan zoom korjattu
+# Kattokartta - sadetutka omana karttana
 
 Korjattu:
-- Sadetutka ei enää pyydä toimimattomia suuria zoom-tasoja.
-- Sadetutkatilassa kartan maksimizoom rajoitetaan tasoon 10.
-- Jos käyttäjä avaa sadetutkan liian suurella zoomilla, kartta palautetaan automaattisesti zoomiin 10.
-- Sadetutkakerrokselle lisätty maxNativeZoom=10 ja maxZoom=10.
-- Sadetutkan opacityä nostettu, jotta sateet erottuvat paremmin.
-- Pinnoituskarttaan palatessa normaali zoom palautuu käyttöön.
+- Sadetutka ei enää käytä Leafletin päälle ladattavaa tutkatiilikerrosta.
+- Pinnoituskartta vaihtuu sadetutkatilassa kokonaan erilliseen sadetutkakarttaan.
+- Tämä poistaa "zoom level not supported" -vilkkumisen.
+- Sadetutka käyttää omaa toimivaa RainViewer-karttanäkymää.
+- Pinnoituskarttaan voi palata yläpalkin painikkeesta.
+- Lähisadearvio MET Norway Nowcastista säilyy mukana.
+- Huoltotilan kirjautuminen säilyy mukana.
 
 Render-asetukset:
 

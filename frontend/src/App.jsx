@@ -75,29 +75,6 @@ function MapSizeFixer({ triggerKey }) {
   return null;
 }
 
-function RadarZoomLimiter({ enabled }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!enabled) {
-      map.setMaxZoom(18);
-      return;
-    }
-
-    // RainViewerin tutkatiilet eivät näy luotettavasti kaikilla suurilla zoomeilla.
-    // Rajoitetaan sadetutkatilassa zoom turvalliseen tasoon ja skaalataan lähin toimiva tiili.
-    map.setMaxZoom(10);
-
-    if (map.getZoom() > 10) {
-      map.setZoom(10, { animate: false });
-    }
-
-    setTimeout(() => map.invalidateSize({ animate: false }), 80);
-  }, [map, enabled]);
-
-  return null;
-}
-
 
 function formatRainTime(iso) {
   if (!iso) return "ei näkyvissä";
@@ -852,6 +829,16 @@ export default function App() {
       ? `${radarHost}${selectedRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
       : null;
 
+  const radarCenter =
+    selectedPlace && hasValidCoordinates(selectedPlace)
+      ? { lat: selectedPlace.lat, lon: selectedPlace.lon }
+      : userLocation
+        ? { lat: userLocation.lat, lon: userLocation.lon }
+        : { lat: activeArea.center[0], lon: activeArea.center[1] };
+
+  const rainViewerEmbedUrl =
+    `https://www.rainviewer.com/map.html?loc=${Number(radarCenter.lat).toFixed(4)},${Number(radarCenter.lon).toFixed(4)},8&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&c=3&o=83&lm=1&layer=radar&sm=1&sn=1`;
+
   if (!authToken) {
     return (
       <div className="app-shell">
@@ -952,7 +939,7 @@ export default function App() {
             <div>
               <strong>Sadetutka</strong>
               <span>Viimeiset 3 h + lähisadearvio</span>
-              <small>Sadetutkassa zoom on rajoitettu toimiville tasoille.</small>
+              <small>Sadetutka käyttää lähintä tuettua tutkatasoa.</small>
             </div>
             <button type="button" onClick={() => loadRainNowcast()} disabled={rainLoading}>
               {rainLoading ? "Haetaan..." : "Päivitä"}
@@ -960,30 +947,7 @@ export default function App() {
           </div>
 
           <div className="radar-actions compact">
-            <button
-              type="button"
-              onClick={() => setRadarPlaying((value) => !value)}
-              disabled={!radarFrames.length}
-            >
-              {radarPlaying ? "Tauko" : "Toista"}
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setRadarIndex((current) => (current <= 0 ? radarFrames.length - 1 : current - 1))
-              }
-              disabled={!radarFrames.length}
-            >
-              ◀
-            </button>
-            <button
-              type="button"
-              onClick={() => setRadarIndex((current) => (current + 1) % radarFrames.length)}
-              disabled={!radarFrames.length}
-            >
-              ▶
-            </button>
-            <span>{selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ei tutkakuvaa"}</span>
+            <span>Sadetutkakartta näyttää sateen liikkeen ja oman aikajanan.</span>
           </div>
 
           {rainNowcast && (
@@ -1014,14 +978,26 @@ export default function App() {
         </div>
       )}
 
-<MapContainer
+{rainMode && (
+        <div className="rainviewer-map-shell">
+          <iframe
+            title="Sadetutka"
+            src={rainViewerEmbedUrl}
+            className="rainviewer-map"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      )}
+
+      <MapContainer
         key={selectedArea}
         center={center}
         zoom={8}
         minZoom={7}
-        maxZoom={rainMode ? 10 : 18}
+        maxZoom={18}
         maxBounds={mapBounds}
-        className="map"
+        className={`map ${rainMode ? "map-hidden-for-radar" : ""}`}
         zoomControl={false}
       >
         <MapMover
@@ -1035,10 +1011,7 @@ export default function App() {
         />
 
         <MapSizeFixer triggerKey={`${selectedArea}-${selectedTimeKey}-${showPanel}-${mapRefreshKey}-${rainMode}`} />
-
-        <RadarZoomLimiter enabled={rainMode} />
-
-        <TileLayer
+<TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           keepBuffer={6}
@@ -1104,26 +1077,7 @@ export default function App() {
             </CircleMarker>
           );
         })}
-
-        {radarUrl && (
-          <TileLayer
-            key={radarUrl}
-            url={radarUrl}
-            opacity={rainMode ? 0.78 : 0.56}
-            zIndex={650}
-            maxNativeZoom={10}
-            maxZoom={10}
-            minNativeZoom={0}
-            tileSize={256}
-            keepBuffer={4}
-            updateWhenIdle={false}
-            updateWhenZooming={false}
-            attribution='Sadetutka &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
-          />
-        )}
-
-
-        {userLocation && (
+{userLocation && (
           <>
             <Circle
               center={[userLocation.lat, userLocation.lon]}
