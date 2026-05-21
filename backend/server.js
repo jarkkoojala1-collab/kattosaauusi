@@ -639,7 +639,7 @@ async function fetchRainForecastGrid(areaId = "uusimaa") {
 
 
 const rainGridCache = new Map();
-const RAIN_GRID_CACHE_DURATION_MS = 5 * 60 * 1000;
+const RAIN_GRID_CACHE_DURATION_MS = 4 * 60 * 1000;
 
 function getRainGridConfig(areaId = "uusimaa") {
   if (areaId === "pirkanmaa") {
@@ -776,6 +776,34 @@ function chunkArray(items, size) {
   return chunks;
 }
 
+
+function interpolatedPrecipitation(hourly, targetMs) {
+  const times = hourly?.time || [];
+  const values = hourly?.precipitation || [];
+
+  if (!times.length || !values.length) return 0;
+
+  const timestamps = times.map((time) => new Date(time).getTime());
+
+  if (targetMs <= timestamps[0]) {
+    return Number(values[0] || 0);
+  }
+
+  for (let index = 0; index < timestamps.length - 1; index += 1) {
+    const start = timestamps[index];
+    const end = timestamps[index + 1];
+
+    if (targetMs >= start && targetMs <= end) {
+      const startValue = Number(values[index] || 0);
+      const endValue = Number(values[index + 1] || 0);
+      const ratio = end === start ? 0 : (targetMs - start) / (end - start);
+      return startValue + (endValue - startValue) * ratio;
+    }
+  }
+
+  return Number(values[values.length - 1] || 0);
+}
+
 async function fetchRainModelGrid(areaId = "uusimaa") {
   const config = getRainGridConfig(areaId);
   const cacheKey = `${config.id}`;
@@ -786,10 +814,13 @@ async function fetchRainModelGrid(areaId = "uusimaa") {
   }
 
   const gridPoints = makeRainGridPoints(config);
-  const targets = [0, 1, 2].map((hour) => Date.now() + hour * 60 * 60 * 1000);
-  const hours = [0, 1, 2].map((hour) => ({
-    hour,
-    time: new Date(targets[hour]).toISOString(),
+  const forecastSteps = [0, 30, 60, 90, 120];
+  const targets = forecastSteps.map((minutes) => Date.now() + minutes * 60 * 1000);
+  const hours = forecastSteps.map((minutes, index) => ({
+    hour: minutes / 60,
+    minutes,
+    label: minutes === 0 ? "Nyt" : `+${minutes} min`,
+    time: new Date(targets[index]).toISOString(),
     cells: []
   }));
 
@@ -806,13 +837,7 @@ async function fetchRainModelGrid(areaId = "uusimaa") {
     const { point, hourly } = result.value;
 
     targets.forEach((targetMs, hourIndex) => {
-      const valueIndex = nearestOpenMeteoHour(hourly, targetMs);
-      const amount = Number(hourly?.precipitation?.[valueIndex] || 0);
-      const time = hourly?.time?.[valueIndex];
-
-      if (time) {
-        hours[hourIndex].time = time;
-      }
+      const amount = interpolatedPrecipitation(hourly, targetMs);
 
       hours[hourIndex].cells.push({
         lat: point.lat,

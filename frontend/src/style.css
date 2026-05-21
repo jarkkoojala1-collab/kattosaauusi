@@ -2775,3 +2775,10 @@ input::placeholder {
 .rain-mode-active .leaflet-tile-pane {
   background: #eaf2f8 !important;
 }
+
+
+/* 30 minuutin sade-ennuste */
+.rain-time-pill {
+  min-width: 64px;
+  text-align: center;
+}

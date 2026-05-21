@@ -1203,11 +1203,11 @@ export default function App() {
         <div className="rain-bottom-bar mobile-rain-bar">
           <div className="rain-mobile-header">
             <div>
-              <strong>Sadealue-ennuste</strong>
+              <strong>Sadealue-ennuste 30 min</strong>
               <span>{activeRadarArea.name}</span>
             </div>
             <span className="rain-time-pill">
-              {selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan"}
+              {rainFallbackGrid[radarIndex]?.label || (selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan")}
             </span>
           </div>
 
@@ -1259,7 +1259,7 @@ export default function App() {
             </div>
           </div>
           {radarError && <div className="rain-bottom-error">{radarError}</div>}
-          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource} · pehmeä sadealuekartta</div>}
+          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource} · pehmeä sadealuekartta · 30 min välein</div>}
         </div>
       )}
 <MapContainer
