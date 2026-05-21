@@ -2795,3 +2795,10 @@ input::placeholder {
   font-size: 11px;
   font-weight: 900;
 }
+
+
+/* Tutka nyt, tulevat ajat malliennusteesta */
+.rain-time-pill {
+  min-width: 72px;
+  text-align: center;
+}

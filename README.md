@@ -1,29 +1,18 @@
-# Kattokartta - tutka + paras sade-ennuste
+# Kattokartta - tutka nyt ja tuleva ennuste
 
-Tämä on paras käytännön toteutus nykyisillä avoimilla lähteillä:
-
-1. Nyt:
-   - näytetään oikea tutkakuva, jos se on saatavilla.
-2. Tulevat sadealueet:
-   - käytetään sadealue-ennustekuvia, jos niitä on saatavilla.
-3. Jos sadealue-ennustekuvia ei ole:
-   - käytetään pehmeää Open-Meteo-malliennustetta 30 minuutin välein.
-
-Parannukset:
-- Nyt-tilassa näkyy oikea tutkakuva.
-- Tuleville ajoille käytetään sadealue-ennustetta tai malliennustetta.
-- Malliennuste ei näy palloina eikä karkeana ruudukkona.
-- Malliennuste piirretään pehmeänä canvas-sadealueena.
-- Sliderissä voi vaihtaa ennusteaikaa.
-- Puolen tunnin malliaskelmat säilyvät mukana:
-  - Nyt
+Korjattu:
+- Nyt-kohta näyttää oikean tutkakuvan, jos se on saatavilla.
+- Tulevat ajat eivät enää riipu RainViewerin epävarmoista ennustekuvista.
+- +30, +60, +90 ja +120 min näkyvät aina malliennusteesta, jos Open-Meteo vastaa.
+- Sliderissä näkyy:
+  - Nyt · tutkakuva
   - +30 min
   - +60 min
   - +90 min
   - +120 min
-
-Huomio:
-Jos sadealue-ennustekuvia on saatavilla, ne ovat ensisijainen lähde. Jos niitä ei ole, sovellus näyttää malliennusteen eikä jää tyhjäksi.
+- Tulevat ajat piirretään pehmeänä sadealueena, ei palloina eikä ruudukkoina.
+- Jos tutkakuvaa ei saada, myös nykyhetki näytetään malliennusteella.
+- Näin ennuste ei jää pelkkään nykyhetkeen.
 
 Render-asetukset:
 
