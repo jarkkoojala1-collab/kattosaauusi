@@ -495,6 +495,7 @@ export default function App() {
   const [rainFallbackGrid, setRainFallbackGrid] = useState([]);
   const [rainFallbackSource, setRainFallbackSource] = useState("");
   const [rainFallbackStep, setRainFallbackStep] = useState({ lat: 0.28, lon: 0.42 });
+  const [rainVisualMode, setRainVisualMode] = useState("loading");
 
   const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : "";
 
@@ -532,7 +533,10 @@ export default function App() {
   const mapBounds = activeArea.bounds;
   const selectedRadarFrame = radarFrames[radarIndex];
   const radarTileUrl =
-    rainMode && selectedRadarFrame && radarHost && !rainFallbackGrid.length
+    rainMode &&
+    selectedRadarFrame?.path &&
+    radarHost &&
+    !String(selectedRadarFrame.path).startsWith("fallback-")
       ? `${radarHost}${selectedRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
       : null;
 
@@ -658,43 +662,76 @@ export default function App() {
   useEffect(() => {
     fetch("https://api.rainviewer.com/public/weather-maps.json")
       .then((response) => {
-        if (!response.ok) throw new Error("Sadealue-ennustetta ei voitu hakea");
+        if (!response.ok) throw new Error("Tutka- ja sade-ennustekuvia ei voitu hakea");
         return response.json();
       })
       .then((data) => {
-        const frames = data?.radar?.nowcast || [];
+        const pastFrames = data?.radar?.past || [];
+        const nowcastFrames = data?.radar?.nowcast || [];
+        const latestPast = pastFrames[pastFrames.length - 1];
         setRadarHost(data.host || "https://tilecache.rainviewer.com");
 
-        if (!frames.length) {
-          setRadarFrames([]);
+        if (latestPast && nowcastFrames.length) {
+          const combinedFrames = [
+            {
+              ...latestPast,
+              label: "Nyt · tutkakuva",
+              frameType: "radar-now"
+            },
+            ...nowcastFrames.map((frame, index) => ({
+              ...frame,
+              label: index === 0 ? "+ lähiennuste" : `+ ennuste ${index + 1}`,
+              frameType: "radar-forecast"
+            }))
+          ];
+
+          setRainFallbackGrid([]);
+          setRainFallbackSource("");
+          setRadarFrames(combinedFrames);
           setRadarIndex(0);
-          setRadarError("Sadealuekuvia ei ole saatavilla. Käytetään malliennustetta.");
+          setRadarError("");
+          setRainVisualMode("radar");
+          return;
+        }
+
+        if (latestPast) {
+          setRadarFrames([
+            {
+              ...latestPast,
+              label: "Nyt · tutkakuva",
+              frameType: "radar-now"
+            }
+          ]);
+          setRadarIndex(0);
+          setRadarError("Tutka + sade-ennustekuvia ei ole saatavilla. Näytetään tutkakuva nyt ja malliennuste varalla.");
+          setRainVisualMode("mixed");
           loadRainFallbackGrid();
           return;
         }
 
-        setRainFallbackGrid([]);
-        setRainFallbackSource("");
-        setRadarFrames(frames);
+        setRadarFrames([]);
         setRadarIndex(0);
-        setRadarError("");
+        setRadarError("Tutkakuvaa ei ole saatavilla. Käytetään malliennustetta.");
+        setRainVisualMode("model");
+        loadRainFallbackGrid();
       })
       .catch((error) => {
         setRadarFrames([]);
         setRadarIndex(0);
         setRadarError(`${error.message}. Käytetään malliennustetta.`);
+        setRainVisualMode("model");
         loadRainFallbackGrid();
       });
   }, [selectedArea]);
 
   useEffect(() => {
-    // Sadealue-ennuste seuraa valittua aluetta ja keskittää kartan uudelleen.
+    // Tutka + sade-ennuste seuraa valittua aluetta ja keskittää kartan uudelleen.
     if (!rainMode) return;
     setMapRefreshKey((value) => value + 1);
   }, [rainMode, selectedArea]);
 
   useEffect(() => {
-    // Sadealue-ennuste-tila hakee lähisadealue-ennusteen valitulle paikalle / omalle sijainnille.
+    // Tutka + sade-ennuste-tila hakee lähisadealue-ennusteen valitulle paikalle / omalle sijainnille.
     if (!rainMode) return;
     loadRainNowcast();
 
@@ -1051,7 +1088,7 @@ export default function App() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || result.details || "Sadealue-ennustetta ei voitu hakea");
+        throw new Error(result.error || result.details || "Tutka + sade-ennustetta ei voitu hakea");
       }
 
       const hours = result.hours || [];
@@ -1090,11 +1127,30 @@ export default function App() {
         lat: Number(result.stepLat || 0.28),
         lon: Number(result.stepLon || 0.42)
       });
-      setRadarFrames(hours.map((item, index) => ({
-        time: Math.floor(new Date(item.time).getTime() / 1000),
-        path: `fallback-${index}`
-      })));
-      setRadarIndex(0);
+      setRadarFrames((currentFrames) => {
+        const hasForecastRadarFrames = currentFrames.some((frame) => frame.frameType === "radar-forecast");
+
+        if (hasForecastRadarFrames) return currentFrames;
+
+        const modelFrames = hours.map((item, index) => ({
+          time: Math.floor(new Date(item.time).getTime() / 1000),
+          path: `fallback-${index}`,
+          label: item.label || (index === 0 ? "Nyt" : `+${index * 30} min`),
+          frameType: "model"
+        }));
+
+        const hasRadarNow = currentFrames.some((frame) => frame.frameType === "radar-now");
+
+        if (hasRadarNow) {
+          return [
+            currentFrames.find((frame) => frame.frameType === "radar-now"),
+            ...modelFrames.slice(1)
+          ];
+        }
+
+        return modelFrames;
+      });
+      setRadarIndex((currentIndex) => (currentIndex > 0 ? currentIndex : 0));
       setRadarError("");
     } catch (error) {
       setRainFallbackGrid([]);
@@ -1173,7 +1229,7 @@ export default function App() {
               });
             }}
           >
-            {rainMode ? "Pinnoituskartta" : "Sadealue-ennuste"}
+            {rainMode ? "Pinnoituskartta" : "Tutka + sade-ennuste"}
           </button>
           <button className="ghost-location-button refresh-button" onClick={refreshForecast}>
             Päivitä
@@ -1203,11 +1259,11 @@ export default function App() {
         <div className="rain-bottom-bar mobile-rain-bar">
           <div className="rain-mobile-header">
             <div>
-              <strong>Sadealue-ennuste 30 min</strong>
+              <strong>Tutka + sade-ennuste</strong>
               <span>{activeRadarArea.name}</span>
             </div>
             <span className="rain-time-pill">
-              {rainFallbackGrid[radarIndex]?.label || (selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan")}
+              {selectedRadarFrame?.label || (selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan")}
             </span>
           </div>
 
@@ -1222,7 +1278,7 @@ export default function App() {
               setRadarIndex(Number(event.target.value));
             }}
             disabled={!radarFrames.length}
-            aria-label="Sadealue-ennusteen kellonaika"
+            aria-label="Tutka + sade-ennusteen kellonaika"
           />
 
           <div className="rain-mobile-actions">
@@ -1259,7 +1315,10 @@ export default function App() {
             </div>
           </div>
           {radarError && <div className="rain-bottom-error">{radarError}</div>}
-          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource} · pehmeä sadealuekartta · 30 min välein</div>}
+          {!radarError && rainVisualMode === "radar" && (
+            <div className="rain-mode-source-line">Tutkakuva nyt + sadealue-ennuste</div>
+          )}
+          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource} · malliennuste · 30 min välein</div>}
         </div>
       )}
 <MapContainer
@@ -1328,12 +1387,16 @@ export default function App() {
             keepBuffer={1}
             updateWhenIdle={true}
             updateWhenZooming={false}
-            attribution='Sadealue-ennuste &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
+            attribution='Tutka + sade-ennuste &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
           />
         )}
 
         <RainHeatmapLayer
-          enabled={rainMode && rainFallbackGrid[radarIndex]?.cells?.length > 0}
+          enabled={
+            rainMode &&
+            String(selectedRadarFrame?.path || "").startsWith("fallback-") &&
+            rainFallbackGrid[radarIndex]?.cells?.length > 0
+          }
           cells={rainFallbackGrid[radarIndex]?.cells || []}
           step={rainFallbackStep}
         />
