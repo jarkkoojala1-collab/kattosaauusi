@@ -3,6 +3,7 @@ import {
   MapContainer,
   TileLayer,
   Circle,
+  Rectangle,
   CircleMarker,
   Popup,
   Tooltip,
@@ -388,6 +389,9 @@ export default function App() {
   const [rainForecastMap, setRainForecastMap] = useState([]);
   const [rainForecastLoading, setRainForecastLoading] = useState(false);
   const [rainForecastError, setRainForecastError] = useState("");
+  const [rainFallbackGrid, setRainFallbackGrid] = useState([]);
+  const [rainFallbackSource, setRainFallbackSource] = useState("");
+  const [rainFallbackStep, setRainFallbackStep] = useState({ lat: 0.28, lon: 0.42 });
 
   const API_BASE = import.meta.env.DEV ? `http://${window.location.hostname}:3001` : "";
 
@@ -425,7 +429,7 @@ export default function App() {
   const mapBounds = activeArea.bounds;
   const selectedRadarFrame = radarFrames[radarIndex];
   const radarTileUrl =
-    rainMode && selectedRadarFrame && radarHost
+    rainMode && selectedRadarFrame && radarHost && !rainFallbackGrid.length
       ? `${radarHost}${selectedRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
       : null;
 
@@ -561,9 +565,13 @@ export default function App() {
         if (!frames.length) {
           setRadarFrames([]);
           setRadarIndex(0);
-          throw new Error("Sadealue-ennustetta ei ole juuri nyt saatavilla");
+          setRadarError("Sadealuekuvia ei ole saatavilla. Käytetään malliennustetta.");
+          loadRainFallbackGrid();
+          return;
         }
 
+        setRainFallbackGrid([]);
+        setRainFallbackSource("");
         setRadarFrames(frames);
         setRadarIndex(0);
         setRadarError("");
@@ -571,9 +579,10 @@ export default function App() {
       .catch((error) => {
         setRadarFrames([]);
         setRadarIndex(0);
-        setRadarError(error.message);
+        setRadarError(`${error.message}. Käytetään malliennustetta.`);
+        loadRainFallbackGrid();
       });
-  }, []);
+  }, [selectedArea]);
 
   useEffect(() => {
     // Sadealue-ennuste seuraa valittua aluetta ja keskittää kartan uudelleen.
@@ -959,6 +968,39 @@ export default function App() {
     }
   }
 
+  async function loadRainFallbackGrid() {
+    setRainForecastLoading(true);
+    setRainForecastError("");
+
+    try {
+      const response = await fetch(`${API_BASE}/api/rain-model-grid?area=${selectedArea}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || result.details || "Sade-ennustetta ei voitu hakea varalähteestä");
+      }
+
+      const hours = result.hours || [];
+      setRainFallbackGrid(hours);
+      setRainFallbackSource(result.source || "Sade-ennuste varalähde");
+      setRainFallbackStep({
+        lat: Number(result.stepLat || 0.28),
+        lon: Number(result.stepLon || 0.42)
+      });
+      setRadarFrames(hours.map((item, index) => ({
+        time: Math.floor(new Date(item.time).getTime() / 1000),
+        path: `fallback-${index}`
+      })));
+      setRadarIndex(0);
+      setRadarError("");
+    } catch (error) {
+      setRainFallbackGrid([]);
+      setRainForecastError(error.message);
+    } finally {
+      setRainForecastLoading(false);
+    }
+  }
+
   async function loadRainNowcast() {
     const target =
       selectedPlace && hasValidCoordinates(selectedPlace)
@@ -1114,6 +1156,7 @@ export default function App() {
             </div>
           </div>
           {radarError && <div className="rain-bottom-error">{radarError}</div>}
+          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource}</div>}
         </div>
       )}
 <MapContainer
@@ -1185,6 +1228,37 @@ export default function App() {
             attribution='Sadealue-ennuste &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
           />
         )}
+
+        
+        {rainMode &&
+          rainFallbackGrid[radarIndex]?.cells?.map((cell, index) => {
+            const amount = Number(cell.precipitation || 0);
+            if (amount <= 0) return null;
+
+            const south = Number(cell.lat) - rainFallbackStep.lat / 2;
+            const north = Number(cell.lat) + rainFallbackStep.lat / 2;
+            const west = Number(cell.lon) - rainFallbackStep.lon / 2;
+            const east = Number(cell.lon) + rainFallbackStep.lon / 2;
+
+            return (
+              <Rectangle
+                className="rain-fallback-cell"
+                key={`rain-fallback-${radarIndex}-${index}`}
+                bounds={[
+                  [south, west],
+                  [north, east]
+                ]}
+                pathOptions={{
+                  color: rainForecastColor(amount),
+                  fillColor: rainForecastColor(amount),
+                  fillOpacity: 0.34,
+                  weight: 0,
+                  opacity: 0
+                }}
+                interactive={false}
+              />
+            );
+          })}
 
         {!rainMode && showColorAreas &&
           points.map((point) => {

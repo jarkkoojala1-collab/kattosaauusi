@@ -2725,3 +2725,20 @@ input::placeholder {
 .rain-mode-active .leaflet-tile-pane {
   background: #eaf2f8 !important;
 }
+
+
+/* Sadealue-ennusteen varalähde: alueet, ei palloja */
+.rain-fallback-cell {
+  mix-blend-mode: multiply;
+}
+
+.rain-fallback-source {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  font-size: 11px;
+  font-weight: 850;
+}

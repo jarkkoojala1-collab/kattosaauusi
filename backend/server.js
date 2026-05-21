@@ -637,6 +637,169 @@ async function fetchRainForecastGrid(areaId = "uusimaa") {
 
 
 
+
+const rainGridCache = new Map();
+const RAIN_GRID_CACHE_DURATION_MS = 10 * 60 * 1000;
+
+function getRainGridConfig(areaId = "uusimaa") {
+  if (areaId === "pirkanmaa") {
+    return {
+      id: "pirkanmaa",
+      bounds: {
+        south: 60.85,
+        west: 22.05,
+        north: 62.25,
+        east: 25.45
+      },
+      stepLat: 0.28,
+      stepLon: 0.42
+    };
+  }
+
+  return {
+    id: "uusimaa",
+    bounds: {
+      south: 59.75,
+      west: 22.25,
+      north: 61.35,
+      east: 27.85
+    },
+    stepLat: 0.28,
+    stepLon: 0.46
+  };
+}
+
+function makeRainGridPoints(config) {
+  const points = [];
+
+  for (let lat = config.bounds.south; lat <= config.bounds.north + 0.001; lat += config.stepLat) {
+    for (let lon = config.bounds.west; lon <= config.bounds.east + 0.001; lon += config.stepLon) {
+      points.push({
+        lat: Number(lat.toFixed(4)),
+        lon: Number(lon.toFixed(4))
+      });
+    }
+  }
+
+  return points;
+}
+
+function nearestOpenMeteoHour(hourly, targetMs) {
+  const times = hourly?.time || [];
+  let bestIndex = 0;
+  let bestDiff = Number.POSITIVE_INFINITY;
+
+  times.forEach((time, index) => {
+    const diff = Math.abs(new Date(time).getTime() - targetMs);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestIndex = index;
+    }
+  });
+
+  return bestIndex;
+}
+
+async function fetchOpenMeteoRainPoint(lat, lon) {
+  const url =
+    "https://api.open-meteo.com/v1/forecast" +
+    `?latitude=${encodeURIComponent(lat)}` +
+    `&longitude=${encodeURIComponent(lon)}` +
+    "&hourly=precipitation" +
+    "&forecast_days=1" +
+    "&timezone=Europe%2FHelsinki";
+
+  const response = await fetchWithTimeout(url, 7000);
+
+  if (!response.ok) {
+    throw new Error(`Open-Meteo status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function fetchRainModelGrid(areaId = "uusimaa") {
+  const config = getRainGridConfig(areaId);
+  const cacheKey = `${config.id}`;
+  const cached = rainGridCache.get(cacheKey);
+
+  if (cached && Date.now() - cached.time < RAIN_GRID_CACHE_DURATION_MS) {
+    return cached.value;
+  }
+
+  const gridPoints = makeRainGridPoints(config);
+  const targets = [0, 1, 2].map((hour) => Date.now() + hour * 60 * 60 * 1000);
+  const hours = [0, 1, 2].map((hour) => ({
+    hour,
+    time: new Date(targets[hour]).toISOString(),
+    cells: []
+  }));
+
+  const results = await Promise.allSettled(
+    gridPoints.map(async (point) => {
+      const data = await fetchOpenMeteoRainPoint(point.lat, point.lon);
+      const hourly = data?.hourly || {};
+
+      return {
+        point,
+        hourly
+      };
+    })
+  );
+
+  for (const result of results) {
+    if (result.status !== "fulfilled") continue;
+
+    const { point, hourly } = result.value;
+
+    targets.forEach((targetMs, hourIndex) => {
+      const valueIndex = nearestOpenMeteoHour(hourly, targetMs);
+      const amount = Number(hourly?.precipitation?.[valueIndex] || 0);
+      const time = hourly?.time?.[valueIndex];
+
+      if (time) {
+        hours[hourIndex].time = time;
+      }
+
+      hours[hourIndex].cells.push({
+        lat: point.lat,
+        lon: point.lon,
+        precipitation: amount
+      });
+    });
+  }
+
+  const value = {
+    area: config.id,
+    source: "Open-Meteo sade-ennuste varalähteenä",
+    stepLat: config.stepLat,
+    stepLon: config.stepLon,
+    hours
+  };
+
+  rainGridCache.set(cacheKey, {
+    time: Date.now(),
+    value
+  });
+
+  return value;
+}
+
+app.get("/api/rain-model-grid", async (req, res) => {
+  try {
+    const area = getArea(String(req.query.area || "uusimaa"));
+    const result = await fetchRainModelGrid(area.id);
+    res.json(result);
+  } catch (error) {
+    console.error("Rain model grid error:", error.message);
+    res.status(500).json({
+      error: "Varasade-ennustetta ei voitu hakea",
+      details: error.message
+    });
+  }
+});
+
+
 app.get("/api/rain-forecast-map", async (req, res) => {
   try {
     const area = getArea(String(req.query.area || "uusimaa"));

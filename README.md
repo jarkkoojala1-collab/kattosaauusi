@@ -1,16 +1,17 @@
-# Kattokartta - sadealue-ennuste, ei palloja
+# Kattokartta - sadeennuste varalähteellä
 
 Korjattu:
-- Palloennuste poistettu näkyvistä.
-- Kartalla näkyy sadealuekerros, ei yksittäisiä palloja.
-- Sadealuekerros käyttää RainViewerin radar.nowcast-ennustekuvia.
-- Toteutunutta radar.past-historiaa ei käytetä.
-- Jos ennustettuja sadealuekuvia ei ole saatavilla, näytetään virhe eikä palloja.
-- Slideri vaihtaa ennustekuvia.
-- Mobiili- ja zoom-korjaukset säilyvät mukana.
+- Jos RainViewerin sadealue-ennustekuvia ei ole saatavilla, sovellus hakee varalähteen.
+- Varalähde on Open-Meteo-sade-ennuste alueellisena ruutukarttana.
+- Varalähde näkyy alueina/ruutuina, ei palloina.
+- Toteutunutta sadetta ei käytetä varalähteenä.
+- Sadealuekuvat ovat ensisijainen tapa.
+- Open-Meteo malliennuste on varatapa, jotta ennuste saadaan aina jostain, jos rajapinta vastaa.
+- Slideri toimii molemmissa tapauksissa.
+- Alapalkissa näytetään, jos käytössä on varalähde.
 
 Huomio:
-Tämä näyttää sadealueet karttakerroksena. Se ei ole pistepohjainen palloennuste.
+Jos sekä RainViewer että Open-Meteo ovat poissa käytöstä, sovellus näyttää virheen. Muuten ennuste haetaan aina saatavilla olevasta avoimesta lähteestä.
 
 Render-asetukset:
 
