@@ -11,7 +11,7 @@ import {
   useMap
 } from "react-leaflet";
 
-function MapMover({ lat, lon, centerLat, centerLon, moveKey, areaMoveKey, areaZoom = 8 }) {
+function MapMover({ lat, lon, centerLat, centerLon, moveKey, areaMoveKey, areaZoom = 9 }) {
   const map = useMap();
   const lastMoveKeyRef = useRef(null);
   const lastAreaMoveKeyRef = useRef(null);
@@ -371,7 +371,7 @@ const AREA_CONFIG = {
     centerName: "Nurmijärvi",
     center: [60.4647, 24.8073],
     radiusKm: 150,
-    zoom: 6,
+    zoom: 9,
     bounds: [
       [58.9, 21.6],
       [62.0, 27.7]
@@ -382,7 +382,7 @@ const AREA_CONFIG = {
     centerName: "Tampere",
     center: [61.4978, 23.761],
     radiusKm: 150,
-    zoom: 6,
+    zoom: 9,
     bounds: [
       [59.9, 20.8],
       [63.0, 26.7]
@@ -1307,7 +1307,7 @@ export default function App() {
 <MapContainer
         key={selectedArea}
         center={rainMode ? activeRadarArea.center : center}
-        zoom={rainMode ? activeRadarArea.zoom : 8}
+        zoom={rainMode ? activeRadarArea.zoom : activeArea.zoom}
         minZoom={rainMode ? RADAR_MIN_ZOOM : 7}
         maxZoom={rainMode ? RADAR_MAX_ZOOM : 18}
         maxBounds={rainMode ? activeRadarArea.bounds : mapBounds}
