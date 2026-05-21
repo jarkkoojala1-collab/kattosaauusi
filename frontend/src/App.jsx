@@ -86,32 +86,17 @@ function SafeRadarZoom({ enabled, activeRadarArea }) {
       return;
     }
 
+    // Sadetutka toimii luotettavimmin, kun näkymä pidetään yksinkertaisena:
+    // rajattu alue, kiinteä aloituszoom ja tiukka min/max zoom.
     map.setMinZoom(RADAR_MIN_ZOOM);
     map.setMaxZoom(RADAR_MAX_ZOOM);
     map.setMaxBounds(activeRadarArea.bounds);
-
-    const clampZoom = () => {
-      const currentZoom = map.getZoom();
-      if (currentZoom < RADAR_MIN_ZOOM) {
-        map.setZoom(RADAR_MIN_ZOOM, { animate: false });
-      } else if (currentZoom > RADAR_MAX_ZOOM) {
-        map.setZoom(RADAR_MAX_ZOOM, { animate: false });
-      }
-    };
-
     map.setView(activeRadarArea.center, activeRadarArea.zoom, { animate: false });
-    clampZoom();
-    map.on("zoomend", clampZoom);
 
     setTimeout(() => {
-      clampZoom();
       map.invalidateSize({ animate: false });
-    }, 80);
-
-    return () => {
-      map.off("zoomend", clampZoom);
-    };
-  }, [enabled, map, activeRadarArea]);
+    }, 120);
+  }, [enabled, activeRadarArea, map]);
 
   return null;
 }
@@ -246,7 +231,7 @@ const AREA_CONFIG = {
     centerName: "Nurmijärvi",
     center: [60.4647, 24.8073],
     radiusKm: 150,
-    zoom: 7,
+    zoom: 6,
     bounds: [
       [58.9, 21.6],
       [62.0, 27.7]
@@ -257,7 +242,7 @@ const AREA_CONFIG = {
     centerName: "Tampere",
     center: [61.4978, 23.761],
     radiusKm: 150,
-    zoom: 7,
+    zoom: 6,
     bounds: [
       [59.9, 20.8],
       [63.0, 26.7]
@@ -301,7 +286,7 @@ const RADAR_AREA_CONFIG = {
       [59.55, 21.6],
       [61.75, 28.2]
     ],
-    zoom: 7
+    zoom: 6
   },
   pirkanmaa: {
     name: "Pirkanmaa",
@@ -310,7 +295,7 @@ const RADAR_AREA_CONFIG = {
       [60.65, 21.9],
       [62.55, 25.9]
     ],
-    zoom: 7
+    zoom: 6
   }
 };
 
@@ -940,7 +925,7 @@ export default function App() {
         : { lat: activeArea.center[0], lon: activeArea.center[1] };
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${rainMode ? "rain-mode-active" : ""}`}>
       <div className="topbar">
         <div className="topbar-title"><img src="/logo.png" alt="" /> Kattosää · {selectedArea === "pirkanmaa" ? "Pirkanmaa" : "Uusimaa"}</div>
         {autoAreaMessage && (
@@ -1206,7 +1191,7 @@ export default function App() {
         )}
       </MapContainer>
 
-      {timelineDays.length > 0 && (
+      {!rainMode && timelineDays.length > 0 && (
         <div className="timeline-card">
           <div className="timeline-days">
             {timelineDays.map((day) => (

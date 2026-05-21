@@ -2412,3 +2412,9 @@ input::placeholder {
 .radar-base-layer {
   filter: saturate(0.7) contrast(0.95) brightness(1.03);
 }
+
+
+/* Sadetutkatilassa piilotetaan pinnoituskartan aikajana */
+.rain-mode-active .timeline-card {
+  display: none !important;
+}

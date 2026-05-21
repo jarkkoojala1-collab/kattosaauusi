@@ -1,13 +1,11 @@
-# Kattokartta - sadetutkan zoom lukittu
+# Kattokartta - sadetutka selkeytetty
 
-Muutokset:
-- Sadetutkatilassa zoom on lukittu turvalliselle välille 5–8.
-- Käyttäjä ei voi zoomata tasoille, joilla sadetutka katoaa.
-- Sadetutka käyttää omaa kevyttä karttapohjaa, ei samaa normaalia pinnoituskartan pohjaa.
-- Normaali karttapohja piilotetaan sadetutkatilassa.
-- Tutkatiilikerros käyttää samoja lukittuja zoom-rajoja.
-- Sadetutkan alapalkki säilyy siistinä.
-- Pinnoituskartassa normaali zoomaus säilyy.
+Korjattu:
+- Pinnoituskelin aikajana, päivämäärät ja kellonapit piilotetaan kokonaan sadetutkatilassa.
+- Sadetutkan zoom-logiikkaa yksinkertaistettu, jotta kartta ei tunnu bugiselta.
+- Sadetutka käyttää edelleen lukittua zoom-väliä 5–8.
+- Sadetutkan aloituszoom tehty rauhallisemmaksi.
+- Pinnoituskartassa normaali aikajana ja zoomaus säilyvät.
 
 Render-asetukset:
 
