@@ -75,7 +75,7 @@ function MapSizeFixer({ triggerKey }) {
   return null;
 }
 
-function SafeRadarZoom({ enabled }) {
+function SafeRadarZoom({ enabled, activeRadarArea }) {
   const map = useMap();
 
   useEffect(() => {
@@ -85,14 +85,14 @@ function SafeRadarZoom({ enabled }) {
       return;
     }
 
-    map.setMaxZoom(8);
-    map.setMaxBounds(FINLAND_BOUNDS);
-    if (map.getZoom() > 8) {
-      map.setZoom(8, { animate: false });
+    map.setMaxZoom(9);
+    map.setMaxBounds(activeRadarArea.bounds);
+    if (map.getZoom() > 9) {
+      map.setZoom(9, { animate: false });
     }
-    map.fitBounds(FINLAND_BOUNDS, { padding: [24, 24], animate: false });
+    map.setView(activeRadarArea.center, activeRadarArea.zoom, { animate: false });
     setTimeout(() => map.invalidateSize({ animate: false }), 80);
-  }, [enabled, map]);
+  }, [enabled, map, activeRadarArea]);
 
   return null;
 }
@@ -271,12 +271,26 @@ function isInsideArea(point, area) {
 }
 
 
-const FINLAND_BOUNDS = [
-  [59.4, 19.0],
-  [70.3, 32.0]
-];
-
-const FINLAND_CENTER = [64.7, 26.0];
+const RADAR_AREA_CONFIG = {
+  uusimaa: {
+    name: "Etelä-Suomi",
+    center: [60.65, 24.95],
+    bounds: [
+      [59.55, 21.6],
+      [61.75, 28.2]
+    ],
+    zoom: 7
+  },
+  pirkanmaa: {
+    name: "Pirkanmaa",
+    center: [61.5, 23.8],
+    bounds: [
+      [60.65, 21.9],
+      [62.55, 25.9]
+    ],
+    zoom: 7
+  }
+};
 
 export default function App() {
   const [forecast, setForecast] = useState(null);
@@ -347,6 +361,7 @@ export default function App() {
     timelineItems.find((item) => item.time === selectedTimeKey) || timelineItems[0];
 
   const activeArea = AREA_CONFIG[selectedArea] || AREA_CONFIG.uusimaa;
+  const activeRadarArea = RADAR_AREA_CONFIG[selectedArea] || RADAR_AREA_CONFIG.uusimaa;
   const rawPoints = selectedTime?.points || [];
   const points = rawPoints.filter((point) => isInsideArea(point, activeArea));
   const center = activeArea.center;
@@ -492,6 +507,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // Sadetutka seuraa valittua aluetta ja keskittää kartan uudelleen.
+    if (!rainMode) return;
+    setMapRefreshKey((value) => value + 1);
+  }, [rainMode, selectedArea]);
+
+  useEffect(() => {
     // Sadetutka-tila hakee lähisade-ennusteen valitulle paikalle / omalle sijainnille.
     if (!rainMode) return;
     loadRainNowcast();
@@ -632,16 +653,28 @@ export default function App() {
 
     setLocating(true);
     setErrorText("");
+    setAutoAreaMessage("");
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
+        const detectedArea = chooseAreaByLocation(lat, lon);
+        const areaChanged = detectedArea !== selectedArea;
         const time = selectedTime?.time || new Date().toISOString();
+
+        if (areaChanged) {
+          setSelectedArea(detectedArea);
+          setAutoAreaMessage(
+            detectedArea === "pirkanmaa"
+              ? "Sijainnin perusteella alueeksi valittiin Pirkanmaa."
+              : "Sijainnin perusteella alueeksi valittiin Uusimaa."
+          );
+        }
 
         try {
           const response = await fetch(
-            `${API_BASE}/api/location-forecast?lat=${lat}&lon=${lon}&time=${encodeURIComponent(time)}&area=${selectedArea}`
+            `${API_BASE}/api/location-forecast?lat=${lat}&lon=${lon}&time=${encodeURIComponent(time)}&area=${detectedArea}`
           );
           const result = await response.json();
 
@@ -664,6 +697,8 @@ export default function App() {
             isOwnLocation: true
           });
           setSelectedMoveKey((value) => value + 1);
+          setAreaMoveKey((value) => value + 1);
+          setMapRefreshKey((value) => value + 1);
           setHourlyForecast(result.hourly || []);
           setForecastSource(result.source || "");
           setShowPanel(true);
@@ -679,7 +714,7 @@ export default function App() {
         } else {
           setErrorText("Sijaintia ei voitu hakea.");
         }
-        setLocating(false)
+        setLocating(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
     );
@@ -936,6 +971,12 @@ export default function App() {
     <div className="app-shell">
       <div className="topbar">
         <div className="topbar-title"><img src="/logo.png" alt="" /> Kattosää · {selectedArea === "pirkanmaa" ? "Pirkanmaa" : "Uusimaa"}</div>
+        {autoAreaMessage && (
+          <div className="auto-area-message">
+            {autoAreaMessage}
+            <button type="button" onClick={() => setAutoAreaMessage("")}>×</button>
+          </div>
+        )}
         <div className="topbar-actions">
           <button className="ghost-location-button" onClick={useOwnLocation}>
             {locating ? "Haetaan sijaintia..." : "Oma sijainti"}
@@ -965,22 +1006,22 @@ export default function App() {
       </div>
 
       {rainMode && (
-        <>
-          <div className="rain-radar-panel">
-            <div className="rain-radar-head">
-              <div>
-                <strong>Sadetutka</strong>
-                <span>Suomen alue · viimeiset tutkakuvat + lähisadearvio</span>
-              </div>
-              <button type="button" onClick={() => loadRainNowcast()} disabled={rainLoading}>
-                {rainLoading ? "Haetaan..." : "Päivitä"}
-              </button>
-            </div>
+        <div className="rain-bottom-bar">
+          <div className="rain-bar-main">
+            <button
+              type="button"
+              className="rain-play-button"
+              onClick={() => setRadarPlaying((value) => !value)}
+              disabled={!radarFrames.length}
+              aria-label={radarPlaying ? "Pysäytä sadetutka" : "Toista sadetutka"}
+            >
+              {radarPlaying ? "⏸" : "▶"}
+            </button>
 
-            <div className="radar-slider-card">
-              <div className="radar-slider-head">
-                <span>Tutkakuva</span>
-                <strong>{selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ei tutkakuvaa"}</strong>
+            <div className="rain-bar-slider">
+              <div className="rain-bar-time">
+                <strong>Sadetutka</strong>
+                <span>{selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ladataan..."}</span>
               </div>
               <input
                 type="range"
@@ -993,59 +1034,24 @@ export default function App() {
                 }}
                 disabled={!radarFrames.length}
               />
-              <div className="radar-slider-actions">
-                <button type="button" onClick={() => setRadarPlaying((value) => !value)} disabled={!radarFrames.length}>
-                  {radarPlaying ? "Tauko" : "Toista"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRadarIndex((current) => (current <= 0 ? radarFrames.length - 1 : current - 1))}
-                  disabled={!radarFrames.length}
-                >
-                  ◀
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRadarIndex((current) => (current + 1) % radarFrames.length)}
-                  disabled={!radarFrames.length}
-                >
-                  ▶
-                </button>
-              </div>
             </div>
 
-            {rainNowcast && (
-              <div className={`rain-summary ${rainRiskClass(rainNowcast.summary?.risk)}`}>
-                <div><span>Kohde</span><strong>{rainNowcast.placeName || "Valittu sijainti"}</strong></div>
-                <div><span>Saderiski 2 h</span><strong>{rainRiskLabel(rainNowcast.summary?.risk)}</strong></div>
-                <div><span>Ensimmäinen sade</span><strong>{formatRainTime(rainNowcast.summary?.firstRainAt)}</strong></div>
-                <div><span>Max sade</span><strong>{(rainNowcast.summary?.maxPrecipitationRate ?? 0).toFixed(1)} mm/h</strong></div>
-                <p>{rainNowcast.summary?.recommendation}</p>
-                <small>Lähde: {rainNowcast.source}</small>
-              </div>
-            )}
-
-            {rainError && <div className="rain-error">{rainError}</div>}
-            {radarError && <div className="rain-error">{radarError}</div>}
+            <div className="rain-bar-legend" aria-label="Sadeasteikko">
+              <span className="rain-dot rain-dot-light" title="Heikko sade"></span>
+              <span className="rain-dot rain-dot-medium" title="Kohtalainen sade"></span>
+              <span className="rain-dot rain-dot-heavy" title="Kova sade"></span>
+              <span className="rain-dot rain-dot-very-heavy" title="Erittäin kova sade"></span>
+            </div>
           </div>
-
-          <div className="rain-legend">
-            <strong>Sadeasteikko</strong>
-            <div><span className="rain-dot rain-dot-light"></span> heikko sade</div>
-            <div><span className="rain-dot rain-dot-medium"></span> kohtalainen sade</div>
-            <div><span className="rain-dot rain-dot-heavy"></span> kova sade</div>
-            <div><span className="rain-dot rain-dot-very-heavy"></span> erittäin kova sade</div>
-            <small>Suuntaa-antava tutkavärien tulkinta. Tarkka mm/h-arvo vaihtelee tutkatuotteen mukaan.</small>
-          </div>
-        </>
+        </div>
       )}
 <MapContainer
         key={selectedArea}
-        center={rainMode ? FINLAND_CENTER : center}
-        zoom={rainMode ? 5 : 8}
+        center={rainMode ? activeRadarArea.center : center}
+        zoom={rainMode ? activeRadarArea.zoom : 8}
         minZoom={rainMode ? 4 : 7}
-        maxZoom={rainMode ? 8 : 18}
-        maxBounds={rainMode ? FINLAND_BOUNDS : mapBounds}
+        maxZoom={rainMode ? 9 : 18}
+        maxBounds={rainMode ? activeRadarArea.bounds : mapBounds}
         className="map"
         zoomControl={false}
       >
@@ -1061,7 +1067,7 @@ export default function App() {
 
         <MapSizeFixer triggerKey={`${selectedArea}-${selectedTimeKey}-${showPanel}-${mapRefreshKey}-${rainMode}`} />
 
-        <SafeRadarZoom enabled={rainMode} />
+        <SafeRadarZoom enabled={rainMode} activeRadarArea={activeRadarArea} />
 
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
@@ -1081,7 +1087,7 @@ export default function App() {
             maxNativeZoom={8}
             minNativeZoom={0}
             tileSize={256}
-            bounds={FINLAND_BOUNDS}
+            bounds={activeRadarArea.bounds}
             noWrap={true}
             keepBuffer={1}
             updateWhenIdle={true}
@@ -1169,12 +1175,14 @@ export default function App() {
                 weight: 2
               }}
             >
-              <Popup>
-                <div className="popup">
-                  <strong>Oma sijainti</strong>
-                  <p>Voit hakea ennusteen tälle sijainnille.</p>
-                </div>
-              </Popup>
+              {!rainMode && (
+                <Popup>
+                  <div className="popup">
+                    <strong>Oma sijainti</strong>
+                    <p>Voit hakea ennusteen tälle sijainnille.</p>
+                  </div>
+                </Popup>
+              )}
             </CircleMarker>
           </>
         )}
@@ -1190,17 +1198,19 @@ export default function App() {
               weight: 3
             }}
           >
-            <Popup>
-              <div className="popup">
-                <strong>{selectedPlace.name}</strong>
-                <p>{selectedPlace.ok ? "✅ Pinnoitus onnistuu" : "❌ Pinnoitus ei onnistu"}</p>
-                <p>Lämpö: {selectedPlace.weather?.temp ?? "-"} °C</p>
-                <p>Kosteus: {selectedPlace.weather?.humidity ?? "-"} %</p>
-                <p>Tuuli: {selectedPlace.weather?.wind?.toFixed?.(1) ?? selectedPlace.weather?.wind ?? "-"} m/s</p>
-                <p>Sade: {selectedPlace.weather?.precipitation ?? "-"} mm/h</p>
-                <p>Etäisyys Nurmijärveltä: {selectedPlace.distanceKm ?? "-"} km</p>
-              </div>
-            </Popup>
+            {!rainMode && (
+              <Popup>
+                <div className="popup">
+                  <strong>{selectedPlace.name}</strong>
+                  <p>{selectedPlace.ok ? "✅ Pinnoitus onnistuu" : "❌ Pinnoitus ei onnistu"}</p>
+                  <p>Lämpö: {selectedPlace.weather?.temp ?? "-"} °C</p>
+                  <p>Kosteus: {selectedPlace.weather?.humidity ?? "-"} %</p>
+                  <p>Tuuli: {selectedPlace.weather?.wind?.toFixed?.(1) ?? selectedPlace.weather?.wind ?? "-"} m/s</p>
+                  <p>Sade: {selectedPlace.weather?.precipitation ?? "-"} mm/h</p>
+                  <p>Etäisyys Nurmijärveltä: {selectedPlace.distanceKm ?? "-"} km</p>
+                </div>
+              </Popup>
+            )}
           </CircleMarker>
         )}
       </MapContainer>
@@ -1411,14 +1421,14 @@ export default function App() {
                       <button
                         type="button"
                         className={selectedArea === "uusimaa" ? "active" : ""}
-                        onClick={() => selectedArea !== "uusimaa" && setSelectedArea("uusimaa")}
+                        onClick={() => { setAutoAreaMessage(""); selectedArea !== "uusimaa" && setSelectedArea("uusimaa"); }}
                       >
                         Uusimaa
                       </button>
                       <button
                         type="button"
                         className={selectedArea === "pirkanmaa" ? "active" : ""}
-                        onClick={() => selectedArea !== "pirkanmaa" && setSelectedArea("pirkanmaa")}
+                        onClick={() => { setAutoAreaMessage(""); selectedArea !== "pirkanmaa" && setSelectedArea("pirkanmaa"); }}
                       >
                         Pirkanmaa
                       </button>

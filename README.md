@@ -1,19 +1,16 @@
-# Kattokartta - sadetutka sliderillä ja sadeasteikolla
+# Kattokartta - sadetutkan siisti alapalkki
 
 Muutokset:
-- Sadetutka käyttää hallittua karttakerrosta sovelluksen omassa kartassa.
-- Sadetutkan alareunan valmiit kellonajat/päivämäärät eivät näy.
-- Lisätty oma liukusäädin tutkakuvan kellonajan vaihtamiseen.
-- Lisätty Toista/Tauko, edellinen ja seuraava painikkeet.
-- Lisätty sadeasteikko kartan sivuun.
-- Sadetutka rajataan Suomen alueelle, jotta turhia tiiliä ei ladata.
-- Sadetutkatilassa zoom rajataan toimivalle tasolle 8.
-- Pinnoituskartan pisteet piilotetaan sadetutkatilassa.
-- Lähisadearvio MET Norway Nowcastista säilyy mukana.
-- Huoltotilan kirjautuminen säilyy mukana.
-
-Huomio:
-Sadeasteikko on suuntaa-antava tutkavärien tulkinta. Tarkka mm/h-arvo vaihtelee tutkatuotteen mukaan.
+- Poistettu ruma slider-ponnahdusikkuna kartan päältä.
+- Sadetutkan aikavalitsin on nyt matala, kiinteä alapalkki.
+- Alapalkki sisältää:
+  - Toista/Tauko-painikkeen
+  - kellonajan
+  - liukusäätimen
+  - pienen sadeasteikon värit
+- Mobiilissa alapalkki on entistä matalampi ja piilottaa ylimääräisen tekstin.
+- Sadetutka seuraa edelleen Uusimaa/Pirkanmaa-aluevalintaa.
+- Oman sijainnin automaattinen aluevalinta säilyy mukana.
 
 Render-asetukset:
 
