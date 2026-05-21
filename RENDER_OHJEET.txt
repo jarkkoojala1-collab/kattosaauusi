@@ -1,17 +1,21 @@
-# Kattokartta - sadeennuste varalähteellä
+# Kattokartta - tarkempi sadealue-ennuste
 
-Korjattu:
-- Jos RainViewerin sadealue-ennustekuvia ei ole saatavilla, sovellus hakee varalähteen.
-- Varalähde on Open-Meteo-sade-ennuste alueellisena ruutukarttana.
-- Varalähde näkyy alueina/ruutuina, ei palloina.
-- Toteutunutta sadetta ei käytetä varalähteenä.
-- Sadealuekuvat ovat ensisijainen tapa.
-- Open-Meteo malliennuste on varatapa, jotta ennuste saadaan aina jostain, jos rajapinta vastaa.
-- Slideri toimii molemmissa tapauksissa.
-- Alapalkissa näytetään, jos käytössä on varalähde.
+Parannettu:
+- Varalähteen sadealue-ennuste on nyt tarkempi.
+- Open-Meteo-alueverkko tihennetty:
+  - Uusimaa noin 0.16° x 0.24°
+  - Pirkanmaa noin 0.16° x 0.22°
+- Ruudut piirretään hieman päällekkäin, jolloin sade näyttää enemmän yhtenäiseltä sadealueelta.
+- Kartalle lisätty pehmeä blur/saturate, jotta ruutujen rajat eivät näy yhtä rumasti.
+- Hyvin pienet sadearvot suodatetaan pois.
+- Väri- ja läpinäkyvyysasteikkoa parannettu.
+- Hakuja rajoitetaan backendissä, jotta Render ei kuormitu liikaa.
+- Cache lyhennetty 6 minuuttiin.
 
-Huomio:
-Jos sekä RainViewer että Open-Meteo ovat poissa käytöstä, sovellus näyttää virheen. Muuten ennuste haetaan aina saatavilla olevasta avoimesta lähteestä.
+Toimintaperiaate:
+1. Ensisijaisesti käytetään RainViewerin sadealue-ennustekuvia, jos niitä on saatavilla.
+2. Jos niitä ei ole saatavilla, käytetään tarkempaa Open-Meteo-sadealuevaralähdettä.
+3. Varalähde ei ole palloennuste, vaan ruutupohjainen sadealuekerros.
 
 Render-asetukset:
 

@@ -639,33 +639,33 @@ async function fetchRainForecastGrid(areaId = "uusimaa") {
 
 
 const rainGridCache = new Map();
-const RAIN_GRID_CACHE_DURATION_MS = 10 * 60 * 1000;
+const RAIN_GRID_CACHE_DURATION_MS = 6 * 60 * 1000;
 
 function getRainGridConfig(areaId = "uusimaa") {
   if (areaId === "pirkanmaa") {
     return {
       id: "pirkanmaa",
       bounds: {
-        south: 60.85,
-        west: 22.05,
-        north: 62.25,
-        east: 25.45
+        south: 60.95,
+        west: 22.35,
+        north: 62.05,
+        east: 25.10
       },
-      stepLat: 0.28,
-      stepLon: 0.42
+      stepLat: 0.16,
+      stepLon: 0.22
     };
   }
 
   return {
     id: "uusimaa",
     bounds: {
-      south: 59.75,
-      west: 22.25,
-      north: 61.35,
-      east: 27.85
+      south: 59.78,
+      west: 23.10,
+      north: 61.25,
+      east: 26.85
     },
-    stepLat: 0.28,
-    stepLon: 0.46
+    stepLat: 0.16,
+    stepLon: 0.24
   };
 }
 
@@ -718,6 +718,28 @@ async function fetchOpenMeteoRainPoint(lat, lon) {
   return response.json();
 }
 
+
+async function runLimited(items, limit, worker) {
+  const results = [];
+  let index = 0;
+
+  async function runNext() {
+    const current = index++;
+    if (current >= items.length) return;
+
+    try {
+      results[current] = { status: "fulfilled", value: await worker(items[current], current) };
+    } catch (error) {
+      results[current] = { status: "rejected", reason: error };
+    }
+
+    await runNext();
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, runNext));
+  return results;
+}
+
 async function fetchRainModelGrid(areaId = "uusimaa") {
   const config = getRainGridConfig(areaId);
   const cacheKey = `${config.id}`;
@@ -735,17 +757,15 @@ async function fetchRainModelGrid(areaId = "uusimaa") {
     cells: []
   }));
 
-  const results = await Promise.allSettled(
-    gridPoints.map(async (point) => {
-      const data = await fetchOpenMeteoRainPoint(point.lat, point.lon);
-      const hourly = data?.hourly || {};
+  const results = await runLimited(gridPoints, 8, async (point) => {
+    const data = await fetchOpenMeteoRainPoint(point.lat, point.lon);
+    const hourly = data?.hourly || {};
 
-      return {
-        point,
-        hourly
-      };
-    })
-  );
+    return {
+      point,
+      hourly
+    };
+  });
 
   for (const result of results) {
     if (result.status !== "fulfilled") continue;

@@ -2742,3 +2742,19 @@ input::placeholder {
   font-size: 11px;
   font-weight: 850;
 }
+
+
+/* Tarkempi sadealue-ennuste */
+.rain-area-soft {
+  mix-blend-mode: multiply;
+}
+
+.rain-mode-active .leaflet-overlay-pane svg {
+  filter: blur(2.2px) saturate(1.12);
+}
+
+@media (max-width: 760px) {
+  .rain-mode-active .leaflet-overlay-pane svg {
+    filter: blur(1.6px) saturate(1.08);
+  }
+}

@@ -140,13 +140,25 @@ function rainRiskClass(risk) {
 }
 
 
+
+function rainForecastOpacity(amount) {
+  const value = Number(amount || 0);
+  if (value >= 5) return 0.52;
+  if (value >= 2) return 0.48;
+  if (value >= 1) return 0.42;
+  if (value >= 0.4) return 0.36;
+  if (value >= 0.1) return 0.28;
+  return 0;
+}
+
 function rainForecastColor(amount) {
   const value = Number(amount || 0);
-  if (value >= 3) return "#ef4444";
+  if (value >= 5) return "#dc2626";
+  if (value >= 2) return "#ef4444";
   if (value >= 1) return "#facc15";
-  if (value >= 0.2) return "#22c55e";
-  if (value > 0) return "#60a5fa";
-  return "#94a3b8";
+  if (value >= 0.4) return "#22c55e";
+  if (value >= 0.1) return "#60a5fa";
+  return "transparent";
 }
 
 function rainForecastRadius(amount) {
@@ -1156,7 +1168,7 @@ export default function App() {
             </div>
           </div>
           {radarError && <div className="rain-bottom-error">{radarError}</div>}
-          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource}</div>}
+          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource} · tarkempi alueverkko</div>}
         </div>
       )}
 <MapContainer
@@ -1233,16 +1245,16 @@ export default function App() {
         {rainMode &&
           rainFallbackGrid[radarIndex]?.cells?.map((cell, index) => {
             const amount = Number(cell.precipitation || 0);
-            if (amount <= 0) return null;
+            if (amount < 0.08) return null;
 
-            const south = Number(cell.lat) - rainFallbackStep.lat / 2;
-            const north = Number(cell.lat) + rainFallbackStep.lat / 2;
-            const west = Number(cell.lon) - rainFallbackStep.lon / 2;
-            const east = Number(cell.lon) + rainFallbackStep.lon / 2;
+            const south = Number(cell.lat) - rainFallbackStep.lat * 0.62;
+            const north = Number(cell.lat) + rainFallbackStep.lat * 0.62;
+            const west = Number(cell.lon) - rainFallbackStep.lon * 0.62;
+            const east = Number(cell.lon) + rainFallbackStep.lon * 0.62;
 
             return (
               <Rectangle
-                className="rain-fallback-cell"
+                className="rain-fallback-cell rain-area-soft"
                 key={`rain-fallback-${radarIndex}-${index}`}
                 bounds={[
                   [south, west],
@@ -1251,7 +1263,7 @@ export default function App() {
                 pathOptions={{
                   color: rainForecastColor(amount),
                   fillColor: rainForecastColor(amount),
-                  fillOpacity: 0.34,
+                  fillOpacity: rainForecastOpacity(amount),
                   weight: 0,
                   opacity: 0
                 }}
