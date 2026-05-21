@@ -2749,12 +2749,29 @@ input::placeholder {
   mix-blend-mode: multiply;
 }
 
-.rain-mode-active .leaflet-overlay-pane svg {
-  filter: blur(2.2px) saturate(1.12);
+
+
+
+/* Paras sadealue-ennuste: pehmeä canvas-kerros */
+.rain-heatmap-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 640;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  filter: saturate(1.12) blur(0.7px);
 }
 
-@media (max-width: 760px) {
-  .rain-mode-active .leaflet-overlay-pane svg {
-    filter: blur(1.6px) saturate(1.08);
-  }
+.rain-fallback-cell,
+.rain-area-soft,
+.rain-forecast-circle {
+  display: none !important;
+}
+
+.rain-mode-active .leaflet-overlay-pane {
+  z-index: 640;
+}
+
+.rain-mode-active .leaflet-tile-pane {
+  background: #eaf2f8 !important;
 }

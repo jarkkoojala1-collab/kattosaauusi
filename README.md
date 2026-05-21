@@ -1,21 +1,23 @@
-# Kattokartta - tarkempi sadealue-ennuste
+# Kattokartta - paras sadeennuste
 
-Parannettu:
-- Varalähteen sadealue-ennuste on nyt tarkempi.
-- Open-Meteo-alueverkko tihennetty:
-  - Uusimaa noin 0.16° x 0.24°
-  - Pirkanmaa noin 0.16° x 0.22°
-- Ruudut piirretään hieman päällekkäin, jolloin sade näyttää enemmän yhtenäiseltä sadealueelta.
-- Kartalle lisätty pehmeä blur/saturate, jotta ruutujen rajat eivät näy yhtä rumasti.
-- Hyvin pienet sadearvot suodatetaan pois.
-- Väri- ja läpinäkyvyysasteikkoa parannettu.
-- Hakuja rajoitetaan backendissä, jotta Render ei kuormitu liikaa.
-- Cache lyhennetty 6 minuuttiin.
+Toteutus:
+- Ensisijaisesti käytetään sadealue-ennustekuvia, jos niitä on saatavilla.
+- Jos sadealuekuvia ei ole saatavilla, käytetään tarkkaa Open-Meteo-ennustealuetta.
+- Open-Meteo-varalähde ei piirrä palloja tai karkeita ruutuja.
+- Varalähde piirretään pehmeänä canvas-sadealuekerroksena.
+- Kartalla sade näyttää yhtenäisemmältä alueelta.
+- Backend hakee Open-Meteo-dataa batch-haulla, joten tarkempi verkko ei kuormita yhtä pahasti.
+- Verkko on tihennetty:
+  - Uusimaa noin 0.12° x 0.16°
+  - Pirkanmaa noin 0.12° x 0.16°
+- Cache 5 minuuttia.
+- Slideri näyttää sade-ennusteen eri ajankohtia.
 
-Toimintaperiaate:
-1. Ensisijaisesti käytetään RainViewerin sadealue-ennustekuvia, jos niitä on saatavilla.
-2. Jos niitä ei ole saatavilla, käytetään tarkempaa Open-Meteo-sadealuevaralähdettä.
-3. Varalähde ei ole palloennuste, vaan ruutupohjainen sadealuekerros.
+Miksi tämä on parempi:
+- Ei palloja.
+- Ei isoja rumia ruutuja.
+- Sade näkyy pehmeänä alueena.
+- Jos ensisijainen sadealuekerros puuttuu, sovellus saa silti ennusteen toisesta avoimesta lähteestä.
 
 Render-asetukset:
 

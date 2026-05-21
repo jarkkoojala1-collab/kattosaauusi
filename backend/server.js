@@ -639,7 +639,7 @@ async function fetchRainForecastGrid(areaId = "uusimaa") {
 
 
 const rainGridCache = new Map();
-const RAIN_GRID_CACHE_DURATION_MS = 6 * 60 * 1000;
+const RAIN_GRID_CACHE_DURATION_MS = 5 * 60 * 1000;
 
 function getRainGridConfig(areaId = "uusimaa") {
   if (areaId === "pirkanmaa") {
@@ -647,12 +647,12 @@ function getRainGridConfig(areaId = "uusimaa") {
       id: "pirkanmaa",
       bounds: {
         south: 60.95,
-        west: 22.35,
-        north: 62.05,
-        east: 25.10
+        west: 22.45,
+        north: 62.10,
+        east: 25.25
       },
-      stepLat: 0.16,
-      stepLon: 0.22
+      stepLat: 0.12,
+      stepLon: 0.16
     };
   }
 
@@ -660,12 +660,12 @@ function getRainGridConfig(areaId = "uusimaa") {
     id: "uusimaa",
     bounds: {
       south: 59.78,
-      west: 23.10,
+      west: 23.05,
       north: 61.25,
-      east: 26.85
+      east: 26.95
     },
-    stepLat: 0.16,
-    stepLon: 0.24
+    stepLat: 0.12,
+    stepLon: 0.16
   };
 }
 
@@ -740,6 +740,42 @@ async function runLimited(items, limit, worker) {
   return results;
 }
 
+
+async function fetchOpenMeteoRainBatch(points) {
+  const latitudes = points.map((point) => point.lat).join(",");
+  const longitudes = points.map((point) => point.lon).join(",");
+
+  const url =
+    "https://api.open-meteo.com/v1/forecast" +
+    `?latitude=${encodeURIComponent(latitudes)}` +
+    `&longitude=${encodeURIComponent(longitudes)}` +
+    "&hourly=precipitation" +
+    "&forecast_days=1" +
+    "&timezone=Europe%2FHelsinki";
+
+  const response = await fetchWithTimeout(url, 8000);
+
+  if (!response.ok) {
+    throw new Error(`Open-Meteo batch status ${response.status}`);
+  }
+
+  const data = await response.json();
+  const list = Array.isArray(data) ? data : [data];
+
+  return points.map((point, index) => ({
+    point,
+    hourly: list[index]?.hourly || list[0]?.hourly || {}
+  }));
+}
+
+function chunkArray(items, size) {
+  const chunks = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
+
 async function fetchRainModelGrid(areaId = "uusimaa") {
   const config = getRainGridConfig(areaId);
   const cacheKey = `${config.id}`;
@@ -757,14 +793,11 @@ async function fetchRainModelGrid(areaId = "uusimaa") {
     cells: []
   }));
 
-  const results = await runLimited(gridPoints, 8, async (point) => {
-    const data = await fetchOpenMeteoRainPoint(point.lat, point.lon);
-    const hourly = data?.hourly || {};
-
-    return {
-      point,
-      hourly
-    };
+  const chunks = chunkArray(gridPoints, 20);
+  const chunkResults = await runLimited(chunks, 4, async (chunk) => fetchOpenMeteoRainBatch(chunk));
+  const results = chunkResults.flatMap((result) => {
+    if (result.status !== "fulfilled") return [];
+    return result.value.map((value) => ({ status: "fulfilled", value }));
   });
 
   for (const result of results) {
@@ -791,7 +824,7 @@ async function fetchRainModelGrid(areaId = "uusimaa") {
 
   const value = {
     area: config.id,
-    source: "Open-Meteo sade-ennuste varalähteenä",
+    source: "Open-Meteo tarkka sadealue-ennuste",
     stepLat: config.stepLat,
     stepLon: config.stepLon,
     hours

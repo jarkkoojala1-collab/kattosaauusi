@@ -119,6 +119,97 @@ function SafeRadarZoom({ enabled, activeRadarArea, refreshKey }) {
 }
 
 
+function rainAmountColor(amount) {
+  const value = Number(amount || 0);
+  if (value >= 5) return [220, 38, 38];
+  if (value >= 2) return [239, 68, 68];
+  if (value >= 1) return [250, 204, 21];
+  if (value >= 0.4) return [34, 197, 94];
+  if (value >= 0.1) return [96, 165, 250];
+  return [96, 165, 250];
+}
+
+function rainAmountOpacity(amount) {
+  const value = Number(amount || 0);
+  if (value >= 5) return 0.62;
+  if (value >= 2) return 0.54;
+  if (value >= 1) return 0.46;
+  if (value >= 0.4) return 0.36;
+  if (value >= 0.1) return 0.24;
+  return 0;
+}
+
+function RainHeatmapLayer({ enabled, cells, step }) {
+  const map = useMap();
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.className = "rain-heatmap-canvas";
+    canvasRef.current = canvas;
+
+    const pane = map.getPanes().overlayPane;
+    pane.appendChild(canvas);
+
+    const draw = () => {
+      const size = map.getSize();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.style.width = `${size.x}px`;
+      canvas.style.height = `${size.y}px`;
+      canvas.width = Math.max(1, Math.floor(size.x * dpr));
+      canvas.height = Math.max(1, Math.floor(size.y * dpr));
+
+      const topLeft = map.containerPointToLayerPoint([0, 0]);
+      canvas.style.transform = `translate3d(${topLeft.x}px, ${topLeft.y}px, 0)`;
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size.x, size.y);
+      ctx.globalCompositeOperation = "source-over";
+
+      const validCells = (cells || []).filter((cell) => Number(cell.precipitation || 0) >= 0.08);
+      const radiusBase = Math.max(34, Math.min(95, map.getZoom() * 9));
+
+      for (const cell of validCells) {
+        const amount = Number(cell.precipitation || 0);
+        const opacity = rainAmountOpacity(amount);
+        if (opacity <= 0) continue;
+
+        const point = map.latLngToContainerPoint([Number(cell.lat), Number(cell.lon)]);
+        const [r, g, b] = rainAmountColor(amount);
+        const radius = radiusBase * (amount >= 1 ? 1.28 : amount >= 0.4 ? 1.08 : 0.92);
+
+        const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius);
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${opacity})`);
+        gradient.addColorStop(0.52, `rgba(${r}, ${g}, ${b}, ${opacity * 0.42})`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalCompositeOperation = "source-over";
+    };
+
+    draw();
+    map.on("move zoom resize zoomend moveend", draw);
+
+    return () => {
+      map.off("move zoom resize zoomend moveend", draw);
+      canvas.remove();
+      canvasRef.current = null;
+    };
+  }, [enabled, cells, step, map]);
+
+  return null;
+}
+
+
 function formatRainTime(iso) {
   if (!iso) return "ei näkyvissä";
   return new Date(iso).toLocaleTimeString("fi-FI", {
@@ -1168,7 +1259,7 @@ export default function App() {
             </div>
           </div>
           {radarError && <div className="rain-bottom-error">{radarError}</div>}
-          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource} · tarkempi alueverkko</div>}
+          {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource} · pehmeä sadealuekartta</div>}
         </div>
       )}
 <MapContainer
@@ -1241,36 +1332,11 @@ export default function App() {
           />
         )}
 
-        
-        {rainMode &&
-          rainFallbackGrid[radarIndex]?.cells?.map((cell, index) => {
-            const amount = Number(cell.precipitation || 0);
-            if (amount < 0.08) return null;
-
-            const south = Number(cell.lat) - rainFallbackStep.lat * 0.62;
-            const north = Number(cell.lat) + rainFallbackStep.lat * 0.62;
-            const west = Number(cell.lon) - rainFallbackStep.lon * 0.62;
-            const east = Number(cell.lon) + rainFallbackStep.lon * 0.62;
-
-            return (
-              <Rectangle
-                className="rain-fallback-cell rain-area-soft"
-                key={`rain-fallback-${radarIndex}-${index}`}
-                bounds={[
-                  [south, west],
-                  [north, east]
-                ]}
-                pathOptions={{
-                  color: rainForecastColor(amount),
-                  fillColor: rainForecastColor(amount),
-                  fillOpacity: rainForecastOpacity(amount),
-                  weight: 0,
-                  opacity: 0
-                }}
-                interactive={false}
-              />
-            );
-          })}
+        <RainHeatmapLayer
+          enabled={rainMode && rainFallbackGrid[radarIndex]?.cells?.length > 0}
+          cells={rainFallbackGrid[radarIndex]?.cells || []}
+          step={rainFallbackStep}
+        />
 
         {!rainMode && showColorAreas &&
           points.map((point) => {
