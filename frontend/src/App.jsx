@@ -75,6 +75,28 @@ function MapSizeFixer({ triggerKey }) {
   return null;
 }
 
+function SafeRadarZoom({ enabled }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!enabled) {
+      map.setMaxZoom(18);
+      map.setMaxBounds(null);
+      return;
+    }
+
+    map.setMaxZoom(8);
+    map.setMaxBounds(FINLAND_BOUNDS);
+    if (map.getZoom() > 8) {
+      map.setZoom(8, { animate: false });
+    }
+    map.fitBounds(FINLAND_BOUNDS, { padding: [24, 24], animate: false });
+    setTimeout(() => map.invalidateSize({ animate: false }), 80);
+  }, [enabled, map]);
+
+  return null;
+}
+
 
 function formatRainTime(iso) {
   if (!iso) return "ei näkyvissä";
@@ -248,6 +270,14 @@ function isInsideArea(point, area) {
   return distanceKm(area.center[0], area.center[1], point.lat, point.lon) <= area.radiusKm + 2;
 }
 
+
+const FINLAND_BOUNDS = [
+  [59.4, 19.0],
+  [70.3, 32.0]
+];
+
+const FINLAND_CENTER = [64.7, 26.0];
+
 export default function App() {
   const [forecast, setForecast] = useState(null);
   const [loadingMap, setLoadingMap] = useState(true);
@@ -322,6 +352,10 @@ export default function App() {
   const center = activeArea.center;
   const mapBounds = activeArea.bounds;
   const selectedRadarFrame = radarFrames[radarIndex];
+  const radarTileUrl =
+    rainMode && selectedRadarFrame && radarHost
+      ? `${radarHost}${selectedRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
+      : null;
 
   const timelineDays = useMemo(() => {
     const groups = [];
@@ -836,9 +870,6 @@ export default function App() {
         ? { lat: userLocation.lat, lon: userLocation.lon }
         : { lat: activeArea.center[0], lon: activeArea.center[1] };
 
-  const rainViewerEmbedUrl =
-    `https://www.rainviewer.com/map.html?loc=${Number(radarCenter.lat).toFixed(4)},${Number(radarCenter.lon).toFixed(4)},8&oFa=0&oC=1&oU=0&oCS=1&oF=0&oAP=1&c=3&o=83&lm=1&layer=radar&sm=1&sn=1`;
-
   if (!authToken) {
     return (
       <div className="app-shell">
@@ -934,70 +965,88 @@ export default function App() {
       </div>
 
       {rainMode && (
-        <div className="rain-radar-panel">
-          <div className="rain-radar-head">
-            <div>
-              <strong>Sadetutka</strong>
-              <span>Viimeiset 3 h + lähisadearvio</span>
-              <small>Sadetutka käyttää lähintä tuettua tutkatasoa.</small>
+        <>
+          <div className="rain-radar-panel">
+            <div className="rain-radar-head">
+              <div>
+                <strong>Sadetutka</strong>
+                <span>Suomen alue · viimeiset tutkakuvat + lähisadearvio</span>
+              </div>
+              <button type="button" onClick={() => loadRainNowcast()} disabled={rainLoading}>
+                {rainLoading ? "Haetaan..." : "Päivitä"}
+              </button>
             </div>
-            <button type="button" onClick={() => loadRainNowcast()} disabled={rainLoading}>
-              {rainLoading ? "Haetaan..." : "Päivitä"}
-            </button>
+
+            <div className="radar-slider-card">
+              <div className="radar-slider-head">
+                <span>Tutkakuva</span>
+                <strong>{selectedRadarFrame ? formatRadarTime(selectedRadarFrame.time) : "Ei tutkakuvaa"}</strong>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max={Math.max(0, radarFrames.length - 1)}
+                value={radarIndex}
+                onChange={(event) => {
+                  setRadarPlaying(false);
+                  setRadarIndex(Number(event.target.value));
+                }}
+                disabled={!radarFrames.length}
+              />
+              <div className="radar-slider-actions">
+                <button type="button" onClick={() => setRadarPlaying((value) => !value)} disabled={!radarFrames.length}>
+                  {radarPlaying ? "Tauko" : "Toista"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRadarIndex((current) => (current <= 0 ? radarFrames.length - 1 : current - 1))}
+                  disabled={!radarFrames.length}
+                >
+                  ◀
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRadarIndex((current) => (current + 1) % radarFrames.length)}
+                  disabled={!radarFrames.length}
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+
+            {rainNowcast && (
+              <div className={`rain-summary ${rainRiskClass(rainNowcast.summary?.risk)}`}>
+                <div><span>Kohde</span><strong>{rainNowcast.placeName || "Valittu sijainti"}</strong></div>
+                <div><span>Saderiski 2 h</span><strong>{rainRiskLabel(rainNowcast.summary?.risk)}</strong></div>
+                <div><span>Ensimmäinen sade</span><strong>{formatRainTime(rainNowcast.summary?.firstRainAt)}</strong></div>
+                <div><span>Max sade</span><strong>{(rainNowcast.summary?.maxPrecipitationRate ?? 0).toFixed(1)} mm/h</strong></div>
+                <p>{rainNowcast.summary?.recommendation}</p>
+                <small>Lähde: {rainNowcast.source}</small>
+              </div>
+            )}
+
+            {rainError && <div className="rain-error">{rainError}</div>}
+            {radarError && <div className="rain-error">{radarError}</div>}
           </div>
 
-          <div className="radar-actions compact">
-            <span>Sadetutkakartta näyttää sateen liikkeen ja oman aikajanan.</span>
+          <div className="rain-legend">
+            <strong>Sadeasteikko</strong>
+            <div><span className="rain-dot rain-dot-light"></span> heikko sade</div>
+            <div><span className="rain-dot rain-dot-medium"></span> kohtalainen sade</div>
+            <div><span className="rain-dot rain-dot-heavy"></span> kova sade</div>
+            <div><span className="rain-dot rain-dot-very-heavy"></span> erittäin kova sade</div>
+            <small>Suuntaa-antava tutkavärien tulkinta. Tarkka mm/h-arvo vaihtelee tutkatuotteen mukaan.</small>
           </div>
-
-          {rainNowcast && (
-            <div className={`rain-summary ${rainRiskClass(rainNowcast.summary?.risk)}`}>
-              <div>
-                <span>Kohde</span>
-                <strong>{rainNowcast.placeName || "Valittu sijainti"}</strong>
-              </div>
-              <div>
-                <span>Saderiski 2 h</span>
-                <strong>{rainRiskLabel(rainNowcast.summary?.risk)}</strong>
-              </div>
-              <div>
-                <span>Ensimmäinen sade</span>
-                <strong>{formatRainTime(rainNowcast.summary?.firstRainAt)}</strong>
-              </div>
-              <div>
-                <span>Max sade</span>
-                <strong>{(rainNowcast.summary?.maxPrecipitationRate ?? 0).toFixed(1)} mm/h</strong>
-              </div>
-              <p>{rainNowcast.summary?.recommendation}</p>
-              <small>Lähde: {rainNowcast.source}</small>
-            </div>
-          )}
-
-          {rainError && <div className="rain-error">{rainError}</div>}
-          {radarError && <div className="rain-error">{radarError}</div>}
-        </div>
+        </>
       )}
-
-{rainMode && (
-        <div className="rainviewer-map-shell">
-          <iframe
-            title="Sadetutka"
-            src={rainViewerEmbedUrl}
-            className="rainviewer-map"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </div>
-      )}
-
-      <MapContainer
+<MapContainer
         key={selectedArea}
-        center={center}
-        zoom={8}
-        minZoom={7}
-        maxZoom={18}
-        maxBounds={mapBounds}
-        className={`map ${rainMode ? "map-hidden-for-radar" : ""}`}
+        center={rainMode ? FINLAND_CENTER : center}
+        zoom={rainMode ? 5 : 8}
+        minZoom={rainMode ? 4 : 7}
+        maxZoom={rainMode ? 8 : 18}
+        maxBounds={rainMode ? FINLAND_BOUNDS : mapBounds}
+        className="map"
         zoomControl={false}
       >
         <MapMover
@@ -1011,7 +1060,10 @@ export default function App() {
         />
 
         <MapSizeFixer triggerKey={`${selectedArea}-${selectedTimeKey}-${showPanel}-${mapRefreshKey}-${rainMode}`} />
-<TileLayer
+
+        <SafeRadarZoom enabled={rainMode} />
+
+        <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           keepBuffer={6}
@@ -1019,6 +1071,24 @@ export default function App() {
           updateWhenZooming={false}
           maxNativeZoom={19}
         />
+
+        {radarTileUrl && (
+          <TileLayer
+            key={radarTileUrl}
+            url={radarTileUrl}
+            opacity={0.82}
+            zIndex={650}
+            maxNativeZoom={8}
+            minNativeZoom={0}
+            tileSize={256}
+            bounds={FINLAND_BOUNDS}
+            noWrap={true}
+            keepBuffer={1}
+            updateWhenIdle={true}
+            updateWhenZooming={false}
+            attribution='Sadetutka &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
+          />
+        )}
 
         {!rainMode && showColorAreas &&
           points.map((point) => {
