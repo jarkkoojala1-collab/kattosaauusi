@@ -947,7 +947,7 @@ export default function App() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || result.details || "Hakua ei voitu suorittaa");
+        throw new Error(result.details || result.error || "Hakua ei voitu suorittaa");
       }
 
       if (!Number.isFinite(Number(result.lat)) || !Number.isFinite(Number(result.lon))) {

@@ -94,7 +94,70 @@ const allPlaces = [
   { name: "Loimaa", lat: 60.8497, lon: 23.0561 },
   { name: "Huittinen", lat: 61.1833, lon: 22.7000 },
   { name: "Eura", lat: 61.1333, lon: 22.1333 },
+
+  { name: "Karjaa", lat: 60.0718, lon: 23.6616 },
+  { name: "Raasepori", lat: 59.9742, lon: 23.4364 },
+  { name: "Tammisaari", lat: 59.9736, lon: 23.4339 },
+  { name: "Hanko", lat: 59.8333, lon: 22.9500 },
+  { name: "Inkoo", lat: 60.0459, lon: 24.0046 },
+  { name: "Siuntio", lat: 60.1386, lon: 24.2272 },
+  { name: "Turku", lat: 60.4518, lon: 22.2666 },
+  { name: "Kaarina", lat: 60.4072, lon: 22.3690 },
+  { name: "Raisio", lat: 60.4859, lon: 22.1689 },
+  { name: "Naantali", lat: 60.4674, lon: 22.0243 },
+  { name: "Lieto", lat: 60.5103, lon: 22.4618 },
+  { name: "Paimio", lat: 60.4567, lon: 22.6869 },
+  { name: "Salo", lat: 60.3833, lon: 23.1333 },
+  { name: "Pargas", lat: 60.3067, lon: 22.3000 },
+  { name: "Parainen", lat: 60.3067, lon: 22.3000 },
+  { name: "Masku", lat: 60.5708, lon: 22.0986 },
+  { name: "Mynämäki", lat: 60.6792, lon: 21.9922 },
+  { name: "Nousiainen", lat: 60.6042, lon: 22.0797 },
+  { name: "Rusko", lat: 60.5333, lon: 22.2167 },
+  { name: "Aura", lat: 60.6472, lon: 22.5897 },
+  { name: "Kemiönsaari", lat: 60.1608, lon: 22.7292 },
+  { name: "Kimitoön", lat: 60.1608, lon: 22.7292 },
 ];
+
+
+function normalizePlaceName(value) {
+  return String(value || "")
+    .trim()
+    .toLocaleLowerCase("fi-FI")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+const PLACE_ALIASES = {
+  "karis": "Karjaa",
+  "karjaa": "Karjaa",
+  "turku": "Turku",
+  "abo": "Turku",
+  "åbo": "Turku",
+  "tammisaari": "Tammisaari",
+  "ekenas": "Tammisaari",
+  "ekenäs": "Tammisaari",
+  "parainen": "Parainen",
+  "pargas": "Pargas",
+  "kemiönsaari": "Kemiönsaari",
+  "kimitoon": "Kimitoön",
+  "kimitoön": "Kimitoön"
+};
+
+function findKnownPlace(query) {
+  const normalizedQuery = normalizePlaceName(query);
+  const alias = PLACE_ALIASES[normalizedQuery];
+  const wanted = normalizePlaceName(alias || query);
+
+  let exact = allPlaces.find((place) => normalizePlaceName(place.name) === wanted);
+  if (exact) return exact;
+
+  exact = allPlaces.find((place) => normalizePlaceName(place.name).startsWith(wanted));
+  if (exact) return exact;
+
+  return null;
+}
 
 function haversineKm(lat1, lon1, lat2, lon2) {
   const toRad = (value) => (value * Math.PI) / 180;
@@ -404,32 +467,72 @@ async function fetchForecastPlaces(areaId = "uusimaa") {
 }
 
 async function geocodeCity(city) {
-  const known = allPlaces.find((p) => p.name.toLowerCase() === city.toLowerCase());
+  const cleanCity = String(city || "").trim();
+  const known = findKnownPlace(cleanCity);
   if (known) return known;
 
-  const searchUrl =
-    "https://nominatim.openstreetmap.org/search" +
-    `?q=${encodeURIComponent(city + ", Finland")}` +
-    "&format=json" +
-    "&limit=1" +
-    "&addressdetails=1";
+  const candidates = [
+    `${cleanCity}, Finland`,
+    `${cleanCity}, Suomi`,
+    cleanCity
+  ];
 
-  const response = await fetch(searchUrl, {
-    headers: { "User-Agent": "kattokartta-local-app/1.0" }
-  });
+  let lastError = null;
 
-  const json = await response.json();
-  if (!Array.isArray(json) || json.length === 0) throw new Error("Paikkakuntaa ei löytynyt");
+  for (const query of candidates) {
+    try {
+      const searchUrl =
+        "https://nominatim.openstreetmap.org/search" +
+        `?q=${encodeURIComponent(query)}` +
+        "&format=json" +
+        "&limit=5" +
+        "&addressdetails=1" +
+        "&countrycodes=fi";
 
-  const lat = Number.parseFloat(json[0].lat);
-  const lon = Number.parseFloat(json[0].lon);
+      const response = await fetchWithTimeout(searchUrl, 7000, {
+        headers: {
+          "User-Agent": "Kattosaa/1.0 geocoder jarkko.ojala1@gmail.com"
+        }
+      });
 
-  return {
-    name: json[0].display_name,
-    lat,
-    lon,
-    distanceKm: Math.round(haversineKm(NURMIJARVI.lat, NURMIJARVI.lon, lat, lon))
-  };
+      if (!response.ok) {
+        lastError = new Error(`Nominatim status ${response.status}`);
+        continue;
+      }
+
+      const json = await response.json();
+
+      if (!Array.isArray(json) || json.length === 0) {
+        continue;
+      }
+
+      const best = json.find((item) => item?.lat && item?.lon) || json[0];
+      const lat = Number.parseFloat(best.lat);
+      const lon = Number.parseFloat(best.lon);
+
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        continue;
+      }
+
+      const displayName =
+        best?.address?.city ||
+        best?.address?.town ||
+        best?.address?.village ||
+        best?.address?.municipality ||
+        cleanCity;
+
+      return {
+        name: displayName,
+        lat,
+        lon,
+        distanceKm: Math.round(haversineKm(NURMIJARVI.lat, NURMIJARVI.lon, lat, lon))
+      };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw new Error(lastError ? `Paikkakuntaa ei löytynyt: ${lastError.message}` : "Paikkakuntaa ei löytynyt");
 }
 
 async function reverseGeocode(lat, lon) {
@@ -1180,7 +1283,7 @@ app.get("/api/suggest", (req, res) => {
       return res.json({ suggestions: [] });
     }
 
-    const normalize = (value) => String(value || "").toLocaleLowerCase("fi-FI");
+    const normalize = normalizePlaceName;
     const areaPlaces = getPlacesForArea(area.id);
     const source = [...areaPlaces, ...allPlaces];
     const seen = new Set();

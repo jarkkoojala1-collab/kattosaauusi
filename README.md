@@ -1,12 +1,36 @@
-# Kattokartta - pinnoituskartta lähemmäs
+# Kattokartta - haku korjattu
 
-Muutokset:
-- Pinnoituskartta zoomaa valittuun alueeseen lähemmäs.
-- Uusimaa zoomaa nyt lähemmäs Uudenmaan aluetta.
-- Pirkanmaa zoomaa nyt lähemmäs Pirkanmaan aluetta.
-- Kartan aloituszoom pinnoituskartassa käyttää nyt activeArea.zoom-arvoa.
-- Sadetutkan erilliset zoom-rajaukset säilyvät ennallaan.
-- FMI-tutka + liike-ennuste säilyy mukana.
+Korjattu:
+- Haku ei ole enää pelkästään Nominatim-paikkahaun varassa.
+- Lisätty sovelluksen omaan paikkalistaan mm.:
+  - Karjaa
+  - Raasepori
+  - Tammisaari
+  - Hanko
+  - Inkoo
+  - Siuntio
+  - Turku
+  - Kaarina
+  - Raisio
+  - Naantali
+  - Lieto
+  - Paimio
+  - Salo
+  - Parainen / Pargas
+  - Masku
+  - Mynämäki
+  - Nousiainen
+  - Rusko
+  - Aura
+  - Kemiönsaari / Kimitoön
+- Lisätty alias-haku:
+  - Karis -> Karjaa
+  - Åbo / Abo -> Turku
+  - Ekenäs -> Tammisaari
+  - Pargas -> Parainen
+- Geokoodaus yrittää nyt useampaa hakumuotoa ja käyttää fetch-timeoutia.
+- Hakuehdotukset löytävät paremmin lisätyt paikat.
+- Mukana säilyy edellinen pinnoituskartan lähemmäs zoomaus ja FMI-tutkaennuste.
 
 Render-asetukset:
 
