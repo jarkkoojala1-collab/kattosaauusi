@@ -279,6 +279,8 @@ function parseFmiTimeValuePair(xml) {
 
     if (lower.includes("temperature")) key = "temp";
     else if (lower.includes("humidity")) key = "humidity";
+    else if (lower.includes("winddirection")) key = "windDirection";
+    else if (lower.includes("windgust") || lower.includes("gustspeed")) key = "gust";
     else if (lower.includes("windspeedms")) key = "wind";
     else if (lower.includes("precipitation1h") || lower.includes("precipitationamount")) key = "precipitation";
 
@@ -300,6 +302,8 @@ function parseFmiTimeValuePair(xml) {
           temp: null,
           humidity: null,
           wind: null,
+          windDirection: null,
+          gust: null,
           precipitation: 0
         });
       }
@@ -329,6 +333,8 @@ async function fetchFmiPointForecast(lat, lon) {
     "&timestep=60";
 
   const urls = [
+    base + "&parameters=Temperature,Humidity,WindSpeedMS,WindDirection,WindGust,Precipitation1h",
+    base + "&param=Temperature,Humidity,WindSpeedMS,WindDirection,WindGust,Precipitation1h",
     base + "&parameters=Temperature,Humidity,WindSpeedMS,Precipitation1h",
     base + "&param=Temperature,Humidity,WindSpeedMS,Precipitation1h"
   ];
@@ -354,7 +360,7 @@ async function fetchOpenMeteoPointForecast(lat, lon) {
     "https://api.open-meteo.com/v1/forecast" +
     `?latitude=${lat}` +
     `&longitude=${lon}` +
-    "&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation" +
+    "&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation" +
     "&forecast_days=3" +
     "&timezone=auto";
 
@@ -365,13 +371,21 @@ async function fetchOpenMeteoPointForecast(lat, lon) {
   const hourly = json.hourly;
   if (!hourly?.time?.length) throw new Error("Open-Meteo returned no values");
 
-  return hourly.time.map((time, index) => ({
-    time,
-    temp: hourly.temperature_2m[index],
-    humidity: hourly.relative_humidity_2m[index],
-    wind: hourly.wind_speed_10m[index] / 3.6,
-    precipitation: hourly.precipitation[index] ?? 0
-  }));
+  return hourly.time.map((time, index) => {
+    const wind = Number(hourly.wind_speed_10m[index]);
+    const gust = Number(hourly.wind_gusts_10m?.[index]);
+    const windDirection = Number(hourly.wind_direction_10m?.[index]);
+
+    return {
+      time,
+      temp: hourly.temperature_2m[index],
+      humidity: hourly.relative_humidity_2m[index],
+      wind: wind / 3.6,
+      windDirection: Number.isFinite(windDirection) ? windDirection : null,
+      gust: Number.isFinite(gust) ? gust / 3.6 : null,
+      precipitation: hourly.precipitation[index] ?? 0
+    };
+  });
 }
 
 async function fetchPointForecast(lat, lon) {

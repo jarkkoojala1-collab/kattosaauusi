@@ -216,11 +216,11 @@ function formatWindDirection(degrees) {
   const value = Number(degrees);
   if (!Number.isFinite(value)) return "-";
 
-  const directions = ["P", "Ko", "I", "Ka", "E", "Lo", "L", "Lu"];
+  const directions = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
   const normalized = ((value % 360) + 360) % 360;
   const index = Math.round(normalized / 45) % 8;
 
-  return `${directions[index]} ${Math.round(normalized)}°`;
+  return directions[index];
 }
 
 function formatWindValue(value) {
@@ -236,8 +236,8 @@ function formatWindWithGust(weather) {
 
   if (speed === "-" && gust === "-" && direction === "-") return "-";
 
-  const directionPart = direction !== "-" ? `${direction}, ` : "";
-  return `${directionPart}${speed} m/s${gust !== "-" ? ` (${gust} m/s)` : ""}`;
+  const directionPart = direction !== "-" ? `${direction} ` : "";
+  return `${directionPart}${speed} m/s${gust !== "-" ? ` (puuska ${gust} m/s)` : ""}`;
 }
 
 function formatRainTime(iso) {
@@ -1715,7 +1715,7 @@ export default function App() {
                                 {(row.weather?.precipitation ?? 0) > 0 ? `${row.weather?.precipitation} mm` : "Ei"}
                               </span>
                               <span>{row.weather?.humidity ?? "-"} %</span>
-                              <span>{row.weather?.wind?.toFixed?.(1) ?? row.weather?.wind ?? "-"} m/s</span>
+                              <span className="wind-cell">{formatWindWithGust(row.weather)}</span>
                             </div>
                           ))}
                         </div>

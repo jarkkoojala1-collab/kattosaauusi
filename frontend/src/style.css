@@ -465,7 +465,7 @@ body {
 .weather-table-head,
 .weather-table-row {
   display: grid;
-  grid-template-columns: 0.85fr 0.45fr 0.75fr 0.75fr 0.75fr 0.8fr;
+  grid-template-columns: 0.78fr 0.4fr 0.68fr 0.68fr 0.62fr minmax(118px, 1.05fr);
   gap: 10px;
   align-items: center;
 }
@@ -484,6 +484,11 @@ body {
   padding: 12px 14px;
   border-top: 1px solid rgba(226, 232, 240, 0.8);
   font-size: 14px;
+}
+
+.weather-table-row > span {
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .weather-table-row.coating-good {
@@ -511,8 +516,13 @@ body {
 }
 
 .temp-cell,
-.rain-cell {
+.rain-cell,
+.wind-cell {
   font-weight: 900;
+}
+
+.wind-cell {
+  line-height: 1.25;
 }
 
 .settings-toggle {
@@ -932,8 +942,8 @@ body {
 
   .weather-table-head,
   .weather-table-row {
-    grid-template-columns: 0.72fr 0.38fr 0.58fr 0.58fr 0.58fr 0.62fr;
-    gap: 8px;
+    grid-template-columns: 0.62fr 0.32fr 0.52fr 0.5fr 0.5fr minmax(96px, 0.95fr);
+    gap: 6px;
   }
 
   .weather-table-head {
