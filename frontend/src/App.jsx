@@ -445,7 +445,7 @@ function isInsideArea(point, area) {
 
 
 const RADAR_MIN_ZOOM = 5;
-const RADAR_MAX_ZOOM = 7;
+const RADAR_MAX_ZOOM = 10;
 
 const RADAR_AREA_CONFIG = {
   uusimaa: {
