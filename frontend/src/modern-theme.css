@@ -1,49 +1,45 @@
-/* Kattosää polished dark theme - high contrast, CSS only. */
+/* Kattosää professional theme - hillitty, selkeä ja yksivärinen. CSS only. */
 
 :root {
-  --modern-bg: #0b1220;
-  --modern-panel: rgba(248, 250, 252, 0.96);
-  --modern-panel-soft: rgba(255, 255, 255, 0.90);
-  --modern-border: rgba(15, 23, 42, 0.10);
-  --modern-text: #0f172a;
-  --modern-muted: #475569;
-  --modern-light: #f8fafc;
-  --modern-cyan: #0891b2;
-  --modern-blue: #2563eb;
-  --modern-green: #059669;
-  --modern-orange: #d97706;
-  --modern-red: #dc2626;
-  --modern-shadow: 0 22px 58px rgba(2, 6, 23, 0.22);
-  --modern-shadow-soft: 0 12px 30px rgba(2, 6, 23, 0.14);
+  --app-bg: #111827;
+  --panel-bg: rgba(255, 255, 255, 0.96);
+  --panel-bg-solid: #ffffff;
+  --border: rgba(15, 23, 42, 0.12);
+  --text: #111827;
+  --muted: #475569;
+  --primary: #1f2937;
+  --primary-hover: #374151;
+  --primary-text: #ffffff;
+  --soft: #f3f4f6;
+  --soft-hover: #e5e7eb;
+  --shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+  --shadow-soft: 0 8px 22px rgba(15, 23, 42, 0.12);
 }
 
 html,
 body,
 #root {
-  background: var(--modern-bg) !important;
+  background: var(--app-bg) !important;
 }
 
 body {
-  color: var(--modern-text) !important;
+  color: var(--text) !important;
 }
 
 .app-shell {
-  background:
-    radial-gradient(circle at 8% 0%, rgba(34, 211, 238, 0.24), transparent 28%),
-    radial-gradient(circle at 95% 6%, rgba(16, 185, 129, 0.20), transparent 32%),
-    linear-gradient(135deg, #0b1220 0%, #111827 52%, #0f172a 100%) !important;
+  background: #111827 !important;
 }
 
 .topbar {
-  border-radius: 26px !important;
-  background: rgba(248, 250, 252, 0.94) !important;
-  border: 1px solid rgba(255, 255, 255, 0.92) !important;
-  box-shadow: var(--modern-shadow-soft) !important;
-  backdrop-filter: blur(18px) saturate(1.15) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  box-shadow: var(--shadow-soft) !important;
+  backdrop-filter: blur(12px) !important;
 }
 
 .topbar-actions {
-  gap: 8px !important;
+  gap: 7px !important;
 }
 
 .topbar-actions button,
@@ -55,10 +51,10 @@ body {
 .rain-recenter-button,
 .timeline-days button,
 .timeline-hour {
-  border-radius: 999px !important;
-  font-weight: 900 !important;
-  letter-spacing: -0.015em !important;
-  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.01em !important;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease !important;
 }
 
 .topbar-actions button:hover,
@@ -71,7 +67,6 @@ body {
 .timeline-days button:hover,
 .timeline-hour:hover {
   transform: translateY(-1px) !important;
-  filter: brightness(1.03) !important;
 }
 
 .radar-mode-button,
@@ -81,10 +76,21 @@ body {
 .location-search-button,
 .timeline-days button.active,
 .timeline-hour.active {
-  background: linear-gradient(135deg, var(--modern-green), var(--modern-cyan), var(--modern-blue)) !important;
-  color: #ffffff !important;
-  border: 0 !important;
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22) !important;
+  background: var(--primary) !important;
+  color: var(--primary-text) !important;
+  border: 1px solid var(--primary) !important;
+  box-shadow: 0 8px 20px rgba(31, 41, 55, 0.18) !important;
+}
+
+.radar-mode-button:hover,
+.refresh-button:hover,
+.open-panel-button:hover,
+.primary-button:hover,
+.location-search-button:hover,
+.timeline-days button.active:hover,
+.timeline-hour.active:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
 }
 
 .ghost-location-button:not(.radar-mode-button),
@@ -93,24 +99,34 @@ body {
 .settings-button,
 .timeline-days button,
 .timeline-hour {
-  background: #ffffff !important;
-  color: var(--modern-text) !important;
-  border: 1px solid rgba(148, 163, 184, 0.32) !important;
-  box-shadow: var(--modern-shadow-soft) !important;
+  background: var(--soft) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  box-shadow: none !important;
 }
 
-/* Icon-like compact top buttons */
+.ghost-location-button:not(.radar-mode-button):hover,
+.secondary-button:hover,
+.close-panel-button:hover,
+.settings-button:hover,
+.timeline-days button:hover,
+.timeline-hour:hover {
+  background: var(--soft-hover) !important;
+}
+
 .ghost-location-button,
-.refresh-button,
 .radar-mode-button,
+.refresh-button,
 .open-panel-button {
-  min-width: 42px !important;
+  font-size: inherit !important;
 }
 
-.ghost-location-button::first-letter,
-.refresh-button::first-letter,
-.radar-mode-button::first-letter {
-  font-size: 16px !important;
+.ghost-location-button::after,
+.radar-mode-button::after,
+.refresh-button::after,
+.open-panel-button::after {
+  content: none !important;
+  display: none !important;
 }
 
 .sidebar,
@@ -125,11 +141,11 @@ body {
 .mobile-rain-bar,
 .stat,
 .info-card {
-  background: var(--modern-panel) !important;
-  color: var(--modern-text) !important;
-  border: 1px solid var(--modern-border) !important;
-  box-shadow: var(--modern-shadow) !important;
-  backdrop-filter: blur(12px) saturate(1.04) !important;
+  background: var(--panel-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 .sidebar,
@@ -137,14 +153,14 @@ body {
 .empty-state,
 .settings-panel,
 .timeline-card {
-  border-radius: 30px !important;
+  border-radius: 20px !important;
 }
 
 .current-forecast-box,
 .forecast-day-card,
 .info-card,
 .stat {
-  border-radius: 24px !important;
+  border-radius: 16px !important;
 }
 
 .sidebar-title,
@@ -156,7 +172,7 @@ body {
 .popup strong,
 .search-card strong,
 .weather-table strong {
-  color: var(--modern-text) !important;
+  color: var(--text) !important;
 }
 
 .sidebar-subtitle,
@@ -167,17 +183,17 @@ body {
 .search-card span,
 .weather-table span,
 .suggestions-list span {
-  color: var(--modern-muted) !important;
+  color: var(--muted) !important;
 }
 
 input,
 select,
 textarea {
-  border-radius: 18px !important;
-  border: 1px solid rgba(148, 163, 184, 0.38) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(148, 163, 184, 0.42) !important;
   background: #ffffff !important;
-  color: var(--modern-text) !important;
-  box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.04) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
 }
 
 input::placeholder,
@@ -186,83 +202,84 @@ textarea::placeholder {
 }
 
 .suggestions-list {
-  border-radius: 20px !important;
-  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(148, 163, 184, 0.30) !important;
   background: #ffffff !important;
-  box-shadow: var(--modern-shadow-soft) !important;
+  box-shadow: var(--shadow-soft) !important;
   overflow: hidden !important;
 }
 
 .suggestions-list button {
-  color: var(--modern-text) !important;
+  color: var(--text) !important;
   background: #ffffff !important;
 }
 
 .suggestions-list button:hover {
-  background: #eff6ff !important;
+  background: #f3f4f6 !important;
 }
 
 .weather-table {
-  border-radius: 20px !important;
+  border-radius: 14px !important;
   overflow: hidden !important;
-  border: 1px solid rgba(148, 163, 184, 0.26) !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
   background: #ffffff !important;
 }
 
 .weather-table-head {
-  background: linear-gradient(135deg, #ecfeff, #eff6ff) !important;
-  color: #0f172a !important;
+  background: #f3f4f6 !important;
+  color: var(--text) !important;
 }
 
 .weather-table-row {
-  border-color: rgba(226, 232, 240, 0.90) !important;
-  color: #0f172a !important;
+  border-color: rgba(226, 232, 240, 0.95) !important;
+  color: var(--text) !important;
 }
 
 .detail-pill,
 .status-pill,
 .rain-time-pill {
   border-radius: 999px !important;
-  background: #e0f2fe !important;
-  color: #075985 !important;
-  border: 1px solid rgba(14, 165, 233, 0.24) !important;
+  background: #f3f4f6 !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
 }
 
 .rain-bottom-bar.mobile-rain-bar {
-  background: rgba(248, 250, 252, 0.96) !important;
-  border: 1px solid rgba(255, 255, 255, 0.92) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
 }
 
 .rain-mobile-header strong {
-  color: #0f172a !important;
+  color: var(--text) !important;
 }
 
 .rain-mobile-header span:not(.rain-time-pill) {
-  color: #475569 !important;
+  color: var(--muted) !important;
 }
 
 .rain-time-pill {
-  background: linear-gradient(135deg, var(--modern-cyan), var(--modern-blue)) !important;
+  background: var(--primary) !important;
   color: #ffffff !important;
+  border-color: var(--primary) !important;
 }
 
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
   background: #ffffff !important;
-  color: var(--modern-text) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--modern-shadow-soft) !important;
+  color: var(--text) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-soft) !important;
 }
 
 .leaflet-control-zoom a {
   background: #ffffff !important;
-  color: var(--modern-text) !important;
-  border-color: rgba(148, 163, 184, 0.24) !important;
+  color: var(--text) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
 }
 
 @media (max-width: 760px) {
   .topbar {
-    border-radius: 20px !important;
+    border-radius: 14px !important;
   }
 
   .topbar-actions button {
@@ -271,43 +288,14 @@ textarea::placeholder {
     font-size: 11px !important;
   }
 
-  .ghost-location-button {
-    font-size: 0 !important;
-  }
-
-  .ghost-location-button::after {
-    font-size: 15px !important;
-  }
-
-  .ghost-location-button:first-child::after {
-    content: "📍";
-  }
-
-  .radar-mode-button::after {
-    content: "🌧️";
-  }
-
-  .refresh-button::after {
-    content: "↻";
-  }
-
-  .open-panel-button {
-    font-size: 0 !important;
-  }
-
-  .open-panel-button::after {
-    content: "☰";
-    font-size: 17px !important;
-  }
-
   .sidebar,
   .panel-overlay .sidebar {
-    border-radius: 24px 24px 0 0 !important;
+    border-radius: 18px 18px 0 0 !important;
   }
 
   .current-forecast-box,
   .forecast-day-card,
   .search-card {
-    border-radius: 20px !important;
+    border-radius: 14px !important;
   }
 }
