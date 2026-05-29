@@ -1,6 +1,17 @@
 /* Kattosää sadetutkan aikajana
    Hillitty, työmaakäyttöön sopiva slider: suuret kosketusalueet ja selkeä nykyhetki/+minuutit. */
 
+.radar-mode-button:not(.active) {
+  font-size: 0 !important;
+}
+
+.radar-mode-button:not(.active)::after {
+  content: "Sade" !important;
+  display: inline !important;
+  font-size: 12px !important;
+  line-height: 1.1 !important;
+}
+
 .rain-bottom-bar.mobile-rain-bar {
   left: 50% !important;
   bottom: max(12px, env(safe-area-inset-bottom)) !important;
@@ -154,6 +165,10 @@
 }
 
 @media (max-width: 760px) {
+  .radar-mode-button:not(.active)::after {
+    font-size: 11px !important;
+  }
+
   .rain-bottom-bar.mobile-rain-bar {
     width: calc(100vw - 10px) !important;
     bottom: max(7px, env(safe-area-inset-bottom)) !important;
