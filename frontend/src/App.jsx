@@ -1375,7 +1375,7 @@ export default function App() {
           <TileLayer
             className="radar-base-layer"
             attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap contributors'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
             minZoom={RADAR_MIN_ZOOM}
             maxZoom={RADAR_MAX_ZOOM}
             maxNativeZoom={RADAR_MAX_ZOOM}
