@@ -1,16 +1,16 @@
-/* Sataako.fi-tyylinen sadeaikajana
-   Oma toteutus: suuret kosketusalueet, selkeä aikajana ja moderni alapalkki. */
+/* Kattosää sadetutkan aikajana
+   Hillitty, työmaakäyttöön sopiva slider: suuret kosketusalueet ja selkeä nykyhetki/+minuutit. */
 
 .rain-bottom-bar.mobile-rain-bar {
   left: 50% !important;
-  bottom: max(10px, env(safe-area-inset-bottom)) !important;
-  width: min(760px, calc(100vw - 16px)) !important;
-  padding: 12px 14px 11px !important;
-  border-radius: 24px !important;
-  background: rgba(255, 255, 255, 0.94) !important;
-  border: 1px solid rgba(191, 219, 254, 0.95) !important;
-  box-shadow: 0 18px 52px rgba(15, 23, 42, 0.22) !important;
-  backdrop-filter: blur(16px) !important;
+  bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  width: min(720px, calc(100vw - 18px)) !important;
+  padding: 13px 16px 12px !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22) !important;
+  backdrop-filter: blur(14px) !important;
 }
 
 .rain-mobile-header {
@@ -18,14 +18,14 @@
   grid-template-columns: 1fr auto !important;
   align-items: center !important;
   gap: 12px !important;
-  margin-bottom: 9px !important;
+  margin-bottom: 10px !important;
 }
 
 .rain-mobile-header strong {
   display: block !important;
-  color: #0f172a !important;
+  color: #111827 !important;
   font-size: 14px !important;
-  font-weight: 950 !important;
+  font-weight: 900 !important;
   letter-spacing: -0.01em !important;
   line-height: 1.1 !important;
 }
@@ -33,28 +33,28 @@
 .rain-mobile-header span:not(.rain-time-pill) {
   display: block !important;
   margin-top: 2px !important;
-  color: #64748b !important;
+  color: #475569 !important;
   font-size: 11px !important;
-  font-weight: 850 !important;
+  font-weight: 750 !important;
 }
 
 .rain-time-pill {
-  min-width: 88px !important;
-  padding: 7px 10px !important;
+  min-width: 84px !important;
+  padding: 7px 11px !important;
   border-radius: 999px !important;
-  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%) !important;
+  background: #1f2937 !important;
   color: #ffffff !important;
   text-align: center !important;
   font-size: 12px !important;
-  font-weight: 950 !important;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.20) !important;
+  font-weight: 900 !important;
+  box-shadow: 0 8px 18px rgba(31, 41, 55, 0.18) !important;
 }
 
 .rain-main-slider {
-  --track-height: 8px;
-  --thumb-size: 26px;
+  --track-height: 10px;
+  --thumb-size: 30px;
   width: 100% !important;
-  height: 32px !important;
+  height: 40px !important;
   margin: 0 !important;
   appearance: none !important;
   -webkit-appearance: none !important;
@@ -66,8 +66,8 @@
 .rain-main-slider::-webkit-slider-runnable-track {
   height: var(--track-height) !important;
   border-radius: 999px !important;
-  background: linear-gradient(90deg, #2563eb 0%, #38bdf8 46%, #cbd5e1 46%, #cbd5e1 100%) !important;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+  background: linear-gradient(90deg, #1f2937 0%, #1f2937 48%, #d1d5db 48%, #d1d5db 100%) !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08) !important;
 }
 
 .rain-main-slider::-webkit-slider-thumb {
@@ -77,30 +77,30 @@
   appearance: none !important;
   -webkit-appearance: none !important;
   border-radius: 999px !important;
-  border: 4px solid #ffffff !important;
-  background: #2563eb !important;
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.34), 0 0 0 1px rgba(37, 99, 235, 0.18) !important;
+  border: 5px solid #ffffff !important;
+  background: #111827 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(15, 23, 42, 0.15) !important;
 }
 
 .rain-main-slider::-moz-range-track {
   height: var(--track-height) !important;
   border-radius: 999px !important;
-  background: #cbd5e1 !important;
+  background: #d1d5db !important;
 }
 
 .rain-main-slider::-moz-range-progress {
   height: var(--track-height) !important;
   border-radius: 999px !important;
-  background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%) !important;
+  background: #1f2937 !important;
 }
 
 .rain-main-slider::-moz-range-thumb {
   width: var(--thumb-size) !important;
   height: var(--thumb-size) !important;
   border-radius: 999px !important;
-  border: 4px solid #ffffff !important;
-  background: #2563eb !important;
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.34) !important;
+  border: 5px solid #ffffff !important;
+  background: #111827 !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.28) !important;
 }
 
 .rain-mobile-actions {
@@ -108,26 +108,28 @@
   grid-template-columns: auto auto auto 1fr !important;
   align-items: center !important;
   gap: 8px !important;
-  margin-top: 8px !important;
+  margin-top: 9px !important;
 }
 
 .rain-mobile-actions button {
-  min-height: 36px !important;
-  border: 0 !important;
-  border-radius: 999px !important;
-  padding: 7px 12px !important;
-  background: #eff6ff !important;
-  color: #1d4ed8 !important;
+  min-height: 38px !important;
+  border-radius: 12px !important;
+  padding: 8px 13px !important;
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
   font-size: 12px !important;
-  font-weight: 950 !important;
+  font-weight: 850 !important;
   cursor: pointer !important;
+  box-shadow: none !important;
 }
 
 .rain-mobile-actions .rain-play-button {
-  min-width: 76px !important;
-  background: #2563eb !important;
+  min-width: 78px !important;
+  background: #1f2937 !important;
   color: #ffffff !important;
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18) !important;
+  border-color: #1f2937 !important;
+  box-shadow: 0 8px 18px rgba(31, 41, 55, 0.18) !important;
 }
 
 .rain-mini-legend {
@@ -142,7 +144,7 @@
   gap: 4px !important;
   color: #475569 !important;
   font-size: 11px !important;
-  font-weight: 850 !important;
+  font-weight: 750 !important;
 }
 
 .rain-mini-legend .rain-dot {
@@ -155,12 +157,12 @@
   .rain-bottom-bar.mobile-rain-bar {
     width: calc(100vw - 10px) !important;
     bottom: max(7px, env(safe-area-inset-bottom)) !important;
-    padding: 10px 10px 9px !important;
-    border-radius: 20px !important;
+    padding: 11px 11px 10px !important;
+    border-radius: 18px !important;
   }
 
   .rain-mobile-header {
-    margin-bottom: 6px !important;
+    margin-bottom: 7px !important;
   }
 
   .rain-mobile-header strong {
@@ -168,15 +170,15 @@
   }
 
   .rain-time-pill {
-    min-width: 76px !important;
+    min-width: 74px !important;
     padding: 6px 8px !important;
     font-size: 11px !important;
   }
 
   .rain-main-slider {
-    --track-height: 9px;
-    --thumb-size: 28px;
-    height: 36px !important;
+    --track-height: 11px;
+    --thumb-size: 32px;
+    height: 42px !important;
   }
 
   .rain-mobile-actions {
@@ -185,7 +187,7 @@
   }
 
   .rain-mobile-actions button {
-    min-height: 34px !important;
+    min-height: 36px !important;
     padding: 7px 11px !important;
     font-size: 11px !important;
   }
