@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import "leaflet/dist/leaflet.css";
 import "./style.css";
+import "./rain-slider.css";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
