@@ -4,6 +4,7 @@ import App from "./App.jsx";
 import "leaflet/dist/leaflet.css";
 import "./style.css";
 import "./rain-slider.css";
+import "./modern-theme.css";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
