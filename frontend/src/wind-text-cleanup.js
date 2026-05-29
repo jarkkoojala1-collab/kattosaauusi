@@ -1,4 +1,4 @@
-function cleanWindGustText(root = document.body) {
+function cleanInterfaceText(root = document.body) {
   if (!root) return;
 
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -9,15 +9,22 @@ function cleanWindGustText(root = document.body) {
   }
 
   for (const node of textNodes) {
-    if (node.nodeValue && node.nodeValue.includes("(puuska ")) {
-      node.nodeValue = node.nodeValue.replaceAll("(puuska ", "(");
-    }
+    if (!node.nodeValue) continue;
+
+    node.nodeValue = node.nodeValue
+      .replaceAll("(puuska ", "(")
+      .replaceAll("Tutka + sade ennuste", "Sade")
+      .replaceAll("Tutka + sade-ennuste", "Sade")
+      .replaceAll("Tutka+sade ennuste", "Sade")
+      .replaceAll("Tutka+sade-ennuste", "Sade")
+      .replaceAll("FMI-tutkaennuste", "Sade")
+      .replaceAll("Tutka nyt · ennuste 2 h", "Sade");
   }
 }
 
-cleanWindGustText();
+cleanInterfaceText();
 
-const observer = new MutationObserver(() => cleanWindGustText());
+const observer = new MutationObserver(() => cleanInterfaceText());
 observer.observe(document.body, {
   childList: true,
   subtree: true,
