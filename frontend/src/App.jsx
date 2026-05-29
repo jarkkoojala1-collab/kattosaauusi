@@ -1364,7 +1364,7 @@ export default function App() {
         <TileLayer
           className={rainMode ? "normal-map-base-hidden" : ""}
           attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           keepBuffer={6}
           updateWhenIdle={false}
           updateWhenZooming={false}
