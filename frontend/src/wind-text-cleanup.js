@@ -1,32 +1,39 @@
-function cleanInterfaceText(root = document.body) {
-  if (!root) return;
+function cleanInterfaceTextOnce() {
+  try {
+    if (typeof document === "undefined" || !document.body || typeof NodeFilter === "undefined") return;
 
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const textNodes = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
 
-  while (walker.nextNode()) {
-    textNodes.push(walker.currentNode);
-  }
+    while (walker.nextNode()) {
+      textNodes.push(walker.currentNode);
+    }
 
-  for (const node of textNodes) {
-    if (!node.nodeValue) continue;
+    for (const node of textNodes) {
+      if (!node.nodeValue) continue;
 
-    node.nodeValue = node.nodeValue
-      .replaceAll("(puuska ", "(")
-      .replaceAll("Tutka + sade ennuste", "Sade")
-      .replaceAll("Tutka + sade-ennuste", "Sade")
-      .replaceAll("Tutka+sade ennuste", "Sade")
-      .replaceAll("Tutka+sade-ennuste", "Sade")
-      .replaceAll("FMI-tutkaennuste", "Sade")
-      .replaceAll("Tutka nyt · ennuste 2 h", "Sade");
+      const nextValue = node.nodeValue
+        .replaceAll("(puuska ", "(")
+        .replaceAll("Tutka + sade ennuste", "Sade")
+        .replaceAll("Tutka + sade-ennuste", "Sade")
+        .replaceAll("Tutka+sade ennuste", "Sade")
+        .replaceAll("Tutka+sade-ennuste", "Sade")
+        .replaceAll("FMI-tutkaennuste", "Sade")
+        .replaceAll("Tutka nyt · ennuste 2 h", "Sade");
+
+      if (nextValue !== node.nodeValue) {
+        node.nodeValue = nextValue;
+      }
+    }
+  } catch {
+    // Tämä lisäsiivous ei saa koskaan estää sovelluksen latautumista.
   }
 }
 
-cleanInterfaceText();
+if (typeof window !== "undefined") {
+  [500, 1500, 3500].forEach((delay) => {
+    window.setTimeout(cleanInterfaceTextOnce, delay);
+  });
+}
 
-const observer = new MutationObserver(() => cleanInterfaceText());
-observer.observe(document.body, {
-  childList: true,
-  subtree: true,
-  characterData: true
-});
+export {};
