@@ -38,6 +38,27 @@ body {
   backdrop-filter: blur(12px) !important;
 }
 
+@media (min-width: 761px) {
+  .topbar {
+    width: auto !important;
+    max-width: max-content !important;
+    padding: 6px 8px !important;
+    border-radius: 14px !important;
+  }
+
+  .topbar-actions {
+    gap: 6px !important;
+  }
+
+  .topbar-actions button,
+  .open-panel-button {
+    min-height: 34px !important;
+    padding: 7px 11px !important;
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+  }
+}
+
 .topbar-actions {
   gap: 7px !important;
 }
