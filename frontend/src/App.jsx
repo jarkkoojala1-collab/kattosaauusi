@@ -1399,7 +1399,7 @@ export default function App() {
             keepBuffer={1}
             updateWhenIdle={true}
             updateWhenZooming={false}
-            attribution='Tutka + sade-ennuste &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
+            attribution='sade &copy; <a href="https://www.rainviewer.com/">RainViewer</a>'
           />
         )}
 
