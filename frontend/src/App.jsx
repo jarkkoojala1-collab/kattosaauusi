@@ -211,6 +211,35 @@ function RainHeatmapLayer({ enabled, cells, step }) {
 }
 
 
+
+function formatWindDirection(degrees) {
+  const value = Number(degrees);
+  if (!Number.isFinite(value)) return "-";
+
+  const directions = ["P", "Ko", "I", "Ka", "E", "Lo", "L", "Lu"];
+  const normalized = ((value % 360) + 360) % 360;
+  const index = Math.round(normalized / 45) % 8;
+
+  return `${directions[index]} ${Math.round(normalized)}°`;
+}
+
+function formatWindValue(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "-";
+  return number.toFixed(1);
+}
+
+function formatWindWithGust(weather) {
+  const speed = formatWindValue(weather?.wind ?? weather?.windSpeed ?? weather?.wind_speed);
+  const gust = formatWindValue(weather?.gust ?? weather?.windGust ?? weather?.wind_gust);
+  const direction = formatWindDirection(weather?.windDirection ?? weather?.wind_direction ?? weather?.windDir);
+
+  if (speed === "-" && gust === "-" && direction === "-") return "-";
+
+  const directionPart = direction !== "-" ? `${direction}, ` : "";
+  return `${directionPart}${speed} m/s${gust !== "-" ? ` (${gust} m/s)` : ""}`;
+}
+
 function formatRainTime(iso) {
   if (!iso) return "ei näkyvissä";
   return new Date(iso).toLocaleTimeString("fi-FI", {
@@ -1446,7 +1475,7 @@ export default function App() {
                   <p>{point.ok ? "✅ Pinnoitus onnistuu" : "❌ Pinnoitus ei onnistu"}</p>
                   <p>Lämpö: {point.weather?.temp ?? "-"} °C</p>
                   <p>Kosteus: {point.weather?.humidity ?? "-"} %</p>
-                  <p>Tuuli: {point.weather?.wind?.toFixed?.(1) ?? point.weather?.wind ?? "-"} m/s</p>
+                  <p>Tuuli: {formatWindWithGust(point.weather)}</p>
                   <p>Sade: {point.weather?.precipitation ?? "-"} mm/h</p>
                   <p>Etäisyys Nurmijärveltä: {point.distanceKm ?? "-"} km</p>
                 </div>
@@ -1506,7 +1535,7 @@ export default function App() {
                   <p>{selectedPlace.ok ? "✅ Pinnoitus onnistuu" : "❌ Pinnoitus ei onnistu"}</p>
                   <p>Lämpö: {selectedPlace.weather?.temp ?? "-"} °C</p>
                   <p>Kosteus: {selectedPlace.weather?.humidity ?? "-"} %</p>
-                  <p>Tuuli: {selectedPlace.weather?.wind?.toFixed?.(1) ?? selectedPlace.weather?.wind ?? "-"} m/s</p>
+                  <p>Tuuli: {formatWindWithGust(selectedPlace.weather)}</p>
                   <p>Sade: {selectedPlace.weather?.precipitation ?? "-"} mm/h</p>
                   <p>Etäisyys Nurmijärveltä: {selectedPlace.distanceKm ?? "-"} km</p>
                 </div>
@@ -1650,7 +1679,7 @@ export default function App() {
                   <div className="current-details">
                     <div className="detail-pill">Kosteus {selectedPlace.weather?.humidity ?? "-"} %</div>
                     <div className="detail-pill">
-                      Tuuli {selectedPlace.weather?.wind?.toFixed?.(1) ?? selectedPlace.weather?.wind ?? "-"} m/s
+                      Tuuli {formatWindWithGust(selectedPlace.weather)}
                     </div>
                     <div className="detail-pill">Sade {selectedPlace.weather?.precipitation ?? "-"} mm/h</div>
                     <div className="detail-pill">Etäisyys Nurmijärveltä {selectedPlace.distanceKm ?? "-"} km</div>
