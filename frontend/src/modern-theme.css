@@ -1,144 +1,112 @@
-/* Kattosää modernimpi ulkoasu
-   Rajattu ulkoasupäivitys: ei muuta sää- tai karttalogiikkaa. */
+/* Kattosää moderni teema - turvallinen versio. Vain ulkoasua. */
 
 :root {
-  --ks-bg: #eef4f8;
-  --ks-surface: rgba(255, 255, 255, 0.92);
-  --ks-surface-strong: rgba(255, 255, 255, 0.98);
-  --ks-border: rgba(148, 163, 184, 0.28);
-  --ks-text: #0f172a;
-  --ks-muted: #64748b;
-  --ks-primary: #0f766e;
-  --ks-primary-2: #2563eb;
-  --ks-shadow: 0 18px 48px rgba(15, 23, 42, 0.16);
-  --ks-shadow-soft: 0 10px 28px rgba(15, 23, 42, 0.10);
+  --modern-panel: rgba(255, 255, 255, 0.94);
+  --modern-border: rgba(148, 163, 184, 0.28);
+  --modern-blue: #2563eb;
+  --modern-green: #0f766e;
+  --modern-shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
+  --modern-shadow-soft: 0 8px 22px rgba(15, 23, 42, 0.10);
 }
 
-html,
-body,
-#root {
-  background: radial-gradient(circle at top left, #dff7ef 0, transparent 34%),
-    radial-gradient(circle at top right, #dbeafe 0, transparent 30%),
-    var(--ks-bg) !important;
-}
-
-.app-shell {
-  background: linear-gradient(135deg, rgba(241, 245, 249, 0.72), rgba(236, 253, 245, 0.58)) !important;
+body {
+  background: #f1f7f8 !important;
 }
 
 .topbar {
-  top: max(8px, env(safe-area-inset-top)) !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: min(980px, calc(100vw - 18px)) !important;
-  border-radius: 24px !important;
-  padding: 8px !important;
-  background: rgba(255, 255, 255, 0.78) !important;
-  border: 1px solid rgba(226, 232, 240, 0.84) !important;
-  box-shadow: var(--ks-shadow-soft) !important;
-  backdrop-filter: blur(18px) saturate(1.15) !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: var(--modern-shadow-soft) !important;
+  backdrop-filter: blur(14px) !important;
 }
 
 .topbar-actions {
   gap: 8px !important;
 }
 
-.topbar button,
 .topbar-actions button,
 .open-panel-button,
+.close-panel-button,
 .secondary-button,
 .primary-button,
-.settings-button,
-.rain-recenter-button {
-  border: 0 !important;
+.location-search-button,
+.rain-recenter-button,
+.timeline-days button,
+.timeline-hour {
   border-radius: 999px !important;
-  font-weight: 900 !important;
+  font-weight: 850 !important;
   letter-spacing: -0.01em !important;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.10) !important;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease !important;
 }
 
-.topbar button:hover,
-.open-panel-button:hover,
-.secondary-button:hover,
-.primary-button:hover,
-.settings-button:hover,
-.rain-recenter-button:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14) !important;
-}
-
-.topbar-actions button,
-.primary-button {
-  background: linear-gradient(135deg, #0f766e, #2563eb) !important;
+.radar-mode-button,
+.refresh-button,
+.open-panel-button,
+.primary-button,
+.location-search-button {
+  background: linear-gradient(135deg, var(--modern-green), var(--modern-blue)) !important;
   color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18) !important;
 }
 
-.topbar-actions button.secondary,
+.ghost-location-button:not(.radar-mode-button),
 .secondary-button,
+.close-panel-button,
 .settings-button {
-  background: rgba(255, 255, 255, 0.88) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
   color: #0f172a !important;
-  border: 1px solid rgba(203, 213, 225, 0.75) !important;
+  border: 1px solid rgba(203, 213, 225, 0.82) !important;
+  box-shadow: var(--modern-shadow-soft) !important;
 }
 
-.panel,
-.forecast-panel,
-.settings-panel,
-.side-panel,
-.bottom-sheet,
-.info-card,
+.sidebar,
+.panel-overlay .sidebar,
+.search-card,
 .current-forecast-box,
 .forecast-day-card,
 .empty-state,
-.stat,
+.timeline-card,
+.settings-panel,
 .rain-bottom-bar,
 .mobile-rain-bar {
-  border: 1px solid var(--ks-border) !important;
-  background: var(--ks-surface) !important;
-  box-shadow: var(--ks-shadow) !important;
-  backdrop-filter: blur(16px) saturate(1.10) !important;
+  background: var(--modern-panel) !important;
+  border: 1px solid var(--modern-border) !important;
+  box-shadow: var(--modern-shadow) !important;
+  backdrop-filter: blur(12px) !important;
 }
 
-.panel,
-.forecast-panel,
+.sidebar,
+.search-card,
+.empty-state,
 .settings-panel,
-.side-panel,
-.bottom-sheet,
-.empty-state {
-  border-radius: 28px !important;
+.timeline-card {
+  border-radius: 26px !important;
 }
 
 .current-forecast-box,
-.forecast-day-card,
-.info-card,
-.stat {
+.forecast-day-card {
   border-radius: 22px !important;
 }
 
 input,
 select,
-textarea,
-.search-input,
-.settings-input {
+textarea {
   border-radius: 16px !important;
   border: 1px solid rgba(203, 213, 225, 0.9) !important;
-  background: rgba(255, 255, 255, 0.92) !important;
-  color: var(--ks-text) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #0f172a !important;
 }
 
-.search-suggestions,
 .suggestions-list {
   border-radius: 18px !important;
-  border: 1px solid rgba(203, 213, 225, 0.82) !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  box-shadow: var(--ks-shadow-soft) !important;
+  border: 1px solid rgba(203, 213, 225, 0.86) !important;
+  box-shadow: var(--modern-shadow-soft) !important;
   overflow: hidden !important;
 }
 
 .weather-table {
-  border-radius: 20px !important;
+  border-radius: 18px !important;
   overflow: hidden !important;
   border: 1px solid rgba(226, 232, 240, 0.86) !important;
 }
@@ -146,61 +114,33 @@ textarea,
 .weather-table-head {
   background: linear-gradient(135deg, #f8fafc, #eef6ff) !important;
   color: #334155 !important;
-  font-weight: 950 !important;
 }
 
-.weather-table-row {
-  border-bottom: 1px solid rgba(226, 232, 240, 0.72) !important;
-}
-
-.status-pill,
 .detail-pill,
+.status-pill,
 .rain-time-pill {
   border-radius: 999px !important;
-  font-weight: 950 !important;
-}
-
-.leaflet-container {
-  background: #e8f2f7 !important;
 }
 
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
   border-radius: 18px !important;
-  box-shadow: var(--ks-shadow-soft) !important;
-}
-
-.leaflet-control-zoom a {
-  border-radius: 12px !important;
+  box-shadow: var(--modern-shadow-soft) !important;
 }
 
 @media (max-width: 760px) {
   .topbar {
-    width: calc(100vw - 12px) !important;
-    border-radius: 20px !important;
-    padding: 6px !important;
-  }
-
-  .topbar-actions {
-    gap: 6px !important;
+    border-radius: 18px !important;
   }
 
   .topbar-actions button {
     min-height: 36px !important;
-    padding: 8px 8px !important;
+    padding: 8px 7px !important;
     font-size: 11px !important;
   }
 
-  .panel,
-  .forecast-panel,
-  .settings-panel,
-  .side-panel,
-  .bottom-sheet {
+  .sidebar,
+  .panel-overlay .sidebar {
     border-radius: 22px 22px 0 0 !important;
-  }
-
-  .current-forecast-box,
-  .forecast-day-card {
-    border-radius: 18px !important;
   }
 }
