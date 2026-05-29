@@ -4,7 +4,6 @@ import App from "./App.jsx";
 import "leaflet/dist/leaflet.css";
 import "./style.css";
 import "./rain-slider.css";
-import "./modern-theme.css";
 import "./wind-text-cleanup.js";
 
 class ErrorBoundary extends React.Component {
