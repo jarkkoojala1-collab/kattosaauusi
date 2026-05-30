@@ -237,7 +237,7 @@ function formatWindWithGust(weather) {
   if (speed === "-" && gust === "-" && direction === "-") return "-";
 
   const directionPart = direction !== "-" ? `${direction} ` : "";
-  return `${directionPart}${speed} m/s${gust !== "-" ? ` (puuska ${gust} m/s)` : ""}`;
+  return `${directionPart}${speed} m/s${gust !== "-" ? ` ( ${gust} m/s)` : ""}`;
 }
 
 function formatRainTime(iso) {
