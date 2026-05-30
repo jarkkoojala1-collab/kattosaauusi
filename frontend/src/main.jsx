@@ -1,10 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
+import LoginGate from "./LoginGate.jsx";
 import "leaflet/dist/leaflet.css";
 import "./style.css";
 import "./rain-slider.css";
 import "./modern-theme.css";
+import "./login.css";
 import "./wind-text-cleanup.js";
 
 class ErrorBoundary extends React.Component {
@@ -48,6 +50,8 @@ class ErrorBoundary extends React.Component {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <ErrorBoundary>
-    <App />
+    <LoginGate>
+      <App />
+    </LoginGate>
   </ErrorBoundary>
 );
