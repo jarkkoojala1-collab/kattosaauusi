@@ -1,0 +1,9 @@
+/* Ennustevalikon siistiminen. */
+.panel-overlay .search-card,
+.panel-overlay .empty-state {
+  display: none !important;
+}
+
+.panel-overlay .sidebar-subtitle {
+  display: none !important;
+}
