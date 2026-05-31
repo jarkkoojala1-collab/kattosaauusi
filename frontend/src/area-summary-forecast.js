@@ -1,166 +1,140 @@
 const CACHE = new Map();
-let debounceTimer = null;
+let timer = null;
 let observer = null;
 
 function getApiBase() {
-  const isDev = Boolean(import.meta.env && import.meta.env.DEV);
-  return isDev ? `http://${window.location.hostname}:3001` : "";
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  return isLocal ? `http://${window.location.hostname}:3001` : "";
 }
 
 function detectArea() {
-  const activeAreaButton = document.querySelector(".panel-overlay .area-selector button.active");
-  const activeText = activeAreaButton?.textContent?.toLowerCase() || "";
-
-  if (activeText.includes("pirkanmaa")) return "pirkanmaa";
-  if (activeText.includes("uusimaa")) return "uusimaa";
-
-  const panelText = document.querySelector(".panel-overlay .sidebar-subtitle")?.textContent || "";
-  if (panelText.includes("Tampere")) return "pirkanmaa";
-  return "uusimaa";
+  const text = document.querySelector(".panel-overlay")?.textContent || "";
+  return text.includes("Pirkanmaa") || text.includes("Tampere") ? "pirkanmaa" : "uusimaa";
 }
 
 function areaLabel(area) {
   return area === "pirkanmaa" ? "Pirkanmaan" : "Uudenmaan";
 }
 
-function numberValue(value) {
+function toNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
 }
 
-function avg(values) {
+function average(values) {
   const valid = values.filter((value) => Number.isFinite(value));
   if (!valid.length) return null;
   return valid.reduce((sum, value) => sum + value, 0) / valid.length;
 }
 
-function formatNumber(value, digits = 1) {
-  if (!Number.isFinite(value)) return "-";
-  return value.toFixed(digits);
+function format(value, digits = 1) {
+  return Number.isFinite(value) ? value.toFixed(digits) : "-";
 }
 
-function windDirection(degrees) {
+function windArrow(degrees) {
   const value = Number(degrees);
   if (!Number.isFinite(value)) return "";
-  const directions = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
-  const normalized = ((value % 360) + 360) % 360;
-  return directions[Math.round(normalized / 45) % 8];
+  const arrows = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"];
+  return arrows[Math.round((((value % 360) + 360) % 360) / 45) % 8];
 }
 
-function getWeatherIcon(summary) {
+function weatherIcon(summary) {
   if (!summary) return "⛅";
-  if ((summary.precipitation ?? 0) > 1.5) return "🌧️";
-  if ((summary.precipitation ?? 0) > 0.1) return "🌦️";
-  if ((summary.temp ?? 0) <= 0) return "❄️";
-  if ((summary.humidity ?? 0) >= 85) return "☁️";
-  if ((summary.temp ?? 0) >= 18) return "☀️";
+  if ((summary.precipitation || 0) > 1.5) return "🌧️";
+  if ((summary.precipitation || 0) > 0.1) return "🌦️";
+  if ((summary.temp || 0) <= 0) return "❄️";
+  if ((summary.humidity || 0) >= 85) return "☁️";
+  if ((summary.temp || 0) >= 18) return "☀️";
   return "⛅";
 }
 
-function pickBestTime(times) {
-  if (!Array.isArray(times) || !times.length) return null;
+function nearestTime(times) {
+  if (!Array.isArray(times) || times.length === 0) return null;
   const now = Date.now();
-  let best = times[0];
-  let bestDiff = Number.POSITIVE_INFINITY;
-
-  for (const item of times) {
-    const diff = Math.abs(new Date(item.time).getTime() - now);
-    if (diff < bestDiff) {
-      best = item;
-      bestDiff = diff;
-    }
-  }
-
-  return best;
+  return times.reduce((best, item) => {
+    const bestDiff = Math.abs(new Date(best.time).getTime() - now);
+    const itemDiff = Math.abs(new Date(item.time).getTime() - now);
+    return itemDiff < bestDiff ? item : best;
+  }, times[0]);
 }
 
-function calculateSummary(data) {
-  const bestTime = pickBestTime(data?.times || []);
-  const points = (bestTime?.points || []).filter((point) => point?.weather);
-
+function summarize(data) {
+  const time = nearestTime(data && data.times ? data.times : []);
+  const points = (time && Array.isArray(time.points) ? time.points : []).filter((point) => point && point.weather);
   if (!points.length) return null;
 
-  const temperatures = points.map((point) => numberValue(point.weather?.temp));
-  const humidities = points.map((point) => numberValue(point.weather?.humidity));
-  const precipitations = points.map((point) => numberValue(point.weather?.precipitation));
-  const winds = points.map((point) => numberValue(point.weather?.wind ?? point.weather?.windSpeed ?? point.weather?.wind_speed));
-  const gusts = points.map((point) => numberValue(point.weather?.gust ?? point.weather?.windGust ?? point.weather?.wind_gust));
-  const directions = points.map((point) => numberValue(point.weather?.windDirection ?? point.weather?.wind_direction ?? point.weather?.windDir));
   const okCount = points.filter((point) => point.ok).length;
-
   return {
-    time: bestTime?.time,
     pointCount: points.length,
-    okPercent: Math.round((okCount / Math.max(points.length, 1)) * 100),
-    temp: avg(temperatures),
-    humidity: avg(humidities),
-    precipitation: avg(precipitations),
-    wind: avg(winds),
-    gust: avg(gusts),
-    windDirection: avg(directions)
+    okPercent: Math.round((okCount / points.length) * 100),
+    temp: average(points.map((point) => toNumber(point.weather.temp))),
+    humidity: average(points.map((point) => toNumber(point.weather.humidity))),
+    precipitation: average(points.map((point) => toNumber(point.weather.precipitation))),
+    wind: average(points.map((point) => toNumber(point.weather.wind ?? point.weather.windSpeed ?? point.weather.wind_speed))),
+    gust: average(points.map((point) => toNumber(point.weather.gust ?? point.weather.windGust ?? point.weather.wind_gust))),
+    windDirection: average(points.map((point) => toNumber(point.weather.windDirection ?? point.weather.wind_direction ?? point.weather.windDir)))
   };
 }
 
-async function fetchSummary(area) {
+async function loadSummary(area) {
   const cached = CACHE.get(area);
   if (cached && Date.now() - cached.loadedAt < 10 * 60 * 1000) return cached.summary;
 
   const response = await fetch(`${getApiBase()}/api/forecast-map?area=${area}`);
-  if (!response.ok) throw new Error("Alue-ennustetta ei voitu hakea");
+  if (!response.ok) throw new Error("Alueen säätä ei voitu hakea");
   const data = await response.json();
-  const summary = calculateSummary(data);
+  const summary = summarize(data);
   CACHE.set(area, { loadedAt: Date.now(), summary });
   return summary;
 }
 
-function renderLoading(card, area) {
-  card.innerHTML = `
-    <div class="area-summary-title">${areaLabel(area)} sää nyt</div>
-    <div class="area-summary-loading">Lasketaan alueen keskiarvoa...</div>
-  `;
-}
-
-function renderSummary(card, area, summary) {
+function render(card, area, summary) {
   if (!summary) {
-    card.innerHTML = `
-      <div class="area-summary-title">${areaLabel(area)} sää nyt</div>
-      <div class="area-summary-loading">Alueen keskiarvoennustetta ei ole saatavilla.</div>
-    `;
+    card.innerHTML = `<div class="area-summary-title">${areaLabel(area)} sää nyt</div><div class="area-summary-loading">Keskiarvosäätä ei ole saatavilla.</div>`;
     return;
   }
 
-  const dir = windDirection(summary.windDirection);
-  const gustText = Number.isFinite(summary.gust) ? ` (${formatNumber(summary.gust)} m/s)` : "";
+  const arrow = windArrow(summary.windDirection);
+  const gust = Number.isFinite(summary.gust) ? ` (${format(summary.gust)} m/s)` : "";
 
   card.innerHTML = `
-    <div class="area-summary-title">${areaLabel(area)} sää nyt</div>
+    <div class="area-summary-title">${areaLabel(area)} keskiarvosää nyt</div>
     <div class="area-summary-main">
-      <div class="area-summary-icon">${getWeatherIcon(summary)}</div>
+      <div class="area-summary-icon">${weatherIcon(summary)}</div>
       <div>
-        <div class="area-summary-temp">${formatNumber(summary.temp)} °C</div>
+        <div class="area-summary-temp">${format(summary.temp)} °C</div>
         <div class="area-summary-subtitle">Keskiarvo ${summary.pointCount} pisteestä</div>
       </div>
     </div>
     <div class="area-summary-grid">
       <div><span>Pinnoitus</span><strong>${summary.okPercent}% OK</strong></div>
-      <div><span>Sade</span><strong>${formatNumber(summary.precipitation)} mm/h</strong></div>
-      <div><span>Kosteus</span><strong>${formatNumber(summary.humidity, 0)} %</strong></div>
-      <div><span>Tuuli</span><strong>${dir ? `${dir} ` : ""}${formatNumber(summary.wind)} m/s${gustText}</strong></div>
+      <div><span>Sade</span><strong>${format(summary.precipitation)} mm/h</strong></div>
+      <div><span>Kosteus</span><strong>${format(summary.humidity, 0)} %</strong></div>
+      <div><span>Tuuli</span><strong>${arrow ? `${arrow} ` : ""}${format(summary.wind)} m/s${gust}</strong></div>
     </div>
   `;
 }
 
-async function updateAreaSummary() {
-  try {
-    const panel = document.querySelector(".panel-overlay .sidebar");
-    const searchCard = document.querySelector(".panel-overlay .search-card");
-    const selectedForecast = document.querySelector(".panel-overlay .forecast-panel");
+function removeCard() {
+  const card = document.querySelector(".area-summary-card");
+  if (card) card.remove();
+}
 
-    if (!panel || !searchCard || selectedForecast) {
-      document.querySelector(".area-summary-card")?.remove();
+function shouldShow() {
+  const panel = document.querySelector(".panel-overlay .sidebar");
+  const searchCard = document.querySelector(".panel-overlay .search-card");
+  const selectedForecast = document.querySelector(".panel-overlay .forecast-panel");
+  return Boolean(panel && searchCard && !selectedForecast);
+}
+
+async function updateCard() {
+  try {
+    if (!shouldShow()) {
+      removeCard();
       return;
     }
 
+    const searchCard = document.querySelector(".panel-overlay .search-card");
     let card = document.querySelector(".area-summary-card");
     if (!card) {
       card = document.createElement("section");
@@ -169,33 +143,38 @@ async function updateAreaSummary() {
     }
 
     const area = detectArea();
-    if (card.dataset.area !== area || !card.dataset.loaded) {
-      card.dataset.area = area;
-      card.dataset.loaded = "";
-      renderLoading(card, area);
-      const summary = await fetchSummary(area);
-      card.dataset.loaded = "true";
-      renderSummary(card, area, summary);
-    }
-  } catch {
-    // Lisäkortti ei saa koskaan estää sovelluksen käyttöä.
+    if (card.dataset.area === area && card.dataset.ready === "true") return;
+
+    card.dataset.area = area;
+    card.dataset.ready = "false";
+    card.innerHTML = `<div class="area-summary-title">${areaLabel(area)} keskiarvosää nyt</div><div class="area-summary-loading">Lasketaan keskiarvosäätä...</div>`;
+
+    const summary = await loadSummary(area);
+    card.dataset.ready = "true";
+    render(card, area, summary);
+  } catch (error) {
+    console.warn("Alueen keskiarvosää ei latautunut", error);
   }
 }
 
 function scheduleUpdate() {
-  window.clearTimeout(debounceTimer);
-  debounceTimer = window.setTimeout(updateAreaSummary, 160);
+  window.clearTimeout(timer);
+  timer = window.setTimeout(updateCard, 250);
 }
 
 if (typeof window !== "undefined") {
-  [300, 1000, 2200].forEach((delay) => window.setTimeout(scheduleUpdate, delay));
+  window.setTimeout(scheduleUpdate, 500);
+  window.setTimeout(scheduleUpdate, 1500);
+
+  window.addEventListener("click", scheduleUpdate, true);
+  window.addEventListener("input", scheduleUpdate, true);
 
   window.setTimeout(() => {
-    if (document.body && !observer) {
+    if (!observer && document.body) {
       observer = new MutationObserver(scheduleUpdate);
       observer.observe(document.body, { childList: true, subtree: true });
     }
-  }, 300);
+  }, 500);
 }
 
 export {};
