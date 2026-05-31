@@ -7,6 +7,7 @@ import "./style.css";
 import "./rain-slider.css";
 import "./modern-theme.css";
 import "./login.css";
+import "./forecast-panel-cleanup.css";
 import "./wind-text-cleanup.js";
 
 class ErrorBoundary extends React.Component {
