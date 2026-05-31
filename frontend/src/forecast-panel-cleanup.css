@@ -1,9 +1,4 @@
-/* Ennustevalikon siistiminen. */
-.panel-overlay .search-card,
+/* Ennustevalikon siistiminen. Säilyttää haun, piilottaa vain tyhjän Valitse paikka -laatikon. */
 .panel-overlay .empty-state {
-  display: none !important;
-}
-
-.panel-overlay .sidebar-subtitle {
   display: none !important;
 }
