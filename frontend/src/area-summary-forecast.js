@@ -1,14 +1,21 @@
 const CACHE = new Map();
 let debounceTimer = null;
+let observer = null;
 
 function getApiBase() {
-  const isDev = Boolean(import.meta?.env?.DEV);
+  const isDev = Boolean(import.meta.env && import.meta.env.DEV);
   return isDev ? `http://${window.location.hostname}:3001` : "";
 }
 
 function detectArea() {
-  const text = document.body?.innerText || "";
-  if (text.includes("Pirkanmaa") || text.includes("Tampere")) return "pirkanmaa";
+  const activeAreaButton = document.querySelector(".panel-overlay .area-selector button.active");
+  const activeText = activeAreaButton?.textContent?.toLowerCase() || "";
+
+  if (activeText.includes("pirkanmaa")) return "pirkanmaa";
+  if (activeText.includes("uusimaa")) return "uusimaa";
+
+  const panelText = document.querySelector(".panel-overlay .sidebar-subtitle")?.textContent || "";
+  if (panelText.includes("Tampere")) return "pirkanmaa";
   return "uusimaa";
 }
 
@@ -177,15 +184,15 @@ async function updateAreaSummary() {
 
 function scheduleUpdate() {
   window.clearTimeout(debounceTimer);
-  debounceTimer = window.setTimeout(updateAreaSummary, 120);
+  debounceTimer = window.setTimeout(updateAreaSummary, 160);
 }
 
 if (typeof window !== "undefined") {
   [300, 1000, 2200].forEach((delay) => window.setTimeout(scheduleUpdate, delay));
 
-  const observer = new MutationObserver(scheduleUpdate);
   window.setTimeout(() => {
-    if (document.body) {
+    if (document.body && !observer) {
+      observer = new MutationObserver(scheduleUpdate);
       observer.observe(document.body, { childList: true, subtree: true });
     }
   }, 300);
