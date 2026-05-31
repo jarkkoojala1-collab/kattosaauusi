@@ -334,6 +334,11 @@ textarea::placeholder {
   font-weight: 900 !important;
 }
 
+/* Piilota ennustevalikon Valitse paikka -hakukortti */
+.search-card {
+  display: none !important;
+}
+
 @media (max-width: 760px) {
   .topbar {
     border-radius: 14px !important;
