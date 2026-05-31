@@ -1,22 +1,9 @@
-/* Ennustevalikon siistiminen. Säilyttää haun, piilottaa vain tyhjän Valitse paikka -laatikon. */
+/* Ennustevalikon siistiminen. Säilyttää haun ja asetukset, piilottaa vain turhat välilaatikot. */
 .panel-overlay .search-card {
   display: block !important;
 }
 
-.panel-overlay .empty-state {
-  display: none !important;
-}
-
+.panel-overlay .empty-state,
 .panel-overlay .summary-strip {
-  margin-top: 12px !important;
-}
-
-.panel-overlay .summary-strip::before {
-  content: "Alueen yhteenveto";
-  display: block;
-  grid-column: 1 / -1;
-  margin-bottom: 8px;
-  color: #111827;
-  font-size: 14px;
-  font-weight: 900;
+  display: none !important;
 }
