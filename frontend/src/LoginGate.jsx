@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 
-const AUTH_VERSION = "2026-05-31-logout-all-v1";
+const AUTH_VERSION = "2026-05-31-password-pinnoitus2026-v1";
 const AUTH_STORAGE_KEY = "kattosaa-auth-session";
 
 // Kevyt sivuston lukitus. Vaihda nämä arvot tarvittaessa.
 // Huom: frontend-toteutus ei ole pankkitason suojaus, mutta sopii huolto-/asiakaskäytön rajaamiseen.
 const VALID_USERS = [
-  { username: "kattosaa", password: "pinnoitus" }
+  { username: "kattosaa", password: "Pinnoitus2026" }
 ];
 
 function readStoredSession() {
