@@ -69,11 +69,13 @@
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 25px !important;
-    height: 25px !important;
+    width: 24px !important;
+    height: 24px !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
     background-size: contain !important;
+    opacity: 1 !important;
+    filter: none !important;
   }
 
   .topbar-actions > button::after,
@@ -95,7 +97,7 @@
 
   .topbar-actions > button:nth-child(2)::before,
   .rain-mode-active .topbar-actions > button:nth-child(2)::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23111827' stroke-width='5.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 40h31a10 10 0 0 0-2-19 15 15 0 0 0-28 6A7 7 0 0 0 14 40Z'/%3E%3Cpath d='M15 17a26 26 0 0 1 34 0M9 10a36 36 0 0 1 46 0M27 49l-3 7M40 49l-3 7'/%3E%3C/g%3E%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23111827' stroke-width='5.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 39h31a10 10 0 0 0-2-19 15 15 0 0 0-28 6A7 7 0 0 0 15 39Z'/%3E%3Cpath d='M24 48l-3 7M38 48l-3 7'/%3E%3C/g%3E%3C/svg%3E") !important;
   }
 
   .topbar-actions > button:nth-child(3)::before,
@@ -112,6 +114,16 @@
   .topbar-actions .km-react-button::before {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 64'%3E%3Cg fill='none' stroke='%23111827' stroke-width='5.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 18h34v26H8z'/%3E%3Cpath d='M42 27h11l8 9v8H42z'/%3E%3Ccircle cx='22' cy='48' r='6'/%3E%3Ccircle cx='54' cy='48' r='6'/%3E%3Cpath d='M8 44h8M28 44h20M60 44h4'/%3E%3C/g%3E%3C/svg%3E") !important;
     width: 29px !important;
+  }
+
+  .radar-mode-button.active::before,
+  .topbar-actions > button.open-panel-button::before,
+  .topbar-actions .km-react-button::before {
+    filter: brightness(0) invert(1) !important;
+  }
+
+  .topbar-actions > button:not(.active):not(.open-panel-button)::before {
+    filter: none !important;
   }
 
   .topbar-actions .km-react-button {
