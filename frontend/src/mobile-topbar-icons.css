@@ -99,17 +99,17 @@
   }
 
   .km-react-backdrop {
-    padding: 0 6px calc(78px + env(safe-area-inset-bottom)) !important;
+    padding: 0 6px calc(18px + env(safe-area-inset-bottom)) !important;
     align-items: flex-end !important;
     justify-content: center !important;
     background: rgba(15, 23, 42, 0.08) !important;
   }
 
   .km-react-panel {
-    max-height: 36dvh !important;
+    max-height: 72dvh !important;
     width: calc(100dvw - 12px) !important;
     border-radius: 20px !important;
-    padding: 9px 12px 10px !important;
+    padding: 12px 12px 14px !important;
   }
 }
 
