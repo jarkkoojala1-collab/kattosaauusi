@@ -7,17 +7,19 @@ const buttonStyle = {
   alignItems: "center",
   justifyContent: "center",
   minHeight: 38,
-  minWidth: 48,
-  padding: "8px 13px",
-  border: 0,
+  minWidth: 42,
+  padding: "8px 11px",
+  border: "1px solid rgba(255,255,255,0.18)",
   borderRadius: 14,
-  background: "#111827",
+  background: "linear-gradient(180deg, #111827 0%, #020617 100%)",
   color: "#ffffff",
   fontWeight: 900,
   cursor: "pointer",
-  boxShadow: "0 8px 22px rgba(15, 23, 42, 0.22)",
+  boxShadow: "0 10px 24px rgba(15, 23, 42, 0.25)",
   position: "relative",
-  zIndex: 20
+  zIndex: 20,
+  fontSize: 18,
+  lineHeight: 1
 };
 
 const backdropStyle = {
@@ -25,21 +27,52 @@ const backdropStyle = {
   inset: 0,
   zIndex: 5000,
   display: "grid",
-  placeItems: "center",
-  padding: 16,
-  background: "rgba(15, 23, 42, 0.45)",
-  backdropFilter: "blur(8px)"
+  alignItems: "end",
+  justifyItems: "center",
+  padding: "12px 10px calc(14px + env(safe-area-inset-bottom))",
+  background: "rgba(15, 23, 42, 0.30)",
+  backdropFilter: "blur(6px)"
 };
 
 const panelStyle = {
-  width: "min(520px, calc(100vw - 28px))",
-  maxHeight: "calc(100vh - 28px)",
+  width: "min(520px, calc(100vw - 20px))",
+  maxHeight: "76dvh",
   overflow: "auto",
-  padding: 18,
-  borderRadius: 22,
+  padding: 16,
+  borderRadius: "24px 24px 16px 16px",
   background: "#ffffff",
   color: "#111827",
-  boxShadow: "0 24px 70px rgba(15, 23, 42, 0.35)"
+  boxShadow: "0 -12px 60px rgba(15, 23, 42, 0.30)",
+  WebkitOverflowScrolling: "touch"
+};
+
+const secondaryButtonStyle = {
+  minHeight: 42,
+  border: 0,
+  borderRadius: 13,
+  padding: "9px 11px",
+  background: "#f1f5f9",
+  color: "#111827",
+  fontWeight: 900,
+  cursor: "pointer",
+  textDecoration: "none",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 7,
+  fontSize: 14
+};
+
+const primaryButtonStyle = {
+  ...secondaryButtonStyle,
+  background: "#111827",
+  color: "#ffffff"
+};
+
+const dangerButtonStyle = {
+  ...secondaryButtonStyle,
+  background: "#fee2e2",
+  color: "#991b1b"
 };
 
 function makeCopyText(addresses) {
@@ -150,29 +183,35 @@ export default function KmTool({ selectedArea }) {
         aria-label="KM-laskuri"
         title="KM-laskuri"
       >
-        KM
+        ⛟
       </button>
 
       {open && (
         <div className="km-react-backdrop" style={backdropStyle} onClick={() => setOpen(false)}>
           <div className="km-react-panel" style={panelStyle} onClick={(event) => event.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+            <div style={{ width: 42, height: 5, borderRadius: 999, background: "#cbd5e1", margin: "0 auto 12px" }} />
+
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 950 }}>KM-laskuri</h2>
-                <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 13, fontWeight: 700 }}>Lähtö ja viimeisen työmaan paluu: {HALL_ADDRESS}</p>
+                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 950, letterSpacing: "-0.04em" }}>KM-laskuri</h2>
+                <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 12, fontWeight: 700 }}>
+                  Lähtö ja viimeisen työmaan paluu: {HALL_ADDRESS}
+                </p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} style={{ width: 38, height: 38, border: 0, borderRadius: 12, background: "#f3f4f6", fontSize: 22 }}>×</button>
+              <button type="button" onClick={() => setOpen(false)} style={{ width: 38, height: 38, border: 0, borderRadius: 14, background: "#f1f5f9", fontSize: 20, cursor: "pointer" }} aria-label="Sulje">
+                ✕
+              </button>
             </div>
 
             <div>
               {stops.map((stop, index) => (
-                <label key={index} style={{ display: "grid", gap: 7, marginTop: 12, fontSize: 13, fontWeight: 900 }}>
+                <label key={index} style={{ display: "grid", gap: 6, marginTop: 10, fontSize: 13, fontWeight: 900 }}>
                   <span>Työmaan osoite {index + 1}</span>
                   <div style={{ display: "grid", gridTemplateColumns: stops.length > 1 ? "1fr auto" : "1fr", gap: 8 }}>
                     <input
                       value={stop}
                       placeholder="Syötä osoite"
-                      style={{ minHeight: 44, borderRadius: 12, border: "1px solid rgba(148, 163, 184, 0.45)", padding: "10px 12px", fontSize: 15 }}
+                      style={{ minHeight: 42, borderRadius: 13, border: "1px solid rgba(148, 163, 184, 0.45)", padding: "9px 11px", fontSize: 15, outline: "none" }}
                       onChange={(event) => {
                         const next = [...stops];
                         next[index] = event.target.value;
@@ -183,13 +222,15 @@ export default function KmTool({ selectedArea }) {
                     {stops.length > 1 && (
                       <button
                         type="button"
-                        style={{ border: 0, borderRadius: 12, padding: "0 12px", background: "#fee2e2", color: "#991b1b", fontWeight: 900 }}
+                        style={dangerButtonStyle}
                         onClick={() => {
                           setStops(stops.filter((_, itemIndex) => itemIndex !== index));
                           setLegs([]);
                         }}
+                        aria-label="Poista pysähdys"
+                        title="Poista"
                       >
-                        Poista
+                        🗑
                       </button>
                     )}
                   </div>
@@ -198,9 +239,11 @@ export default function KmTool({ selectedArea }) {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
-              <button type="button" style={{ minHeight: 44, border: 0, borderRadius: 12, fontWeight: 900 }} onClick={() => setStops([...stops, ""])}>Lisää pysähdys</button>
-              <button type="button" style={{ minHeight: 44, border: 0, borderRadius: 12, fontWeight: 900, background: "#111827", color: "#ffffff" }} onClick={handleCalculate} disabled={loading}>
-                {loading ? "Lasketaan..." : "Laske kilometrit"}
+              <button type="button" style={secondaryButtonStyle} onClick={() => setStops([...stops, ""])}>
+                ＋ Pysähdys
+              </button>
+              <button type="button" style={primaryButtonStyle} onClick={handleCalculate} disabled={loading}>
+                {loading ? "⏳ Lasketaan" : "↗ Laske"}
               </button>
             </div>
 
@@ -208,17 +251,17 @@ export default function KmTool({ selectedArea }) {
 
             {legs.length > 0 && (
               <div style={{ marginTop: 14 }}>
-                <strong style={{ display: "block", fontSize: 28, fontWeight: 950 }}>Yhteensä {totalKm} km</strong>
+                <strong style={{ display: "block", fontSize: 24, fontWeight: 950, letterSpacing: "-0.04em" }}>Yhteensä {totalKm} km</strong>
                 {legs.map((leg) => (
-                  <section key={leg.id} style={{ marginTop: 14, padding: 12, borderRadius: 14, background: "#f8fafc", border: "1px solid rgba(148, 163, 184, 0.35)" }}>
+                  <section key={leg.id} style={{ marginTop: 12, padding: 12, borderRadius: 16, background: "#f8fafc", border: "1px solid rgba(148, 163, 184, 0.35)" }}>
                     <h3 style={{ margin: "0 0 4px", fontSize: 16 }}>{leg.title}</h3>
                     <strong>{leg.distanceKm} km</strong>
-                    <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: "10px 0", padding: 10, borderRadius: 10, background: "#ffffff" }}>{leg.copyText}</pre>
+                    <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: "10px 0", padding: 10, borderRadius: 12, background: "#ffffff", fontSize: 13 }}>{leg.copyText}</pre>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                      <button type="button" style={{ minHeight: 40, border: 0, borderRadius: 12, background: "#111827", color: "#ffffff", fontWeight: 900 }} onClick={() => handleCopy(leg)}>
-                        {copiedLeg === leg.id ? "Kopioitu" : "Kopioi tämä työmaa"}
+                      <button type="button" style={primaryButtonStyle} onClick={() => handleCopy(leg)}>
+                        {copiedLeg === leg.id ? "✓ Kopioitu" : "⧉ Kopioi"}
                       </button>
-                      <a href={leg.mapsUrl} target="_blank" rel="noreferrer" style={{ minHeight: 40, borderRadius: 12, background: "#e5e7eb", color: "#111827", fontWeight: 900, textDecoration: "none", display: "grid", placeItems: "center" }}>Avaa Mapsissa</a>
+                      <a href={leg.mapsUrl} target="_blank" rel="noreferrer" style={secondaryButtonStyle}>⌖ Maps</a>
                     </div>
                   </section>
                 ))}
