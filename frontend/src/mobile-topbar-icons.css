@@ -1,0 +1,78 @@
+@media (max-width: 768px) {
+  .topbar {
+    padding-top: max(58px, env(safe-area-inset-top));
+  }
+
+  .topbar-actions {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: calc(100vw - 28px) !important;
+    max-width: 680px !important;
+    margin: 0 auto !important;
+    align-items: center !important;
+  }
+
+  .topbar-actions > button,
+  .topbar-actions .km-react-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 48px !important;
+    height: 48px !important;
+    padding: 0 !important;
+    border-radius: 16px !important;
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    overflow: hidden !important;
+  }
+
+  .topbar-actions > button::before,
+  .topbar-actions .km-react-button::before {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 22px !important;
+    line-height: 1 !important;
+  }
+
+  .topbar-actions > button:nth-child(1)::before {
+    content: "⌖";
+  }
+
+  .topbar-actions > button:nth-child(2)::before {
+    content: "☔";
+  }
+
+  .topbar-actions > button:nth-child(3)::before {
+    content: "↻";
+  }
+
+  .topbar-actions > button:nth-child(4)::before {
+    content: "▤";
+  }
+
+  .topbar-actions .km-react-button::before {
+    content: "⛟";
+  }
+
+  .topbar-actions .km-react-button {
+    margin: 0 !important;
+    position: relative !important;
+    z-index: 20 !important;
+  }
+
+  .km-react-backdrop {
+    padding-bottom: calc(118px + env(safe-area-inset-bottom)) !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+  }
+
+  .km-react-panel {
+    max-height: 40dvh !important;
+    width: calc(100vw - 18px) !important;
+    border-radius: 22px !important;
+  }
+}
