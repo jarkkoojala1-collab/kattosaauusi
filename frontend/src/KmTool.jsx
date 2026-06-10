@@ -70,6 +70,12 @@ const primaryButtonStyle = {
   color: "#ffffff"
 };
 
+const clearButtonStyle = {
+  ...secondaryButtonStyle,
+  background: "#e2e8f0",
+  color: "#0f172a"
+};
+
 const dangerButtonStyle = {
   ...secondaryButtonStyle,
   background: "#fee2e2",
@@ -169,6 +175,14 @@ export default function KmTool({ selectedArea }) {
     }
   }
 
+  function handleClear() {
+    setStops([""]);
+    setLegs([]);
+    setError("");
+    setCopiedLeg(null);
+    setLoading(false);
+  }
+
   async function handleCopy(leg) {
     await navigator.clipboard.writeText(leg.copyText);
     setCopiedLeg(leg.id);
@@ -234,6 +248,10 @@ export default function KmTool({ selectedArea }) {
             {loading ? "⏳ Lasketaan" : "↗ Laske"}
           </button>
         </div>
+
+        <button type="button" style={{ ...clearButtonStyle, width: "100%", marginTop: 10 }} onClick={handleClear} disabled={loading}>
+          Tyhjennä
+        </button>
 
         {error && <div style={{ marginTop: 10, padding: "9px 11px", borderRadius: 12, background: "#fee2e2", color: "#991b1b", fontWeight: 800 }}>{error}</div>}
 
