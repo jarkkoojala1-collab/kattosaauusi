@@ -5,42 +5,60 @@ function ensureRainTopbarActions() {
   if (!shell || !actions) return;
 
   const rainModeActive = shell.classList.contains("rain-mode-active");
-  const existingButton = actions.querySelector(".rain-open-panel-button");
+  const existingBackButton = actions.querySelector(".rain-back-button");
+  const existingForecastButton = actions.querySelector(".rain-open-panel-button");
 
   if (!rainModeActive) {
-    existingButton?.remove();
+    existingBackButton?.remove();
+    existingForecastButton?.remove();
     return;
+  }
+
+  const radarButton = actions.querySelector(".radar-mode-button");
+  const firstButton = actions.querySelector("button");
+  const kmButton = actions.querySelector(".km-react-button");
+
+  if (!existingBackButton) {
+    const backButton = document.createElement("button");
+    backButton.type = "button";
+    backButton.className = "ghost-location-button rain-back-button";
+    backButton.textContent = "Edellinen";
+    backButton.setAttribute("aria-label", "Edellinen");
+    backButton.title = "Edellinen";
+    backButton.addEventListener("click", () => {
+      radarButton?.click();
+    });
+
+    actions.insertBefore(backButton, firstButton || null);
   }
 
   if (actions.querySelector(".open-panel-button:not(.rain-open-panel-button)")) {
-    existingButton?.remove();
+    existingForecastButton?.remove();
     return;
   }
 
-  if (existingButton) return;
+  if (!existingForecastButton) {
+    const forecastButton = document.createElement("button");
+    forecastButton.type = "button";
+    forecastButton.className = "open-panel-button rain-open-panel-button";
+    forecastButton.textContent = "Avaa ennuste";
+    forecastButton.setAttribute("aria-label", "Avaa ennuste");
+    forecastButton.title = "Avaa ennuste";
 
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "open-panel-button rain-open-panel-button";
-  button.textContent = "Avaa ennuste";
-  button.setAttribute("aria-label", "Avaa ennuste");
-  button.title = "Avaa ennuste";
+    forecastButton.addEventListener("click", () => {
+      radarButton?.click();
 
-  button.addEventListener("click", () => {
-    const radarButton = actions.querySelector(".radar-mode-button");
-    radarButton?.click();
+      window.setTimeout(() => {
+        const realOpenButton = document.querySelector(".topbar-actions .open-panel-button:not(.rain-open-panel-button)");
+        realOpenButton?.click();
+      }, 80);
+    });
 
-    window.setTimeout(() => {
-      const realOpenButton = document.querySelector(".topbar-actions .open-panel-button:not(.rain-open-panel-button)");
-      realOpenButton?.click();
-    }, 80);
-  });
-
-  const kmButton = actions.querySelector(".km-react-button");
-  if (kmButton) {
-    actions.insertBefore(button, kmButton);
-  } else {
-    actions.appendChild(button);
+    if (kmButton) {
+      actions.insertBefore(forecastButton, kmButton);
+    } else {
+      actions.appendChild(forecastButton);
+    }
   }
 }
 
