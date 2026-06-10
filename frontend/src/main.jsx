@@ -12,6 +12,7 @@ import "./area-summary-forecast.css";
 import "./mobile-topbar-icons.css";
 import "./area-summary-forecast.js";
 import "./wind-text-cleanup.js";
+import "./rain-topbar-actions.js";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
