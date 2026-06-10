@@ -9,6 +9,7 @@ import "./modern-theme.css";
 import "./login.css";
 import "./forecast-panel-cleanup.css";
 import "./area-summary-forecast.css";
+import "./mobile-topbar-icons.css";
 import "./area-summary-forecast.js";
 import "./wind-text-cleanup.js";
 
