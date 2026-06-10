@@ -26,31 +26,31 @@ const backdropStyle = {
   position: "fixed",
   inset: 0,
   zIndex: 5000,
-  display: "grid",
-  alignItems: "end",
-  justifyItems: "center",
-  padding: "12px 10px calc(14px + env(safe-area-inset-bottom))",
-  background: "rgba(15, 23, 42, 0.30)",
-  backdropFilter: "blur(6px)"
+  display: "flex",
+  alignItems: "flex-end",
+  justifyContent: "center",
+  padding: "0 8px calc(86px + env(safe-area-inset-bottom))",
+  background: "rgba(15, 23, 42, 0.12)",
+  pointerEvents: "auto"
 };
 
 const panelStyle = {
-  width: "min(520px, calc(100vw - 20px))",
-  maxHeight: "76dvh",
+  width: "min(520px, calc(100vw - 16px))",
+  maxHeight: "42dvh",
   overflow: "auto",
-  padding: 16,
-  borderRadius: "24px 24px 16px 16px",
+  padding: "10px 14px 12px",
+  borderRadius: "22px",
   background: "#ffffff",
   color: "#111827",
-  boxShadow: "0 -12px 60px rgba(15, 23, 42, 0.30)",
+  boxShadow: "0 14px 45px rgba(15, 23, 42, 0.28)",
   WebkitOverflowScrolling: "touch"
 };
 
 const secondaryButtonStyle = {
-  minHeight: 42,
+  minHeight: 40,
   border: 0,
   borderRadius: 13,
-  padding: "9px 11px",
+  padding: "8px 10px",
   background: "#f1f5f9",
   color: "#111827",
   fontWeight: 900,
@@ -189,29 +189,29 @@ export default function KmTool({ selectedArea }) {
       {open && (
         <div className="km-react-backdrop" style={backdropStyle} onClick={() => setOpen(false)}>
           <div className="km-react-panel" style={panelStyle} onClick={(event) => event.stopPropagation()}>
-            <div style={{ width: 42, height: 5, borderRadius: 999, background: "#cbd5e1", margin: "0 auto 12px" }} />
+            <div style={{ width: 40, height: 4, borderRadius: 999, background: "#cbd5e1", margin: "0 auto 8px" }} />
 
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-              <div>
-                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 950, letterSpacing: "-0.04em" }}>KM-laskuri</h2>
-                <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 12, fontWeight: 700 }}>
-                  Lähtö ja viimeisen työmaan paluu: {HALL_ADDRESS}
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
+              <div style={{ minWidth: 0 }}>
+                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 950, letterSpacing: "-0.04em" }}>KM-laskuri</h2>
+                <p style={{ margin: "2px 0 0", color: "#64748b", fontSize: 11, fontWeight: 700, lineHeight: 1.25 }}>
+                  Halli: {HALL_ADDRESS}
                 </p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} style={{ width: 38, height: 38, border: 0, borderRadius: 14, background: "#f1f5f9", fontSize: 20, cursor: "pointer" }} aria-label="Sulje">
+              <button type="button" onClick={() => setOpen(false)} style={{ width: 34, height: 34, border: 0, borderRadius: 12, background: "#f1f5f9", fontSize: 18, cursor: "pointer", flex: "0 0 auto" }} aria-label="Sulje">
                 ✕
               </button>
             </div>
 
             <div>
               {stops.map((stop, index) => (
-                <label key={index} style={{ display: "grid", gap: 6, marginTop: 10, fontSize: 13, fontWeight: 900 }}>
+                <label key={index} style={{ display: "grid", gap: 5, marginTop: 8, fontSize: 12, fontWeight: 900 }}>
                   <span>Työmaan osoite {index + 1}</span>
-                  <div style={{ display: "grid", gridTemplateColumns: stops.length > 1 ? "1fr auto" : "1fr", gap: 8 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: stops.length > 1 ? "1fr 42px" : "1fr", gap: 8 }}>
                     <input
                       value={stop}
                       placeholder="Syötä osoite"
-                      style={{ minHeight: 42, borderRadius: 13, border: "1px solid rgba(148, 163, 184, 0.45)", padding: "9px 11px", fontSize: 15, outline: "none" }}
+                      style={{ minHeight: 40, borderRadius: 13, border: "1px solid rgba(148, 163, 184, 0.45)", padding: "8px 11px", fontSize: 15, outline: "none" }}
                       onChange={(event) => {
                         const next = [...stops];
                         next[index] = event.target.value;
@@ -238,25 +238,25 @@ export default function KmTool({ selectedArea }) {
               ))}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
               <button type="button" style={secondaryButtonStyle} onClick={() => setStops([...stops, ""])}>
-                ＋ Pysähdys
+                + Pysähdys
               </button>
               <button type="button" style={primaryButtonStyle} onClick={handleCalculate} disabled={loading}>
                 {loading ? "⏳ Lasketaan" : "↗ Laske"}
               </button>
             </div>
 
-            {error && <div style={{ marginTop: 12, padding: "10px 12px", borderRadius: 12, background: "#fee2e2", color: "#991b1b", fontWeight: 800 }}>{error}</div>}
+            {error && <div style={{ marginTop: 10, padding: "9px 11px", borderRadius: 12, background: "#fee2e2", color: "#991b1b", fontWeight: 800 }}>{error}</div>}
 
             {legs.length > 0 && (
-              <div style={{ marginTop: 14 }}>
-                <strong style={{ display: "block", fontSize: 24, fontWeight: 950, letterSpacing: "-0.04em" }}>Yhteensä {totalKm} km</strong>
+              <div style={{ marginTop: 12 }}>
+                <strong style={{ display: "block", fontSize: 22, fontWeight: 950, letterSpacing: "-0.04em" }}>Yhteensä {totalKm} km</strong>
                 {legs.map((leg) => (
-                  <section key={leg.id} style={{ marginTop: 12, padding: 12, borderRadius: 16, background: "#f8fafc", border: "1px solid rgba(148, 163, 184, 0.35)" }}>
-                    <h3 style={{ margin: "0 0 4px", fontSize: 16 }}>{leg.title}</h3>
+                  <section key={leg.id} style={{ marginTop: 10, padding: 10, borderRadius: 16, background: "#f8fafc", border: "1px solid rgba(148, 163, 184, 0.35)" }}>
+                    <h3 style={{ margin: "0 0 4px", fontSize: 15 }}>{leg.title}</h3>
                     <strong>{leg.distanceKm} km</strong>
-                    <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: "10px 0", padding: 10, borderRadius: 12, background: "#ffffff", fontSize: 13 }}>{leg.copyText}</pre>
+                    <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", margin: "8px 0", padding: 9, borderRadius: 12, background: "#ffffff", fontSize: 13 }}>{leg.copyText}</pre>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       <button type="button" style={primaryButtonStyle} onClick={() => handleCopy(leg)}>
                         {copiedLeg === leg.id ? "✓ Kopioitu" : "⧉ Kopioi"}
