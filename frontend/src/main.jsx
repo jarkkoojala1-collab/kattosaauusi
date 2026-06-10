@@ -11,7 +11,6 @@ import "./forecast-panel-cleanup.css";
 import "./area-summary-forecast.css";
 import "./area-summary-forecast.js";
 import "./km-tool.js";
-import "./km-mobile-fix.js";
 import "./wind-text-cleanup.js";
 
 class ErrorBoundary extends React.Component {
