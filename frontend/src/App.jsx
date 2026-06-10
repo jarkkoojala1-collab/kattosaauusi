@@ -1226,32 +1226,38 @@ export default function App() {
           </div>
         )}
         <div className="topbar-actions">
-          <button className="ghost-location-button" onClick={useOwnLocation}>
-            {locating ? "Haetaan sijaintia..." : "Oma sijainti"}
-          </button>
-          <button
-            className={`ghost-location-button radar-mode-button ${rainMode ? "active" : ""}`}
-            onClick={() => {
-              setRainMode((value) => {
-                const next = !value;
-                setShowRadar(next);
-                setRadarPlaying(next);
-                return next;
-              });
-            }}
-          >
-            {rainMode ? "Pinnoituskartta" : "Tutka + sade-ennuste"}
-          </button>
-          <button className="ghost-location-button refresh-button" onClick={refreshForecast}>
-            Päivitä
-          </button>
-          {!rainMode && !showPanel && (
-          <button className="open-panel-button" onClick={() => setShowPanel(true)}>
-            Avaa ennuste
-          </button>
-        )}
-        </div>
-      </div>
+  <button className="ghost-location-button" onClick={useOwnLocation}>
+    {locating ? "Haetaan sijaintia..." : "Oma sijainti"}
+  </button>
+
+  <button
+    className={`ghost-location-button radar-mode-button ${rainMode ? "active" : ""}`}
+    onClick={() => {
+      setRainMode((value) => {
+        const next = !value;
+        setShowRadar(next);
+        setRadarPlaying(next);
+        return next;
+      });
+    }}
+  >
+    {rainMode ? "Pinnoituskartta" : "Tutka + sade-ennuste"}
+  </button>
+
+  <button className="ghost-location-button refresh-button" onClick={refreshForecast}>
+    Päivitä
+  </button>
+
+  {!rainMode && !showPanel && (
+    <button className="open-panel-button" onClick={() => setShowPanel(true)}>
+      Avaa ennuste
+    </button>
+  )}
+
+  {selectedArea === "uusimaa" && (
+    <KmTool selectedArea={selectedArea} />
+  )}
+</div>
 
       {rainMode && (
         <button
