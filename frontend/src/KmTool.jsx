@@ -30,16 +30,16 @@ const backdropStyle = {
   display: "flex",
   alignItems: "flex-end",
   justifyContent: "center",
-  padding: "0 8px calc(86px + env(safe-area-inset-bottom))",
+  padding: "0 8px calc(22px + env(safe-area-inset-bottom))",
   background: "rgba(15, 23, 42, 0.12)",
   pointerEvents: "auto"
 };
 
 const panelStyle = {
   width: "min(520px, calc(100vw - 16px))",
-  maxHeight: "42dvh",
+  maxHeight: "72dvh",
   overflow: "auto",
-  padding: "10px 14px 12px",
+  padding: "12px 14px 14px",
   borderRadius: "22px",
   background: "#ffffff",
   color: "#111827",
