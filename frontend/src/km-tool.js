@@ -1,6 +1,8 @@
 const HALL_ADDRESS = "Ilvesvuorenkatu 25, Nurmijärvi";
+const AREA_KEY = "kattosaa-area-for-km";
 let panel = null;
 let observer = null;
+let bootDone = false;
 
 function injectStyles() {
   if (document.getElementById("km-tool-styles")) return;
@@ -14,21 +16,70 @@ function injectStyles() {
     .km-stop-row{display:grid;gap:7px;margin-top:12px}.km-stop-row label{font-size:13px;font-weight:900}.km-stop-row div{display:grid;grid-template-columns:1fr auto;gap:8px}.km-stop-row input{min-height:44px;border-radius:12px;border:1px solid rgba(148,163,184,.45);padding:10px 12px;font-size:15px}.km-remove-stop{padding:0 12px;background:#fee2e2;color:#991b1b}
     .km-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.km-add-button,.km-calc-button,.km-copy-button,.km-maps-link{min-height:44px;padding:10px 12px}.km-add-button,.km-maps-link{background:#f3f4f6;color:#111827;text-decoration:none;text-align:center;display:grid;place-items:center}.km-calc-button,.km-copy-button{background:#1f2937;color:white}
     .km-result{margin-top:14px}.km-distance{font-size:28px;font-weight:950}.km-copy-text{margin:10px 0;padding:12px;border-radius:12px;background:#f8fafc;border:1px solid rgba(148,163,184,.35);white-space:pre-wrap}.km-error{margin-top:12px;padding:10px 12px;border-radius:12px;background:#fee2e2;color:#991b1b;font-weight:800}
-    @media(max-width:760px){.km-panel-backdrop{align-items:end;padding:10px}.km-panel{width:100%;border-radius:20px}.km-actions{grid-template-columns:1fr}}
+    .topbar-actions button[data-icon-ready="true"]{font-size:0!important;min-width:38px!important;padding:8px 10px!important}
+    .topbar-actions button[data-icon-ready="true"]::before{font-size:18px!important;line-height:1!important;display:inline-block}
+    .topbar-actions button[data-topbar-icon="location"]::before{content:"⌖"}
+    .topbar-actions button[data-topbar-icon="rain"]::before{content:"☔"}
+    .topbar-actions button[data-topbar-icon="refresh"]::before{content:"↻"}
+    .topbar-actions button[data-topbar-icon="forecast"]::before{content:"▤"}
+    .topbar-actions button[data-topbar-icon="km"]::before{content:"🚗"}
+    @media(max-width:760px){.km-panel-backdrop{align-items:end;padding:10px}.km-panel{width:100%;border-radius:20px}.km-actions{grid-template-columns:1fr}.topbar-actions{justify-content:center!important;gap:6px!important}.topbar-actions button[data-icon-ready="true"]{min-height:36px!important;min-width:40px!important;border-radius:12px!important}}
   `;
   document.head.appendChild(style);
 }
 
-function isUusimaaMode() {
-  const activePirkanmaa = document.querySelector(".area-selector button.active")?.textContent?.includes("Pirkanmaa");
+function rememberArea(text) {
+  const value = String(text || "").trim().toLowerCase();
+  if (value === "pirkanmaa") sessionStorage.setItem(AREA_KEY, "pirkanmaa");
+  if (value === "uusimaa") sessionStorage.setItem(AREA_KEY, "uusimaa");
+}
+
+function detectArea() {
+  const active = document.querySelector(".area-selector button.active")?.textContent || "";
+  if (/pirkanmaa/i.test(active)) return "pirkanmaa";
+  if (/uusimaa/i.test(active)) return "uusimaa";
+
   const text = document.body?.innerText || "";
-  if (activePirkanmaa || text.includes("Tampereen 150 km alue")) return false;
-  return true;
+  if (text.includes("Tampereen 150 km alue") || text.includes("150 km Tampereelta")) return "pirkanmaa";
+  if (text.includes("Nurmijärven 150 km alue") || text.includes("150 km Nurmijärveltä")) return "uusimaa";
+
+  return sessionStorage.getItem(AREA_KEY) || "uusimaa";
+}
+
+function isUusimaaMode() {
+  return detectArea() === "uusimaa";
+}
+
+function iconizeTopbar() {
+  const buttons = Array.from(document.querySelectorAll(".topbar-actions button"));
+  for (const button of buttons) {
+    const text = button.textContent.trim();
+    button.dataset.iconReady = "true";
+    if (text.includes("Oma sijainti") || text.includes("Haetaan sijaintia")) {
+      button.dataset.topbarIcon = "location";
+      button.title = text;
+      button.setAttribute("aria-label", text);
+    } else if (text.includes("Sade") || text.includes("Tutka") || text.includes("Pinnoituskartta")) {
+      button.dataset.topbarIcon = "rain";
+      button.title = text;
+      button.setAttribute("aria-label", text);
+    } else if (text.includes("Päivitä")) {
+      button.dataset.topbarIcon = "refresh";
+      button.title = text;
+      button.setAttribute("aria-label", text);
+    } else if (text.includes("Avaa ennuste")) {
+      button.dataset.topbarIcon = "forecast";
+      button.title = text;
+      button.setAttribute("aria-label", text);
+    }
+  }
 }
 
 function updateKmButtonVisibility() {
   const actions = document.querySelector(".topbar-actions");
   if (!actions) return;
+
+  iconizeTopbar();
 
   let button = document.querySelector(".km-button");
   if (!button) {
@@ -36,11 +87,18 @@ function updateKmButtonVisibility() {
     button.type = "button";
     button.className = "ghost-location-button km-button";
     button.textContent = "KM";
+    button.dataset.iconReady = "true";
+    button.dataset.topbarIcon = "km";
+    button.title = "KM-laskuri";
+    button.setAttribute("aria-label", "KM-laskuri");
     button.addEventListener("click", openPanel);
     actions.appendChild(button);
   }
 
-  button.style.display = isUusimaaMode() ? "" : "none";
+  const show = isUusimaaMode();
+  button.hidden = !show;
+  button.style.display = show ? "" : "none";
+  if (!show && panel) closePanel();
 }
 
 function kmText(stops) {
@@ -104,7 +162,8 @@ function renderResult(distanceKm, stops) {
 
 function openPanel() {
   injectStyles();
-  if (panel) return;
+  updateKmButtonVisibility();
+  if (!isUusimaaMode() || panel) return;
   panel = document.createElement("div");
   panel.className = "km-panel-backdrop";
   panel.innerHTML = `<div class="km-panel"><div class="km-panel-head"><div><div class="km-panel-title">KM-laskuri</div><div class="km-panel-subtitle">Lähtö ja paluu: ${HALL_ADDRESS}</div></div><button type="button" class="km-close-button">×</button></div><div class="km-stops"></div><div class="km-actions"><button type="button" class="km-add-button">Lisää pysähdys</button><button type="button" class="km-calc-button">Laske kilometrit</button></div><div class="km-result"></div><div class="km-error" style="display:none"></div><div class="km-muted">Kilometrit lasketaan tieverkkoa pitkin. Google Maps -linkki avautuu tarkistusta varten.</div></div>`;
@@ -150,14 +209,23 @@ function boot() {
   updateKmButtonVisibility();
   if (!observer && document.body) {
     observer = new MutationObserver(updateKmButtonVisibility);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
   }
-  window.addEventListener("click", () => setTimeout(updateKmButtonVisibility, 50), true);
+  if (!bootDone) {
+    bootDone = true;
+    window.addEventListener("click", (event) => {
+      const text = event.target?.closest?.("button")?.textContent || "";
+      rememberArea(text);
+      setTimeout(updateKmButtonVisibility, 80);
+      setTimeout(updateKmButtonVisibility, 400);
+    }, true);
+  }
 }
 
 if (typeof window !== "undefined") {
-  window.setTimeout(boot, 400);
-  window.setTimeout(boot, 1400);
+  window.setTimeout(boot, 300);
+  window.setTimeout(boot, 1000);
+  window.setTimeout(boot, 2200);
 }
 
 export {};
