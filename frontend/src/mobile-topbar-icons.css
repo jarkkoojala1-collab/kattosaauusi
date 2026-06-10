@@ -36,7 +36,7 @@
     align-items: center !important;
     padding: 7px !important;
     border-radius: 20px !important;
-    background: rgba(255, 255, 255, 0.82) !important;
+    background: rgba(255, 255, 255, 0.86) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
     box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16) !important;
@@ -47,7 +47,11 @@
   }
 
   .topbar-actions > button,
-  .topbar-actions .km-react-button {
+  .topbar-actions .km-react-button,
+  .topbar-actions > button.active,
+  .topbar-actions .km-react-button.active,
+  .topbar-actions .radar-mode-button.active,
+  .topbar-actions .open-panel-button {
     width: 100% !important;
     min-width: 0 !important;
     min-height: 42px !important;
@@ -61,6 +65,10 @@
     line-height: 1 !important;
     overflow: hidden !important;
     white-space: nowrap !important;
+    background: rgba(248, 250, 252, 0.96) !important;
+    color: #111827 !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 5px 12px rgba(15, 23, 42, 0.08) !important;
   }
 
   .topbar-actions > button::before,
@@ -114,16 +122,6 @@
   .topbar-actions .km-react-button::before {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 64'%3E%3Cg fill='none' stroke='%23111827' stroke-width='5.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 18h34v26H8z'/%3E%3Cpath d='M42 27h11l8 9v8H42z'/%3E%3Ccircle cx='22' cy='48' r='6'/%3E%3Ccircle cx='54' cy='48' r='6'/%3E%3Cpath d='M8 44h8M28 44h20M60 44h4'/%3E%3C/g%3E%3C/svg%3E") !important;
     width: 29px !important;
-  }
-
-  .radar-mode-button.active::before,
-  .topbar-actions > button.open-panel-button::before,
-  .topbar-actions .km-react-button::before {
-    filter: brightness(0) invert(1) !important;
-  }
-
-  .topbar-actions > button:not(.active):not(.open-panel-button)::before {
-    filter: none !important;
   }
 
   .topbar-actions .km-react-button {
