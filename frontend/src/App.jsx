@@ -1340,6 +1340,7 @@ export default function App() {
           {rainFallbackSource && <div className="rain-fallback-source">{rainFallbackSource} · tulevat ajat · 30 min välein</div>}
         </div>
       )}
+        </div>
 <MapContainer
         key={selectedArea}
         center={rainMode ? activeRadarArea.center : center}
