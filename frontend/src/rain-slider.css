@@ -169,6 +169,14 @@
     font-size: 11px !important;
   }
 
+  .rain-mode-active .topbar {
+    top: max(74px, calc(env(safe-area-inset-top) + 50px)) !important;
+  }
+
+  .rain-mode-active .topbar-actions {
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18) !important;
+  }
+
   .rain-bottom-bar.mobile-rain-bar {
     width: calc(100vw - 10px) !important;
     bottom: max(7px, env(safe-area-inset-bottom)) !important;
