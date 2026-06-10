@@ -2,15 +2,15 @@ import { useMemo, useState } from "react";
 
 const HALL_ADDRESS = "Ilvesvuorenkatu 25, Nurmijärvi";
 
-function makeCopyText(stops) {
-  return [HALL_ADDRESS, ...stops, HALL_ADDRESS]
+function makeCopyText(addresses) {
+  return addresses
     .filter(Boolean)
     .map((item) => `- ${item}`)
     .join("\n");
 }
 
-function makeMapsUrl(stops) {
-  return `https://www.google.com/maps/dir/${[HALL_ADDRESS, ...stops, HALL_ADDRESS].map(encodeURIComponent).join("/")}`;
+function makeMapsUrl(addresses) {
+  return `https://www.google.com/maps/dir/${addresses.map(encodeURIComponent).join("/")}`;
 }
 
 async function geocode(address) {
@@ -22,9 +22,9 @@ async function geocode(address) {
   return [Number(data[0].lon), Number(data[0].lat)];
 }
 
-async function calculateKm(stops) {
+async function calculateLegKm(addresses) {
   const coords = [];
-  for (const address of [HALL_ADDRESS, ...stops, HALL_ADDRESS]) {
+  for (const address of addresses) {
     coords.push(await geocode(address));
   }
 
@@ -35,23 +35,42 @@ async function calculateKm(stops) {
   return Math.round(data.routes[0].distance / 1000);
 }
 
+function makeWorksiteLegs(stops) {
+  return stops.map((stop, index) => {
+    const isFirst = index === 0;
+    const isLast = index === stops.length - 1;
+    const previousAddress = isFirst ? HALL_ADDRESS : stops[index - 1];
+    const addresses = isLast ? [previousAddress, stop, HALL_ADDRESS] : [previousAddress, stop];
+
+    return {
+      id: `${index}-${stop}`,
+      title: `Työmaa ${index + 1}`,
+      worksite: stop,
+      addresses,
+      copyText: makeCopyText(addresses),
+      mapsUrl: makeMapsUrl(addresses),
+      distanceKm: null
+    };
+  });
+}
+
 export default function KmTool({ selectedArea }) {
   const [open, setOpen] = useState(false);
   const [stops, setStops] = useState([""]);
-  const [distanceKm, setDistanceKm] = useState(null);
+  const [legs, setLegs] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedLeg, setCopiedLeg] = useState(null);
 
   const cleanStops = useMemo(() => stops.map((stop) => stop.trim()).filter(Boolean), [stops]);
   const visible = selectedArea === "uusimaa";
-  const copyText = makeCopyText(cleanStops);
+  const totalKm = legs.reduce((sum, leg) => sum + (Number(leg.distanceKm) || 0), 0);
 
   if (!visible) return null;
 
   async function handleCalculate() {
     setError("");
-    setCopied(false);
+    setCopiedLeg(null);
 
     if (!cleanStops.length) {
       setError("Lisää vähintään yksi työmaan osoite.");
@@ -60,8 +79,15 @@ export default function KmTool({ selectedArea }) {
 
     try {
       setLoading(true);
-      const km = await calculateKm(cleanStops);
-      setDistanceKm(km);
+      const nextLegs = makeWorksiteLegs(cleanStops);
+      const calculatedLegs = [];
+
+      for (const leg of nextLegs) {
+        const distanceKm = await calculateLegKm(leg.addresses);
+        calculatedLegs.push({ ...leg, distanceKm });
+      }
+
+      setLegs(calculatedLegs);
     } catch (err) {
       setError(err?.message || "Kilometrien laskenta epäonnistui.");
     } finally {
@@ -69,9 +95,9 @@ export default function KmTool({ selectedArea }) {
     }
   }
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(copyText);
-    setCopied(true);
+  async function handleCopy(leg) {
+    await navigator.clipboard.writeText(leg.copyText);
+    setCopiedLeg(leg.id);
   }
 
   return (
@@ -93,7 +119,7 @@ export default function KmTool({ selectedArea }) {
             <div className="km-react-head">
               <div>
                 <h2>KM-laskuri</h2>
-                <p>Lähtö ja paluu: {HALL_ADDRESS}</p>
+                <p>Lähtö ja viimeisen työmaan paluu: {HALL_ADDRESS}</p>
               </div>
               <button type="button" className="km-react-close" onClick={() => setOpen(false)}>×</button>
             </div>
@@ -110,13 +136,16 @@ export default function KmTool({ selectedArea }) {
                         const next = [...stops];
                         next[index] = event.target.value;
                         setStops(next);
-                        setDistanceKm(null);
+                        setLegs([]);
                       }}
                     />
                     {stops.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => setStops(stops.filter((_, itemIndex) => itemIndex !== index))}
+                        onClick={() => {
+                          setStops(stops.filter((_, itemIndex) => itemIndex !== index));
+                          setLegs([]);
+                        }}
                       >
                         Poista
                       </button>
@@ -135,14 +164,22 @@ export default function KmTool({ selectedArea }) {
 
             {error && <div className="km-react-error">{error}</div>}
 
-            {distanceKm !== null && (
+            {legs.length > 0 && (
               <div className="km-react-result">
-                <strong>{distanceKm} km</strong>
-                <pre>{copyText}</pre>
-                <div className="km-react-actions">
-                  <button type="button" className="primary" onClick={handleCopy}>{copied ? "Kopioitu" : "Kopioi osoitteet"}</button>
-                  <a href={makeMapsUrl(cleanStops)} target="_blank" rel="noreferrer">Avaa Google Mapsissa</a>
-                </div>
+                <strong>Yhteensä {totalKm} km</strong>
+                {legs.map((leg) => (
+                  <section key={leg.id} className="km-react-leg">
+                    <h3>{leg.title}</h3>
+                    <strong>{leg.distanceKm} km</strong>
+                    <pre>{leg.copyText}</pre>
+                    <div className="km-react-actions">
+                      <button type="button" className="primary" onClick={() => handleCopy(leg)}>
+                        {copiedLeg === leg.id ? "Kopioitu" : "Kopioi tämä työmaa"}
+                      </button>
+                      <a href={leg.mapsUrl} target="_blank" rel="noreferrer">Avaa Mapsissa</a>
+                    </div>
+                  </section>
+                ))}
               </div>
             )}
           </div>
