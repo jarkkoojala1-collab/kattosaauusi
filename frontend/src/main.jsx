@@ -10,6 +10,7 @@ import "./login.css";
 import "./forecast-panel-cleanup.css";
 import "./area-summary-forecast.css";
 import "./area-summary-forecast.js";
+import "./km-tool.js";
 import "./wind-text-cleanup.js";
 
 class ErrorBoundary extends React.Component {
@@ -25,28 +26,15 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{
-          padding: 20,
-          fontFamily: "Arial, sans-serif",
-          color: "#111827",
-          background: "#f8fafc",
-          minHeight: "100vh"
-        }}>
+        <div style={{padding:20,fontFamily:"Arial, sans-serif",color:"#111827",background:"#f8fafc",minHeight:"100vh"}}>
           <h1>Sovelluksessa tapahtui virhe</h1>
           <p>Tämä näkymä estää valkoisen sivun. Lähetä alla oleva virhe kehittäjälle:</p>
-          <pre style={{
-            whiteSpace: "pre-wrap",
-            background: "#fee2e2",
-            border: "1px solid #fecaca",
-            padding: 12,
-            borderRadius: 8
-          }}>
+          <pre style={{whiteSpace:"pre-wrap",background:"#fee2e2",border:"1px solid #fecaca",padding:12,borderRadius:8}}>
             {String(this.state.error?.message || this.state.error)}
           </pre>
         </div>
       );
     }
-
     return this.props.children;
   }
 }
