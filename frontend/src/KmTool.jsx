@@ -6,11 +6,11 @@ const buttonStyle = {
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  minHeight: 38,
-  minWidth: 42,
+  minHeight: 52,
+  minWidth: 52,
   padding: "8px 11px",
   border: "1px solid rgba(255,255,255,0.18)",
-  borderRadius: 14,
+  borderRadius: 16,
   background: "linear-gradient(180deg, #111827 0%, #020617 100%)",
   color: "#ffffff",
   fontWeight: 900,
@@ -18,7 +18,7 @@ const buttonStyle = {
   boxShadow: "0 10px 24px rgba(15, 23, 42, 0.25)",
   position: "relative",
   zIndex: 20,
-  fontSize: 18,
+  fontSize: 22,
   lineHeight: 1
 };
 
